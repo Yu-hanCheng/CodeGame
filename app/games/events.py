@@ -1,6 +1,6 @@
 from flask import session,redirect, url_for
 from flask_socketio import emit, join_room, leave_room
-from .. import socketio # //in codegame.py
+from .. import socketio # //in microblog.py
 from flask_login import current_user
 from app.models import User, Game, Log, Code,Game_lib
 from app import db
@@ -11,20 +11,20 @@ import json
 def new_connect():
     print("client connect")
     
-@socketio.on('over',namespace = '/test') 
+@socketio.on('over') 
 def game_over(message):
     # msg：tuple([l_score,r_score,gametime])??
     # 使 webserver切換至 gameover路由
-    print('over game',message['msg'])
-    emit('gameover', {'msg': message['msg']},namespace = '/test',room= message['msg'][2])
+    print('over game:',message['msg'])
+    emit('gameover', {'msg': message},namespace = '/test',room= message['log_id'])
     # return redirect(url_for('games.gameover',room= message['msg'][3],msg= message['msg']))
 
-@socketio.on('connectfromgame',namespace='/test')
+@socketio.on('connectfromgame')
 def test_connect(message):
     # 接收來自 exec主機 gamemain傳送的訊息並再傳至browser
     # msg:??
     print(message['msg'])
-    emit('gameobject', {'msg': message['msg']},namespace = '/test',room= message['msg'][3])#,room= message['msg'][3]
+    emit('gameobject', {'msg': message['msg']},namespace = '/test',room= message['log_id'])#,room= message['msg'][3]
 
 @socketio.on('join' ,namespace = '/test')
 def joined(message):

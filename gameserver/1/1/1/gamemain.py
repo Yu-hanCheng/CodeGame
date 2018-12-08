@@ -4,7 +4,7 @@ import threading,math, random
 from socketIO_client import SocketIO, BaseNamespace
 
 log_id = sys.argv[1]
-bind_ip = '0.0.0.0'
+bind_ip = '127.0.0.1'
 bind_port = 8802
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((bind_ip, bind_port))
@@ -19,7 +19,7 @@ WIDTH = 800
 HEIGHT = 400
 BALL_RADIUS = 20
 PAD_WIDTH = 8
-PAD_HEIGHT = math.ceil(HEIGHT/3)
+PAD_HEIGHT = math.ceil(HEIGHT/2)
 HALF_PAD_WIDTH = PAD_WIDTH // 3
 HALF_PAD_HEIGHT = PAD_HEIGHT // 3
 ball = [0, 0]
@@ -38,8 +38,9 @@ p2_rt=0.0001
 start=0 # control timeout loop
 lock = threading.Lock()
 class WebNamespace(BaseNamespace):
-    def on_aaa_response(self, *args):
-        print('on_aaa_response', args)
+    def on_connect(self):
+        print('[Connected]')
+
 def ball_init(right):
     global ball, ball_vel
     ball = [WIDTH // 2, HEIGHT // 2]
@@ -66,9 +67,11 @@ def __init__():
 def send_to_webserver():
     global ball,paddle1,paddle2,log_id
     print("sendtoweb")
-    with SocketIO('192.168.55.160', 5000) as socketIO:
-        Web_namespace = socketIO.define(WebNamespace, '/test')
-        Web_namespace.emit('connectfromgame',{'msg':tuple([ball,paddle1,paddle2,log_id])})#q1 log_id
+    with SocketIO('127.0.0.1', 5000) as socketIO:
+        Web_namespace = socketIO.define(WebNamespace)
+        print("sendtoweb2")
+        Web_namespace.emit('connectfromgame',{'msg':tuple([ball,paddle1,paddle2]),'log_id':log_id})#q1 log_id
+        print("sendtoweb2")
 
 
 def send_to_Players(instr):
@@ -89,9 +92,9 @@ def send_to_Players(instr):
             playerlist[cli].send(json.dumps(msg).encode())
         barrier=[0,0]
         print('endgame %f'%time.time())
-        with SocketIO('192.168.55.160', 5000) as socketIO:
-            Web_namespace = socketIO.define(WebNamespace, '/test')
-            Web_namespace.emit('over',{'msg':[l_report,r_report,log_id]})
+        with SocketIO('127.0.0.1', 5000) as socketIO:
+            Web_namespace = socketIO.define(WebNamespace )
+            Web_namespace.emit('over',{'msg':[l_report,r_report],'log_id':log_id})
 
         time.sleep(20)
 
@@ -267,16 +270,16 @@ def handle_client_connection(client_socket):
                 l_report = msg['content']
                 if r_report!="":
                     
-                    with SocketIO('192.168.55.160', 5000) as socketIO:
-                        Web_namespace = socketIO.define(WebNamespace, '/test')
-                        Web_namespace.emit('over',{'msg':[l_report,r_report]})
+                    with SocketIO('127.0.0.1', 5000) as socketIO:
+                        Web_namespace = socketIO.define(WebNamespace )
+                        Web_namespace.emit('over',{'msg':[l_report,r_report],'log_id':log_id})
 
             elif msg['who']=='P2':
                 r_report = msg['content']
                 if l_report!="":
-                    with SocketIO('192.168.55.160', 5000) as socketIO:
-                        Web_namespace = socketIO.define(WebNamespace, '/test')
-                        Web_namespace.emit('over',{'msg':[l_report,r_report]})
+                    with SocketIO('127.0.0.1', 5000) as socketIO:
+                        Web_namespace = socketIO.define(WebNamespace )
+                        Web_namespace.emit('over',{'msg':[l_report,r_report],'log_id':log_id})
 
 
 
