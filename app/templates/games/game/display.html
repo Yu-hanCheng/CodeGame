@@ -1,0 +1,80 @@
+<br>
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block app_content %}
+<script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
+<div class="popup" style="visibility:hidden" >
+        <span class="popuptext" id="myPopup">Display end</span>
+    </div>
+<div class="container" id="game_playground">
+    <h2> game_playground </h2>
+    
+    <div id="game_display">
+        <div class="row" style="height:500px">
+    
+                <div class =playground>
+                <div class="ball"></div>
+                <div class = "left-goalkeeper goalkeeper"></div>
+                <div class = "right-goalkeeper goalkeeper"></div>
+                </div>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='src-noconflict/ace.js') }}" type="text/javascript" charset="utf-8">
+</script>
+<script>
+let display_content =[{{content}}]
+console.log('display_content:',display_content)
+function ball_update(position){
+    var width = $(".ball").outerWidth();
+    var height = $(".ball").outerHeight();
+    // console.log($(".ball").left())
+    $(".ball").css({"left":position[0]-width/2,"top":position[1]-height/2});
+}
+function left_update(position){
+    var windowHeight = $(window).height();
+    var height = $(".left-goalkeeper").outerHeight();
+    var p_top = position-height/2;
+    var topMax = windowHeight - p_top - 5;
+    if (p_top < 5) p_top = 5;
+    if (p_top > topMax) p_top = topMax;
+    $(".left-goalkeeper").css("top",p_top);	
+}
+function right_update(position){
+    var windowHeight = $(window).height();
+    var height = $(".right-goalkeeper").outerHeight();
+    var p_top = position-height/2;
+    var topMax = windowHeight - height - 5;
+    if (p_top < 5) p_top = 5;
+    if (p_top > topMax) p_top = topMax;
+    $(".right-goalkeeper").css("top",p_top);	
+}
+function score_update(newscores){
+    Scores.setLeft(newscores[0]);
+    Scores.setRight(newscores[1]);
+}
+function display_end(){
+    var popup = document.getElementById("myPopup");
+    console.log("popup:",popup)
+    popup.classList.toggle("show");
+}
+var startTime=new Date();
+var speed=30;
+var start_flag=0;
+var position=[[97, 99], [1, 200], [799, 200]];
+var refreshIntervalId=setInterval(function(){
+    
+    position=display_content.shift();
+    if(position == undefined){
+        clearInterval(refreshIntervalId);
+        display_end();
+    }else{
+    ball_update(position[0]);
+    left_update(position[1]);
+    right_update(position[2]);
+    }
+},speed);
+</script>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='gameover.css') }}">
+{% endblock %}

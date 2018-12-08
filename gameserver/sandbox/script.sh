@@ -6,4 +6,4 @@ file=$4
 cont=$(docker run -it -d "$image" bash)
 
 docker cp $path$file "$cont":/$file
-docker exec -i "$cont" sh -c "$compiler $file"
+docker exec -i "$cont" sh -c "cd /;$compiler $file"

@@ -1,6 +1,10 @@
+<body background="https://i.imgur.com/OPE70hq.jpg">
 {% extends "base.html" %}
 {% block app_content %}
-        <title>Enter_Game</title>
+    
+    
+
+        <title color="white">Enter_Game</title>
         <link rel=stylesheet type=text/css href="{{ url_for('static', filename='index_css.css') }}">
 
         <div class="tab">
@@ -17,6 +21,14 @@
         </div>
         <div id="NewGames" class="tabcontent">
                 {% include '/games/index/newGame_list.html' %}
+                <button class="btn btn-info" onclick="creategame()">create game</button>
+                <script>
+                 function creategame(name)
+                    {
+                        window.open("{{ url_for('games.create_game')}}");
+                        
+                    }
+                </script>
         </div>
         <div id="HotGames" class="tabcontent">
                 {% include '/games/index/hotGame_list.html' %}
@@ -37,7 +49,7 @@
                     }
                 </script>
         </div>
-        <h1>Enter Game</h1>
+        <h1 color="white">Enter room to watch Game</h1>
         <form method="POST">
             {{ form.hidden_tag() }}
             {{ form.name.label }}: {{ form.name() }} {% for error in form.name.errors %}{{ error }}{% endfor %}<br>
@@ -60,3 +72,4 @@
                 }
                 </script>
 {% endblock %}
+</body>

@@ -25,13 +25,11 @@ def send_confirm_email(email_data):
 @bp.route('/user_confirm/<token>')
 def user_confirm(token):
     user = User()
-    print('user:',user)
     data = user.validate_confirm_token(token)
-    print('data: ',data)
     if data:
         user = User.query.filter_by(id=data.get('user_id')).first()
         user.confirm = True
-        db.session.add(user)
+        print('user: ',user)
         db.session.commit()
         return redirect(url_for('auth.login'))
     else:
@@ -44,9 +42,13 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data)
+        
         user.set_password(form.password.data)
+        
         db.session.add(user)
         db.session.commit()
+        user = User.query.filter_by(username=form.username.data).first()
+        print('user',user)
         flash('Congratulations, you are now a registered user! Please click the confirm link in your email')
         return redirect(url_for('auth.send_confirm_email',email_data=form.email.data))
     return render_template('auth/register.html', title='Register', form=form)

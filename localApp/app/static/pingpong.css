@@ -1,0 +1,80 @@
+
+.playground {
+	width: 800px;
+	height:400px;
+	position: absolute;
+	left: 50%;
+	margin-left: -400px;
+	text-align: center;
+}
+.ball {
+	width: 40px;
+	height: 40px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	background: green;
+	border: 1px solid rgba(0, 0, 0, 0.5);
+	border-radius: 50%;
+}
+.goalkeeper {
+	width: 20px;
+	height: 30%;
+	position: relative;
+	top: 35%;
+	background: red;
+	border: 1px solid rgba(0, 0, 0, 0.5);
+	border-radius: 5px;
+}
+.left-goalkeeper {
+	float: left;
+	margin-left: 10px;
+}
+.right-goalkeeper {
+	float: right;
+	margin-right: 10px;
+}
+.cat {
+	height: 50px;
+	width: 50px;
+	position: absolute;
+	background-image: url("https://lukakva.github.io/NyanPong/resources/Nyan-Cat.gif");
+	background-size: cover;
+	/*z-index: 1;
+	overflow: hidden;*/
+}
+.scores {
+	position: fixed;
+	top: 45px;
+	left: 12.5%;
+	width: 75%;
+	height: 48px;
+	overflow: hidden;
+}
+.scores div:first-child {
+	position: relative;
+	display: inline-block;
+}
+
+#score {
+	display: none;
+}
+.left-score, .right-score {
+	font-size: 50px;
+	font-weight: bold;
+	width: 50%;
+	height: 100%;
+	text-align: center;
+	float: left;
+	font-family: monospace;
+	position: relative;
+	color: purple;
+	text-shadow: 
+	1px 0 pink,
+	0 1px pink,
+	-1px 0 pink,
+	0 -1px pink;
+}
+.right-score {
+	float: right;
+}

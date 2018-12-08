@@ -1,21 +1,25 @@
+<body>
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
 
 
-        <h1>Sign In</h1>
+        <h1 >Sign In</h1>
         <div class="row">
                 <div class="col-md-4">
-                        {{ wtf.quick_form(form) }}
+                        {{ wtf.quick_form(form,button_map={'submit': 'success'},extra_classes="label_loginform") }}
                 </div>
+                <div class="col-md-6">
+                                <iframe src="https://giphy.com/embed/MhHmVf60oEZQQ" width="480" height="154" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/frog-ping-pong-glove-and-boots-MhHmVf60oEZQQ">via GIPHY</a></p>
+                        </div>
         </div>
         <br>
-        <p>New User? <a href="{{ url_for('auth.register') }}">Click to Register!</a></p>
+        <p>New User? <a class="btn btn-warning" href="{{ url_for('auth.register') }}">Click to Register!</a></p>
         <p>Forgot Your Password?
-                <a href="{{ url_for('auth.reset_password_request') }}">Click to Reset It</a>
+                <a class="btn btn-info" href="{{ url_for('auth.reset_password_request') }}">Click to Reset It</a>
         </p>
-		<p><a href="{{ url_for('auth.oauth_authorize', provider='facebook') }}">Login with Facebook</a></p>
+		<p><a class="btn btn-primary" href="{{ url_for('auth.oauth_authorize', provider='facebook') }}">Login with Facebook</a></p>       
         <script>
                 window.fbAsyncInit = function() {
                 FB.init({
@@ -51,7 +55,6 @@
                 </div>
                 <br>
                 <fb:login-button scope="public_profile,email" onlogin="checkLoginState();"></fb:login-button>
-
-
-
+                <link rel="stylesheet" href="/static/basic.css" />
 {% endblock %}
+</body>

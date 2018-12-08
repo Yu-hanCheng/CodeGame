@@ -16,24 +16,34 @@ $(document).ready(function(){
     socket.on('arrived', function(data) {
         console.log("arrived:",data.msg)
         $('#game_playground').css("display","block");
+        $('#page_title').html("Game Start");
     });
-
+    socket.on('enter_room', function(data){
+        console.log("enter rooom", data.msg)
+        $('#page_title').html("enter room");
+    }) 
+    socket.on('connect_start', function(data){
+        console.log("map Player:", data.msg)        
+    })
     socket.on('status', function(data) {
         $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
         $('#chat').scrollTop($('#chat')[0].scrollHeight);
     });
     socket.on('gameover', function(data){
-        
-        var tbl = document.getElementById('tblHTML');
-        alert(tbl.innerHTML);
-
+        alert('l_report:'+ JSON.stringify(data.msg.l_report))
+        myPopupjs(data.msg,data.log_id);
+        // var popup = document.getElementById("myPopup");
+        // popup.classList.toggle("show");
     });
-
     socket.on('gameobject', function(data) {
     // data=tuple([ball,paddle1[1],paddle2[1],[r_score,l_score]])
-        left_buff.push(data.msg[1][1]);
-        right_buff.push(data.msg[2][1]);
-        ball_buff.push(data.msg[0]);
+        console.log("data:",data)
+        // left_buff.push(data.msg[1][1]);
+        // right_buff.push(data.msg[2][1]);
+        // ball_buff.push(data.msg[0]);
+        left_update(data.msg[1][1]);
+        right_update(data.msg[2][1]);
+        ball_update(data.msg[0]);
         score_update(data.msg[3]);
 
         $('#showgame').val($('#showgame').val() + data.msg[1][1]+ '\n');
@@ -52,102 +62,40 @@ $(document).ready(function(){
             socket.emit('text', {msg: text});
         }
     });
-    $('form#join').submit(function(event) {
-        socket.emit('join', {room: $('#join_room').val()});
-        return false;
+    $('select#mode').change(function(event) {
+        // socket.emit('check_code', {language: (document.getElementById("mode").selectedIndex+1)});
+        document.getElementById('select_code').style.display = "block";
+        console.log('mode',document.getElementById('mode').value);
     });
-    $('form#commit').submit(function(event) {
-        var glanguage = document.getElementById("mode").selectedIndex;
-        var editor_content=editor.getValue();
-        var commit_msg = document.getElementById('commit_msg').value; 
-        socket.emit('commit', {code: editor_content,commit_msg:commit_msg,glanguage:glanguage});
-        return false;
-    });
-
-    $('form#upload_to_server').submit(function(event) {
+    $('form#select_code').submit(function(event) {
+        // socket.emit('select_code', {room: $('#join_room').val(),code_id: $('#join_code_id').val(), language:document.getElementById("mode").selectedIndex});
+        document.getElementById('select_code').style.display = "none";
+        document.getElementById('section_code').style.display = "none";
+        document.getElementById('section_game').style.display = "block";
+        socket.emit('select_code', {room: $('#join_room').val(),code_id:document.getElementById('mode').value});
         
-        var glanguage = document.getElementById("mode").selectedIndex;
-        var commit_msg = document.getElementById('commit_msg').value; 
-
-        let choosed= $("#chooseFile")[0].files;
-        convertFile(choosed[0]).then(data => {
-            // 把編碼後的字串 send to webserver
-            socket.emit('commit', {code: data,commit_msg:commit_msg,glanguage:glanguage});
         return false;
-            
-          })
-          .catch(err => console.log(err))
-        
     });
 
 });
+function myPopupjs(data_msg,log_id){
 
-function previewFiles(files) {
-    if (files && files.length >= 1) {
-        $.map(files, file => {
-            convertFile(file)
-                .then(data => {
-                  // 把編碼後的字串輸出到console
-                //   const upload_file = data
-                  console.log('preview: ',data)
-                //   showPreviewImage(data, file.name)
-                })
-                .catch(err => console.log(err))
-        })
-    }
-
-}
-
-// 使用FileReader讀取檔案，並且回傳Base64編碼後的source
-function convertFile(file) {
-    return new Promise((resolve,reject)=>{
-        // 建立FileReader物件
-        let reader = new FileReader()
-        // 註冊onload事件，取得result則resolve (會是一個Base64字串)
-        reader.onload = () => { resolve(reader.result) }
-        // 註冊onerror事件，若發生error則reject
-        reader.onerror = () => { reject(reader.error) }
-        // 讀取檔案
-        reader.readAsDataURL(file)
-    })
-}
-
-// 當上傳檔案改變時清除目前預覽圖，並且呼叫previewFiles()
-$("#chooseFile").change(function(){
-    console.log(this)
-    $("#previewDiv").empty() // 清空當下預覽
-    previewFiles(this.files) // this即為<input>元素
-    console.log('this.files',this.files);
-})
-
-var editor = ace.edit("editor");
-editor.setTheme("ace/theme/twilight");
-editor.session.setMode("ace/mode/javascript");
-function changeMode(){
-    console.log("changeMode")
-    var mode = document.getElementById('mode').value;
-    editor.session.setMode("ace/mode/"+ mode);
-    var contents = {
-        c:'main(){}',
-        python: '\
-def run():\n\
-    global paddle_vel,ball_pos,move_unit\n\
-    if (ball_pos[-1][0]-ball_pos[-2][0]) <0: \n\
-        print("ball moves left")\n\
-        if (ball_pos[-1][1]-ball_pos[-2][1]) >0:\n\
-            print("ball moves down")\n\
-            paddle_vel=move_unit\n\
-        elif (ball_pos[-1][1]-ball_pos[-2][1])<0:\n\
-            print("ball moves up")\n\
-            paddle_vel=-move_unit\n\
-    else: \n\
-        paddle_vel=0\n\
-        print("ball moves right, no need to move paddle1")\n',
-        
-        sh: '<value attr="something">Write something here...</value>'
-    };
-    editor.setValue(contents[mode]);
+    console.log('msg type parse:'+typeof(JSON.parse(data_msg.l_report)))
+    var mytable = "<table class=\"popuptext\" ><tbody><tr>" ;
+    var l_data = JSON.parse(data_msg.l_report)
+    var r_data = JSON.parse(data_msg.r_report)
     
+    mytable += "</tr><tr><td></td><td>SCORE</td></tr><tr>";
+    mytable += "</tr><tr><td></td><td>P1</td><td>P2</td></tr><tr>";
+
+    for(key in l_data){
+        mytable += "</tr><tr><td>" +key+ "</td>"+ "<td>" + l_data[key]+ "</td>"+"<td>" + r_data[key]+ "</td>";
+    }
+    
+    mytable += "</tr><tr><td></td><td><button onclick=\"javascript:location.href='/games/rank_list/"+log_id+"'\" >rank</button></td></tr></tbody></table>";
+    
+    document.getElementById("myPopup_dom").innerHTML = mytable;
+
 }
 
 function leave_room() {
@@ -192,23 +140,23 @@ var startTime=new Date();
 var speed=10;
 var start_flag=0;
 
-setInterval(function(){
+// setInterval(function(){
     
-    if (ball_buff.length>buff_normal){ 
-        start_flag=1;
-        // console.clear();   
-        speed=10;
-    }else if(ball_buff.length<buff_min){
-        speed=50;
-    }
+//     if (ball_buff.length>buff_normal){ 
+//         start_flag=1;
+//         // console.clear();   
+//         speed=10;
+//     }else if(ball_buff.length<buff_min){
+//         speed=50;
+//     }
 
-    if (start_flag==1){
-        left_update(left_buff.shift());
-        right_update(right_buff.shift());
-        ball_update(ball_buff.shift());
+//     if (start_flag==1){
+//         left_update(left_buff.shift());
+//         right_update(right_buff.shift());
+//         ball_update(ball_buff.shift());
         
-    }
-},speed);
+//     }
+// },speed);
 
 var Scores = {
 	// set lsef tscore with animation

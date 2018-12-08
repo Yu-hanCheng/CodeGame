@@ -44,7 +44,6 @@ players_in_log = db.Table('players_in_log',
     db.Column('player_id',db.Integer, db.ForeignKey('user.id'))
     )
 
-
 @login.user_loader #@lm.user_loader
 def load_user(id):
 	return User.query.get(int(id)) 
@@ -245,18 +244,21 @@ class Status(db.Model):
 
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    record_content = db.Column(db.String(1024),default='record_content')
+    record_content = db.Column(db.String(102400),default='record_content')
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     # user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
     winner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     status=db.Column(db.Integer,db.ForeignKey('status.id'))
+    # room目前還有多少空位，會在 event的 joined update
     privacy=db.Column(db.Integer,db.ForeignKey('privacy.id'))
     score = db.Column(db.Integer,default='100200')
     
     current_users = db.relationship(
         'User', secondary=players_in_log)
+
+
 
     # player_list = db.relationship(
     #     'User', secondary=players,
@@ -269,10 +271,10 @@ class Log(db.Model):
     def __repr__(self):
         return '<Log {}>'.format(self.id)
     
-    def get_rank_list(self,the_game_id):
-        print("get rank")
-        # rank_list = Log.query.with_entities(Log.id,Log.game_id,Log.score).filter_by(game_id = self.game_id).order_by(Log.score.desc()).all()
-        rank_list = Log.query.with_entities(Log.winner_id,Log.game_id,Log.score).filter_by(game_id = the_game_id).order_by(Log.score.desc()).all()
+    def get_rank_list(self):
+        
+        rank_list = Log.query.with_entities(Log.id,Log.game_id,User.username,Log.score).filter_by(game_id = self.game_id).join(User,(User.id==Log.winner_id)).order_by(Log.score.desc()).all()
+        
         return rank_list
 
     def get_codes(self):
@@ -293,14 +295,15 @@ class Log(db.Model):
 
 class Language(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    languuage_name = db.Column(db.String(30)) 
+    language_name = db.Column(db.String(30)) 
+    filename_extension = db.Column(db.String(30)) 
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     gamename = db.Column(db.String(30))
     descript = db.Column(db.String(1024))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    game_lib_id = db.Column(db.Integer, db.ForeignKey('game_lib.id'))
+    game_libs = db.relationship('Game_lib', backref='game_info', lazy='dynamic')
 
     # example_code = db.Column(db.String(1024))
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'),
@@ -346,6 +349,7 @@ class Game_lib(db.Model):
     example_code_name = db.Column(db.String(1024))
     player_num = db.Column(db.Integer)
     language_id = db.Column(db.String(1024))
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
