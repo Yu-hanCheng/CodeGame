@@ -17,6 +17,14 @@
         </div>
         <div id="NewGames" class="tabcontent">
                 {% include '/games/index/newGame_list.html' %}
+                <button onclick="creategame()">create game</button>
+                <script>
+                 function creategame(name)
+                    {
+                        window.open("{{ url_for('games.create_game')}}");
+                        
+                    }
+                </script>
         </div>
         <div id="HotGames" class="tabcontent">
                 {% include '/games/index/hotGame_list.html' %}
