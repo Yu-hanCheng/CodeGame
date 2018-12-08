@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block app_content %}
+        <title>Enter_Game</title>
+        <link rel=stylesheet type=text/css href="{{ url_for('static', filename='index_css.css') }}">
+
+        <div class="tab">
+            <button class="tablinks" onclick="openTab(event, 'News')">News</button>
+            <button class="tablinks" onclick="openTab(event, 'NewGames')">NewGames</button>
+            <button class="tablinks" onclick="openTab(event, 'HotGames')">HotGames</button>
+            <button class="tablinks" onclick="openTab(event, 'Discuss')">Discuss</button>
+            <button class="tablinks" onclick="openTab(event, 'Rooms')">Rooms</button>
+        </div>
+        
+        
+        <div id="News" class="tabcontent">
+                {% include '/games/index/news.html' %}
+        </div>
+        <div id="NewGames" class="tabcontent">
+                {% include '/games/index/newGame_list.html' %}
+        </div>
+        <div id="HotGames" class="tabcontent">
+                {% include '/games/index/hotGame_list.html' %}
+        </div>
+        <div id="Discuss" class="tabcontent">
+                {% include '/games/index/discuss.html' %}
+        </div>
+        <div id="Rooms" class="tabcontent">
+            {% if wait_rooms or gaming_room %}
+                {% include '/games/index/room_list.html' %}
+            {% endif %}
+            <button onclick="addroom()">add room</button>
+                <script>
+                 function addroom(name)
+                    {
+                        window.open("{{ url_for('games.add_room')}}");
+                        
+                    }
+                </script>
+        </div>
+        <h1>Enter Game</h1>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            {{ form.name.label }}: {{ form.name() }} {% for error in form.name.errors %}{{ error }}{% endfor %}<br>
+            {{ form.room.label }}: {{ form.room() }} {% for error in form.room.errors %}{{ error }}{% endfor %}<br>
+            {{ form.submit() }}
+        </form>
+        <script>
+                function openTab(evt, evtName) {
+                    var i, tabcontent, tablinks;
+                    tabcontent = document.getElementsByClassName("tabcontent");
+                    for (i = 0; i < tabcontent.length; i++) {
+                        tabcontent[i].style.display = "none";
+                    }
+                    tablinks = document.getElementsByClassName("tablinks");
+                    for (i = 0; i < tablinks.length; i++) {
+                        tablinks[i].className = tablinks[i].className.replace(" active", "");
+                    }
+                    document.getElementById(evtName).style.display = "block";
+                    evt.currentTarget.className += " active";
+                }
+                </script>
+{% endblock %}

@@ -1,0 +1,42 @@
+<!DOCTYPE html> 
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Ace - The High Performance Code Editor for the Web</title>
+        <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap.no-icons.min.css" />
+        <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/3.0/css/font-awesome.css" />
+        <link href="./t_editor/build/resources/csses/ace_api.css" rel="stylesheet" type="text/css" />
+        <link href="./t_editor/doc/site/style.css" rel="stylesheet" type="text/css" />
+
+        <script src="./t_editor/build/src/ace.js"></script>
+        <script src="./t_editor/build/src/ext-static_highlight.js"></script>
+        <!--[if lt IE 9]>
+            <script src="./t_editor/build/src/ext-old_ie.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <h1>Hello EDitor</h1>
+        <pre id="ace_editor_demo" style="opacity:0">/**
+ * In fact, you're looking at ACE right now. Go ahead and play with it!
+ */</pre>
+        <div class="tab-pane fade active in" id="embedding">
+        <pre id="embedded_ace_code" style="opacity:0">&lt;!DOCTYPE html>
+        &lt;html lang="en">
+</pre><br>
+
+        </div>
+        <p id="show"></p>
+<button onclick="myFunction()">Try it</button>
+        <script>
+            function myFunction() {
+                document.getElementById("show").innerHTML="xxx"
+    console.log(document.getElementById("ace_editor_demo").innerHTML);
+}
+        </script>
+       <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script src="./t_editor/build/resources/javascripts/ux.js"></script>
+        <script src="./t_editor/doc/site/js/main.js"></script>
+        <script defer src="./t_editor/build/resources/javascripts/clicker.js"></script>
+        <script defer src="./t_editor/doc/site/js/ga.js"></script>
+    </body>
+</html>

@@ -1,0 +1,8 @@
+*__pycache__
+*venv
+*logs
+app/__init__.pyc
+*migrations
+app.db
+*.pem
+.DS_Store

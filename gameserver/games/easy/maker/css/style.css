@@ -1,0 +1,47 @@
+html,body {
+	height: 100%;
+	width: 100%;
+	margin: 0px;
+	padding: 0px;
+	overflow: hidden;
+}
+
+body {
+	background-image: url('https://lukakva.github.io/NyanPong/resources/background.jpg');
+}
+
+.container {
+	width: 800px;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin-left: -400px;
+	text-align: center;
+}
+.goalkeeper {
+	width: 20px;
+	height: 30%;
+	position: relative;
+	top: 35%;
+	background: white;
+	border: 1px solid rgba(0, 0, 0, 0.5);
+	border-radius: 5px;
+}
+.left-goalkeeper {
+	float: left;
+	margin-left: 5px;
+}
+.right-goalkeeper {
+	float: right;
+	margin-right: 5px;
+}
+.cat {
+	height: 50px;
+	width: 50px;
+	position: absolute;
+	background-image: url("https://lukakva.github.io/NyanPong/resources/Nyan-Cat.gif");
+	background-size: cover;
+	/*z-index: 1;
+	overflow: hidden;*/
+	-webkit-transform: none;
+}

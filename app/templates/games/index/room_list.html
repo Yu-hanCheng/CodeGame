@@ -1,0 +1,71 @@
+<br>
+<h3>room_list</h3>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='list_css.css') }}">
+<div class="container">
+        <div class="modal-content">
+            <div class="panel-body table-responsive">
+                <table class="table ">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">RoomID</th>
+                        <th scope="col">RoomName</th>
+                        <th scope="col">目前人數</th>
+                        <th scope="col">人數上限</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <p>room_wait</p>
+                    {% for w_room in wait_rooms %}
+                        <tr>
+                            <th scope="row">1</th>
+                            <td>{{ w_room.id }}</td>
+                            <td>{{ w_room.game_id }}</td>
+                            <td>online_people</td>
+                            <td>max_people</td>
+                            <td><button onclick="javascript:location.href='{{ url_for('games.wait_to_play',log_id=w_room.id ) }}'" >Enter</button></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="modal-content">
+            <div class="panel-body table-responsive">
+                    <table class="table ">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">RoomID</th>
+                            <th scope="col">RoomName</th>
+                            <th scope="col">目前人數</th>
+                            <th scope="col">人數上限</th>
+                        </tr>
+                        </thead>
+                    <tbody>
+                            <p>game_start</p>
+                        {% for g_room in gaming_room %}
+                            <tr>
+                                <th scope="row">1</th>
+                                <td>{{ g_room.id }}</td>
+                                <td>{{ g_room.game_id }}</td>
+                                <td>online_people</td>
+                                <td>max_people</td>
+                                <td><a href="{{ url_for('games.game_view',log_id=g_room.id) }}">@mdo</a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                   
+                </table>
+              
+            </div>
+        </div>
+</div>
+<script>
+    function enterRoom(room_id) {
+        
+        console.log($(room_id));
+        var log_id =$(room_id)[0];
+        console.log(typeof(log_id));
+    }
+</script>

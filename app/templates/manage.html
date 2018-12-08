@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block app_content %}
+<h1>Log file</h1>
+<h2>Game Privacy</h2>
+<div class="row">
+    <div class="col-md-4">
+        {{ wtf.quick_form(privacy_form) }}
+    </div>
+</div>
+
+
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='list_css.css') }}">
+<div class="container">
+    <div class="modal-content">
+        <div class="panel-body table-responsive">
+            <table class="table ">
+                <thead class="thead-dark">
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Name</th>
+                </tr>
+                </thead>
+                <tbody>
+                {%  if _privacy|length > 0 %} 
+                    {% for p in _privacy %}
+                        <tr>
+                            <td>{{ p.id }}</td>
+                            <td>{{ p.privacy_name }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+    <h2>Room Status</h2>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(status_form) }}
+        </div>
+    </div>
+<div class="container">
+    <div class="modal-content">
+        <div class="panel-body table-responsive">
+            <table class="table">
+                    <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {%  if _status|length > 0 %}
+                            {% for s in _status %}
+                                <tr>
+                                    <td>{{ s.id }}</td>
+                                    <td>{{ s.status_name }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                        </tbody>
+                </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
