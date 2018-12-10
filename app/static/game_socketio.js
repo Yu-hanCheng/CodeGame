@@ -17,16 +17,15 @@ $(document).ready(function(){
         console.log("arrived:",data.msg)
         $('#game_playground').css("display","block");
     });
-
+    socket.on('enter_room', function(data){
+        console.log("enter rooom", data.msg)
+    }) 
     socket.on('status', function(data) {
         $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
         $('#chat').scrollTop($('#chat')[0].scrollHeight);
     });
     socket.on('gameover', function(data){
-        
-        var tbl = document.getElementById('tblHTML');
-        alert(tbl.innerHTML);
-
+        alert('l_score:'+ JSON.stringify(data.msg.msg.l_score))
     });
 
     socket.on('gameobject', function(data) {
@@ -54,6 +53,7 @@ $(document).ready(function(){
     });
     $('form#join').submit(function(event) {
         socket.emit('join', {room: $('#join_room').val()});
+        console.log("join_room submit");
         return false;
     });
     $('form#commit').submit(function(event) {

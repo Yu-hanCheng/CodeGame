@@ -1,5 +1,5 @@
 from flask import session,redirect, url_for
-from flask_socketio import emit, join_room, leave_room
+from flask_socketio import emit, join_room, leave_room,send
 from .. import socketio # //in microblog.py
 from flask_login import current_user
 from app.models import User, Game, Log, Code,Game_lib
@@ -15,7 +15,7 @@ def new_connect():
 def game_over(message):
     # msg：tuple([l_score,r_score,gametime])??
     # 使 webserver切換至 gameover路由
-    print('over game:',message['msg'])
+    print('over game:',message['log_id'])
     emit('gameover', {'msg': message},namespace = '/test',room= message['log_id'])
     # return redirect(url_for('games.gameover',room= message['msg'][3],msg= message['msg']))
 
@@ -34,6 +34,7 @@ def joined(message):
     log_id = message['room'] #session.get('room') 
     session['log_id']=log_id
     join_room(log_id)
+    emit('enter_room', {'msg': log_id},namespace = '/test',room= log_id)
     l= Log.query.filter_by(id=log_id).first()
     print("log",l.privacy,l.status)
     if l.privacy is 1: # public,可以
@@ -47,7 +48,6 @@ def joined(message):
             db.session.commit()
             if l.status is 0 :
                 emit('arrived', {'msg': current_user.id},namespace = '/test',room= log_id)
-                
             # 單純觀賽
         elif l.privacy is 2:# friend
             pass
