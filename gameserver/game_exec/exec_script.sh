@@ -4,6 +4,7 @@ path=$3
 file=$4
 link=$5
 log_id=$6
+userId=$7
 
 if [ "$link" -eq "0" ]; then
 	cont=$(docker run --name "$log_id$file" --net="codegame" -ti -d 41f2086aefd8 bash)
@@ -14,6 +15,6 @@ else
     cont=$(docker run --name "$file" --net="codegame" -ti -d "$image" bash)
     echo the link"$link"
     docker cp $path$file "$cont":/$file
-    docker exec -i "$cont" sh -c "$compiler $file $link"
+    docker exec -i "$cont" sh -c "$compiler $file $link $userId"
 fi
 

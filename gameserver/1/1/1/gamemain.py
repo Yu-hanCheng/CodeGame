@@ -1,11 +1,11 @@
 #!/usr/bin/python
 import socket,json,time,sys
 import threading,math, random
-from socketIO_client import SocketIO, BaseNamespace
+from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 
 log_id = sys.argv[1]
 bind_ip = '127.0.0.1'
-bind_port = 8802
+bind_port = 8800
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((bind_ip, bind_port))
 # server.connect(address)
@@ -24,19 +24,21 @@ HALF_PAD_WIDTH = PAD_WIDTH // 3
 HALF_PAD_HEIGHT = PAD_HEIGHT // 3
 ball = [0, 0]
 ball_vel = [0, 0]
+record_content=[]
 paddle1_move = 0
 paddle2_move = 0
 l_score = 0
 l_report = ""
 r_score = 0
 r_report = ""
-
+identify={}
 barrier=[0,0] # ensure a round fair
 cnt=0
 p1_rt=0.0001
 p2_rt=0.0001
 start=0 # control timeout loop
 lock = threading.Lock()
+socketIO=SocketIO('127.0.0.1', 5000, LoggingNamespace)
 class WebNamespace(BaseNamespace):
     def on_connect(self):
         print('[Connected]')
@@ -64,14 +66,20 @@ def __init__():
     else:
         ball_init(False)
 
-def send_to_webserver():
-    global ball,paddle1,paddle2,log_id
-    print("sendtoweb")
-    with SocketIO('127.0.0.1', 5000) as socketIO:
-        Web_namespace = socketIO.define(WebNamespace)
+# def send_to_webserver():
+#     global ball,paddle1,paddle2,log_id
+#     print("sendtoweb")
+#     with SocketIO('127.0.0.1', 5000) as socketIO:
+#         Web_namespace = socketIO.define(WebNamespace)
+#         print("sendtoweb2")
+#         Web_namespace.emit('connectfromgame',{'msg':tuple([ball,paddle1,paddle2]),'log_id':log_id})#q1 log_id
         print("sendtoweb2")
-        Web_namespace.emit('connectfromgame',{'msg':tuple([ball,paddle1,paddle2]),'log_id':log_id})#q1 log_id
-        print("sendtoweb2")
+def send_to_webserver(msg_type,msg_content,logId):
+    print("web:",msg_content)
+    # #lock.acquire()
+    global ball,paddle1,paddle2,socketIO, score
+    socketIO.emit(msg_type,{'msg':msg_content,'log_id':logId})
+    #lock.release()
 
 
 def send_to_Players(instr):
@@ -81,20 +89,20 @@ def send_to_Players(instr):
 
     if (instr == 'gameinfo') and barrier==[1,1]:
         cnt+=1
-        msg={'type':'info','content':tuple([ball,paddle1[1],paddle2[1],[r_score,l_score]])}
+        msg={'type':'info','content':tuple([ball,paddle1[1],paddle2[1],[l_score,r_score]])}
         for cli in range(0,len(playerlist)):
             playerlist[cli].send(json.dumps(msg).encode())
         barrier=[0,0]
 
     elif instr == 'endgame':
-        msg={'type':'over','content':ball}
+        msg={'type':'over','content':{'ball':ball,'score':[l_score,r_score]}}
         for cli in range(0,len(playerlist)):
             playerlist[cli].send(json.dumps(msg).encode())
         barrier=[0,0]
         print('endgame %f'%time.time())
-        with SocketIO('127.0.0.1', 5000) as socketIO:
-            Web_namespace = socketIO.define(WebNamespace )
-            Web_namespace.emit('over',{'msg':[l_report,r_report],'log_id':log_id})
+        # with SocketIO('127.0.0.1', 5000) as socketIO:
+        #     Web_namespace = socketIO.define(WebNamespace )
+        #     Web_namespace.emit('over',{'msg':[l_report,r_report],'log_id':log_id})
 
         time.sleep(20)
 
@@ -212,78 +220,89 @@ def handle_client_connection(client_socket):
                 # print('P1 content',msg['content'])
                 paddle1_move=msg['content']
                 p1_rt=time.time()
-                lock.acquire()
+                #lock.acquire()
                 try:
                     barrier[0]=1
                     if barrier[1]==1:
-                        send_to_webserver()
+                        send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2]),log_id)
+                        record_content.append([ball,paddle1,paddle2])
                         game('on_p1')
                 finally:
-                    lock.release()
+                    #lock.release()
+                    pass
 
             elif msg['who']=='P2':
                 # print('P2 content',msg['content'])
                 paddle2_move=msg['content']
                 p2_rt=time.time()
-                lock.acquire()
+                #lock.acquire()
                 try:
                     barrier[1]=1
                     if barrier[0]==1:
-                        send_to_webserver()
+                        send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2]),log_id)
+                        record_content.append([ball,paddle1,paddle2])
                         game('on_p2')
                 finally:
-                    lock.release()
-
-
-
+                    #lock.release()
+                    pass
 
         elif msg['type']=='connect':
 
             if msg['who']=='P1':
                 print('P1 in',barrier)
                 p1_rt=time.time()
-                lock.acquire()
+                identify['P1']=msg['user_id']
+                #lock.acquire()
                 try:
                     barrier[0]=1
                     if barrier[1]==1:
                         print("p1_start")
                         start=1
+                        send_to_webserver('gamemain_connect',identify,log_id)
                         send_to_Players("gameinfo")
                 finally:
-                    lock.release()
+                    #lock.release()
+                    pass
 
             elif msg['who']=='P2':
                 print('P2 in',barrier)
                 p2_rt=time.time()
-                lock.acquire()
+                identify['P2']=msg['user_id']
+                #lock.acquire()
                 try:
                     barrier[1]=1
                     if barrier[0]==1:
                         print("p2_start")
                         start=1
+                        send_to_webserver('gamemain_connect',identify,log_id)
                         send_to_Players("gameinfo")
                 finally:
-                    lock.release()
+                    #lock.release()
+                    pass
 
-        elif msg['type']=='gameover':
+        elif msg['type']=='score':
+            print("score")
             if msg['who']=='P1':
                 l_report = msg['content']
+                print('l_report',l_report)
                 if r_report!="":
-                    
-                    with SocketIO('127.0.0.1', 5000) as socketIO:
-                        Web_namespace = socketIO.define(WebNamespace )
-                        Web_namespace.emit('over',{'msg':[l_report,r_report],'log_id':log_id})
+                    print("ok send report")
+                    send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
+                    # {'score':score,'cpu':'50','mem':'30','time':'554400'}
+                    # with SocketIO('127.0.0.1', 5000) as socketIO:
+                    #     Web_namespace = socketIO.define(WebNamespace )
+                    #     Web_namespace.emit('over',{'msg':[l_report,r_report],'log_id':log_id})
 
             elif msg['who']=='P2':
                 r_report = msg['content']
+                print('r_report',r_report)
                 if l_report!="":
-                    with SocketIO('127.0.0.1', 5000) as socketIO:
-                        Web_namespace = socketIO.define(WebNamespace )
-                        Web_namespace.emit('over',{'msg':[l_report,r_report],'log_id':log_id})
-
-
-
-
+                    print("ok send report")
+                    send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
+                    
+                    # with SocketIO('127.0.0.1', 5000) as socketIO:
+                    #     Web_namespace = socketIO.define(WebNamespace )
+                    #     Web_namespace.emit('over',{'msg':[l_report,r_report],'log_id':log_id})
                 
         elif msg['type']=='disconnect':
             if msg['who']=='P1':
@@ -318,7 +337,7 @@ def timeout_check():
         # time.sleep(0.3)
     if start==1:
         # print("check")
-        lock.acquire()
+        #lock.acquire()
         try:
             if barrier[0]==0:
                 p1_rt_sub=time.time()-p1_rt
@@ -331,23 +350,24 @@ def timeout_check():
                     barrier=[1,1]
                     p1_rt=time.time()
                     p2_rt=time.time()
-                    send_to_webserver()
+                    send_to_webserver('timeout',p1_rt_sub,log_id)
                     game('p1_timeout')
 
 
             elif barrier[1]==0:
-                # print('p2_no')
-                if (time.time()-p2_rt)>timeout:
+                p2_rt_sub=time.time()-p2_rt
+                if (p2_rt_sub)>timeout:
                     # print('p2_rt',time.time()-p2_rt)
                     paddle2_move=0
                     barrier=[1,1]
                     p1_rt=time.time()
                     p2_rt=time.time()
-                    send_to_webserver()
                     game('p2_timeout')
+                    send_to_webserver('timeout',p2_rt_sub,log_id)
 
         finally:
-            lock.release()
+            #lock.release()
+            pass
 
 
 

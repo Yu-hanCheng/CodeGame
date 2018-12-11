@@ -245,13 +245,14 @@ class Status(db.Model):
 
 class Log(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    record_content = db.Column(db.String(1024),default='record_content')
+    record_content = db.Column(db.String(102400),default='record_content')
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     # user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
     winner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     status=db.Column(db.Integer,db.ForeignKey('status.id'))
+    # room目前還有多少空位，會在 event的 joined update
     privacy=db.Column(db.Integer,db.ForeignKey('privacy.id'))
     score = db.Column(db.Integer,default='100200')
     
@@ -269,10 +270,10 @@ class Log(db.Model):
     def __repr__(self):
         return '<Log {}>'.format(self.id)
     
-    def get_rank_list(self,the_game_id):
-        print("get rank")
-        # rank_list = Log.query.with_entities(Log.id,Log.game_id,Log.score).filter_by(game_id = self.game_id).order_by(Log.score.desc()).all()
-        rank_list = Log.query.with_entities(Log.winner_id,Log.game_id,Log.score).filter_by(game_id = the_game_id).order_by(Log.score.desc()).all()
+    def get_rank_list(self):
+        
+        rank_list = Log.query.with_entities(Log.id,Log.game_id,User.username,Log.score).filter_by(game_id = self.game_id).join(User,(User.id==Log.winner_id)).order_by(Log.score.desc()).all()
+        
         return rank_list
 
     def get_codes(self):

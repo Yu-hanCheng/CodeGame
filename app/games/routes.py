@@ -100,6 +100,20 @@ def wait_to_play(log_id):
 	
 	return render_template('games/game/spa.html', title='wait_play_commit',join_form=join_form,room_id=log_id)
 
+@bp.route('/rank_list/<int:log_id>', methods=['GET','POST'])
+@login_required
+def rank_list(log_id):
+	log = Log.query.filter_by(id=log_id).first()
+	rank_list = log.get_rank_list()
+	return render_template('games/game/rank_list.html', title='rank_list',rank_list=rank_list)
+
+@bp.route('/display_record/<int:log_id>', methods=['GET','POST'])
+@login_required
+def display_record(log_id):
+	log = Log.query.filter_by(id=log_id).first()
+	record_content = json.loads(log.record_content)
+	print(record_content['record_content'])
+	return render_template('games/game/display.html', title='display',content=record_content['record_content'])
 
 
 @bp.route('/', methods=['GET', 'POST'])
@@ -129,10 +143,7 @@ def gameover(log_id):
 	# event.py收到gameserver的 'score'訊息後, redirect到此遊戲結束的 route, update log, 顯示分數
 	# get record_content from gameserver or local var ?
 	# record display in many jpeg 為學習影像處理存擋, 也用來做回顧播放
-	Log.query.filter_by(id=log_id).update(dict(record_content=msg[1],score=msg[2],winner_id=msg[3]))
-	# Log.query.filter_by(id=logId).update(dict(record_content='ooooo',score=300,winner_id=winner_id))
 	log=Log.query.with_entities(Log.game_id).filter_by(id=log_id).first()
-	db.session.commit()
 	print(Log.get_rank_list(Log,str(log[0])))# log[1]=game_id
 	return render_template('games/index.html', title='Register')
 

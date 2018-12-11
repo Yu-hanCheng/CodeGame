@@ -4,6 +4,7 @@
 {% block app_content %}
 <script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+
 <div class="scores">
         <div class="left-score">
             <div>
@@ -32,8 +33,8 @@
         </form>
     </div>
 </div>
-<table id="tblHTML"  hidden="hidden"><tr><td>a table baby =]</td></tr></table>
-
+<div class="popup"id="myPopup_dom" >the popup!
+  </div>
 <div class="container" id="game_playground" style="display:none">
     <h2> game_playground </h2>
     <div id="game_display">
@@ -77,9 +78,10 @@
         
     </div>
 </div>
-<script src="{{
-    url_for('static', filename='src-noconflict/ace.js') }}" type="text/javascript" charset="utf-8">
-    </script>
+<script src="{{ url_for('static', filename='src-noconflict/ace.js') }}" type="text/javascript" charset="utf-8">
+</script>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='gameover.css') }}">
 <script src="{{ url_for('static', filename='game_socketio.js') }}"></script>
+
 {% endblock %}

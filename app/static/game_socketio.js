@@ -20,12 +20,19 @@ $(document).ready(function(){
     socket.on('enter_room', function(data){
         console.log("enter rooom", data.msg)
     }) 
+    socket.on('connect_start', function(data){
+        console.log("map Player:", data.msg)
+
+    }) 
     socket.on('status', function(data) {
         $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
         $('#chat').scrollTop($('#chat')[0].scrollHeight);
     });
     socket.on('gameover', function(data){
-        alert('l_score:'+ JSON.stringify(data.msg.msg.l_score))
+        alert('l_report:'+ JSON.stringify(data.msg.l_report))
+        myPopupjs(data.msg,data.log_id);
+        // var popup = document.getElementById("myPopup");
+        // popup.classList.toggle("show");
     });
 
     socket.on('gameobject', function(data) {
@@ -81,7 +88,25 @@ $(document).ready(function(){
     });
 
 });
+function myPopupjs(data_msg,log_id){
 
+    console.log('msg type parse:'+typeof(JSON.parse(data_msg.l_report)))
+    var mytable = "<table class=\"popuptext\" ><tbody><tr>" ;
+    var l_data = JSON.parse(data_msg.l_report)
+    var r_data = JSON.parse(data_msg.r_report)
+    
+    mytable += "</tr><tr><td></td><td>SCORE</td></tr><tr>";
+    mytable += "</tr><tr><td></td><td>P1</td><td>P2</td></tr><tr>";
+
+    for(key in l_data){
+        mytable += "</tr><tr><td>" +key+ "</td>"+ "<td>" + l_data[key]+ "</td>"+"<td>" + r_data[key]+ "</td>";
+    }
+    
+    mytable += "</tr><tr><td></td><td><button onclick=\"javascript:location.href='/games/rank_list/"+log_id+"'\" >rank</button></td></tr></tbody></table>";
+    
+    document.getElementById("myPopup_dom").innerHTML = mytable;
+
+}
 function previewFiles(files) {
     if (files && files.length >= 1) {
         $.map(files, file => {

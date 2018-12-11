@@ -17,7 +17,7 @@ def aws_container(log_id, userId, compiler, path_, filename, link_dc):
 	image = "cce238a618539"
 	
 	try:
-		p = Popen('sh game_exec/exec_script.sh ' + image + ' ' + compiler + ' ' + path_ + ' '+ filename + ' '+ link_dc + ' '+log_id+ ' ',shell=True)
+		p = Popen('sh game_exec/exec_script.sh ' + image + ' ' + compiler + ' ' + path_ + ' '+ filename + ' '+ link_dc + ' '+log_id+ ' '+userId+ ' ',shell=True)
 		return 0
 	except Exception as e:
 		print('e: ',e)

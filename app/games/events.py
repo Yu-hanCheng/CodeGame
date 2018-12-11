@@ -10,14 +10,36 @@ import json
 @socketio.on('connect', namespace='/test')
 def new_connect():
     print("client connect")
-    
+
+@socketio.on('gamemain_connect')
+def gamemain_connect(message):
+    print(" gamemain_connect")
+    emit('connect_start',message,namespace = '/test',room= message['log_id'])
+
 @socketio.on('over') 
 def game_over(message):
     # msg：tuple([l_score,r_score,gametime])??
     # 使 webserver切換至 gameover路由
-    print('over game:',message['log_id'])
-    emit('gameover', {'msg': message},namespace = '/test',room= message['log_id'])
-    # return redirect(url_for('games.gameover',room= message['msg'][3],msg= message['msg']))
+    # print('message[msg][score]:',type(json.loads(message['msg']['l_report'])),json.loads(message['msg']['l_report']))
+    l_report=json.loads(message['msg']['l_report'])
+    r_report=json.loads(message['msg']['r_report'])
+    emit('gameover', {'msg': message['msg'],'log_id':message['log_id']},namespace = '/test',room= message['log_id'])
+    print('message[log_id]:',message['log_id'])
+    if l_report['score']>r_report['score']:
+        winner=l_report['user_id']
+    else:
+        winner=r_report['user_id']
+    
+    l=Log.query.filter_by(id=message['log_id']).first()
+    
+    l.winner_id = winner
+    save_content = json.dumps(message['msg'])
+    l.record_content = save_content
+    db.session.commit()
+
+    # if 
+    # l[0].winner=
+    # return redirect(url_for('games.gameover',log_id= message['log_id']))
 
 @socketio.on('connectfromgame')
 def test_connect(message):
