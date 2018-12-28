@@ -44,7 +44,6 @@ players_in_log = db.Table('players_in_log',
     db.Column('player_id',db.Integer, db.ForeignKey('user.id'))
     )
 
-
 @login.user_loader #@lm.user_loader
 def load_user(id):
 	return User.query.get(int(id)) 
@@ -258,6 +257,8 @@ class Log(db.Model):
     
     current_users = db.relationship(
         'User', secondary=players_in_log)
+
+
 
     # player_list = db.relationship(
     #     'User', secondary=players,

@@ -15,7 +15,7 @@ def new_connect():
 def gamemain_connect(message):
     print(" gamemain_connect")
     emit('connect_start',message,namespace = '/test',room= message['log_id'])
-
+    
 @socketio.on('over') 
 def game_over(message):
     # msg：tuple([l_score,r_score,gametime])??
@@ -35,13 +35,19 @@ def game_over(message):
     l.winner_id = winner
     save_content = json.dumps(message['msg'])
     l.record_content = save_content
-    db.session.commit()
+    
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        db.session.close()
 
     # if 
     # l[0].winner=
     # return redirect(url_for('games.gameover',log_id= message['log_id']))
 
-@socketio.on('connectfromgame')
+@socketio.on('info')
 def test_connect(message):
     # 接收來自 exec主機 gamemain傳送的訊息並再傳至browser
     # msg:??
@@ -67,7 +73,14 @@ def joined(message):
             current_users_len = len(l.current_users)
             l.status = int(game_player_num[0]) - current_users_len
             current_user.current_log_id = log_id
-            db.session.commit()
+
+            try:
+                db.session.commit()
+            except:
+                db.session.rollback()
+            finally:
+                db.session.close()
+
             if l.status is 0 :
                 emit('arrived', {'msg': current_user.id},namespace = '/test',room= log_id)
             # 單純觀賽
@@ -86,8 +99,14 @@ def commit_code(message):
     commit_msg =  message['commit_msg']
         
     code = Code(log_id=log_id, body=editor_content, commit_msg=commit_msg,game_id=l.game_id,user_id=current_user.id)
-    db.session.add(code)
-    db.session.commit()
+    
+    try:
+        db.session.add(code)
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        db.session.close()
     game = Game.query.filter_by(id=l.game_id).first()
     players = l.current_users
     player_list = []
@@ -101,7 +120,7 @@ def commit_code(message):
             print("append: ",player.id)
             player_list.append(player.id)
 
-    ws = create_connection("ws://localhost:6005")
+    ws = create_connection("ws://140.116.82.226:6005")
     ws.send(json.dumps({'from':'webserver','code':editor_content,'log_id':log_id,'user_id':current_user.id,'category_id':game.category_id,'game_id':l.game_id,'language':message['glanguage'],'player_list':player_list}))
     result =  ws.recv() #
     print("Received '%s'" % result)

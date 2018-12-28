@@ -6,3 +6,4 @@ app/__init__.pyc
 app.db
 *.pem
 .DS_Store
+*test_code

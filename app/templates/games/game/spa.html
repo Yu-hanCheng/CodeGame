@@ -4,7 +4,7 @@
 {% block app_content %}
 <script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
-
+<h1 id="page_title">room wait</h1>
 <div class="scores">
         <div class="left-score">
             <div>
@@ -17,22 +17,45 @@
             </div>
         </div>
 </div>
+<label for="mode" class="control-label">Language Mode:</label>
+    <select id="mode" class="form-control"onChange="changeMode()">
+        <option>C</option>
+        <option>python</option>
+        <option>SCRIPT</option>
+        
+    </select>
 <form enctype="multipart/form-data">
-    <input id="chooseFile" type="file">
+    <input class="btn btn-info" id="chooseFile" type="file">
 </form>
+
 <form id= "upload_to_server" enctype="multipart/form-data" action='#'>
-    <input type="submit" value="upload_to_server"  > 
+    <input class="btn btn-primary" type="submit" value="upload_to_server"  > 
 </form>
-<h1>room wait</h1>
-<h2>join game</h2>
+<br>
 <div class="row">
     <div class="col-md-4">
-        <form id="join" method="POST" action='#'>
+        <form id="join" method="POST" action='#' style="visibility:hidden;" >
             <input type="hidden" name="join_room" id="join_room" value={{room_id}}>
-            <input type="submit" value="Join Room" >
+            <input class="btn btn-success" type="submit" value="Join Room" >
         </form>
     </div>
 </div>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <p>code id</p>
+        <p>{{ message }}</p>
+        <script>document.getElementById("join").style.visibility="visible";</script>
+        {% endfor %}
+    </ul>
+
+    {% else %}
+    <p>To join game, need to upload available code</p>
+    {% endif %}
+{% endwith %}
+
 <div class="popup"id="myPopup_dom" >the popup!
   </div>
 <div class="container" id="game_playground" style="display:none">
@@ -61,13 +84,7 @@
     </div>
     <div id="game_code">
         
-        <label for="mode" class="control-label">Language Mode:</label>
-        <select id="mode" class="form-control"onChange="changeMode()">
-            <option>C</option>
-            <option>python</option>
-            <option>SCRIPT</option>
-            
-        </select>
+        
         
         <pre id="editor" style="height:255px"></pre>
         <br>

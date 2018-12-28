@@ -16,14 +16,15 @@ $(document).ready(function(){
     socket.on('arrived', function(data) {
         console.log("arrived:",data.msg)
         $('#game_playground').css("display","block");
+        $('#page_title').html("Game Start");
     });
     socket.on('enter_room', function(data){
         console.log("enter rooom", data.msg)
+        $('#page_title').html("enter room");
     }) 
     socket.on('connect_start', function(data){
-        console.log("map Player:", data.msg)
-
-    }) 
+        console.log("map Player:", data.msg)        
+    })
     socket.on('status', function(data) {
         $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
         $('#chat').scrollTop($('#chat')[0].scrollHeight);
@@ -34,7 +35,6 @@ $(document).ready(function(){
         // var popup = document.getElementById("myPopup");
         // popup.classList.toggle("show");
     });
-
     socket.on('gameobject', function(data) {
     // data=tuple([ball,paddle1[1],paddle2[1],[r_score,l_score]])
         left_buff.push(data.msg[1][1]);
