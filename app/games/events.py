@@ -1,6 +1,6 @@
 from flask import session,redirect, url_for
 from flask_socketio import emit, join_room, leave_room,send
-from .. import socketio # //in microblog.py
+from .. import socketio # //in CodeGame.py
 from flask_login import current_user
 from app.models import User, Game, Log, Code,Game_lib
 from app import db
@@ -41,7 +41,8 @@ def game_over(message):
     except:
         db.session.rollback()
     finally:
-        db.session.close()
+        # db.session.close()
+        pass
 
     # if 
     # l[0].winner=
@@ -79,7 +80,8 @@ def joined(message):
             except:
                 db.session.rollback()
             finally:
-                db.session.close()
+                # db.session.close()
+                pass
 
             if l.status is 0 :
                 emit('arrived', {'msg': current_user.id},namespace = '/test',room= log_id)
@@ -106,7 +108,8 @@ def commit_code(message):
     except:
         db.session.rollback()
     finally:
-        db.session.close()
+        # db.session.close()
+        pass
     game = Game.query.filter_by(id=l.game_id).first()
     players = l.current_users
     player_list = []

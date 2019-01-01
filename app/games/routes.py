@@ -95,6 +95,7 @@ def add_room():
 @bp.route('/wait_to_play/<int:log_id>', methods=['GET','POST'])
 @login_required
 def wait_to_play(log_id):
+	session['log_id']=log_id
 	# 檢查這個log的game是否有可用的code, 有才讓 html的btn visable
 	checked_code =Code.query.with_entities(Code.id).filter_by(game_id=Log.game_id, user_id=current_user.id).join(Log,(Log.id==log_id)).order_by(Code.id.desc()).first()
 	if checked_code :
@@ -126,10 +127,11 @@ def index():
 	print("user:",session.get('username','nnnooo'))
 	form = LoginForm()
 	if form.validate_on_submit():
+		# 進入觀賽
 		session['name'] = form.name.data
 		session['room'] = form.room.data
 
-		return redirect(url_for('.game_view',log_id=current_log))
+		return redirect(url_for('.wait_to_play',log_id=form.room.data))
 	elif request.method == 'GET':
 		form.name.data = session.get('name', '')
 		form.room.data = session.get('room', '')

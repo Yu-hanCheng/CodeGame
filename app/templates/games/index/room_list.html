@@ -23,7 +23,7 @@
                             <td>{{ w_room.game_id }}</td>
                             <td>online_people</td>
                             <td>max_people</td>
-                            <td><button onclick="javascript:location.href='{{ url_for('games.wait_to_play',log_id=w_room.id ) }}'" >Enter</button></td>
+                            <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.wait_to_play',log_id=w_room.id ) }}'" >Enter</button></td>
                         </tr>
                     {% endfor %}
                     </tbody>
