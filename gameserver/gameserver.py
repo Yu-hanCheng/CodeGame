@@ -2,7 +2,7 @@ import logging
 from websocket_server import WebsocketServer
 
 import time
-import json,sys,os
+import json,sys,os,base64
 game_exec_id=0
 servs_full=0
 servs_full_right=1
@@ -140,17 +140,19 @@ def save_code(code,log_id,user_id,category_id,game_id,language):
 	# data['code'],data['log_id'],data['user_id'],data['category_id'],data['game_id'],data['language']
 	# 在呼叫 sandbox前 將程式碼依遊戲人數？分類？為路徑 加上 lib後 存於 gameserver並回傳檔名
 	# "w"上傳新的程式碼會直接取代掉
+
 	language_res = set_language(str(language))
-	print('language_res',language_res)
 	path = "%s/%s/%s/"%(category_id,game_id,language)
 	filename = "%s_%s%s"%(log_id,user_id,language_res[1])
 	try:
 		os.makedirs( path )
 	except:
 		pass
-	with open("%s%s"%(path,filename), "w") as f:
-		f.write(code+'\n')
-		f.write("global paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
+	decoded = base64.b64decode(code.split(",")[1])
+		
+	with open("%s%s"%(path,filename), "wb") as f:
+		f.write(decoded)
+		f.write(b"\n global paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
 		# with open('%s%s%s'%(path,game_lib_id,language)) as fin: # lib應該是改取資料庫, 而非開文件
 		# 	lines = fin.readlines() 
 		# 	for i, line in enumerate(lines):
