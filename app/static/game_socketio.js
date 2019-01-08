@@ -59,8 +59,9 @@ $(document).ready(function(){
         }
     });
     $('form#join').submit(function(event) {
-        socket.emit('join', {room: $('#join_room').val()});
-        console.log("join_room submit");
+        socket.emit('join', {room: $('#join_room').val(),code: $('#join_code_id').val(), glanguage:document.getElementById("mode").selectedIndex});
+        console.log("join_code:",$('#join_code_id').val());
+        document.getElementById('join').style.display = "none";
         return false;
     });
     $('form#commit').submit(function(event) {

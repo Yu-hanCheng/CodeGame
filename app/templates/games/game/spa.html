@@ -36,6 +36,7 @@
     <div class="col-md-4">
         <form id="join" method="POST" action='#' style="visibility:hidden;" >
             <input type="hidden" name="join_room" id="join_room" value={{room_id}}>
+            <input type="hidden" name="join_code_id" id="join_code_id" >
             <input class="btn btn-success" type="submit" value="Join Room" >
         </form>
     </div>
@@ -47,7 +48,10 @@
         {% for message in messages %}
         <p>code id</p>
         <p>{{ message }}</p>
-        <script>document.getElementById("join").style.visibility="visible";</script>
+        <script>
+        document.getElementById("join").style.visibility="visible";
+        document.getElementById('join_code_id').value={{ message }};
+        </script>
         {% endfor %}
     </ul>
 
