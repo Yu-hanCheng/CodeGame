@@ -63,23 +63,29 @@ def new_client(client, server):
 
 def push_to_room_list(user_code_str):
 	# 將經過 sandbox的 code 放進 room_list, check是否到齊 若有到齊, return logid, 否則 return 0
-	if len(room_list.get_list()) == 0:
+	#[data['log_id'],data['user_id'],data['category_id'],compiler,path,filename,player_num]
+	r_list = room_list.get_list()
+	if len(r_list) == 0:
 		room_list.push(user_code_str)
+		r_list[0][-1] -=1 #player_num 應到人數
 	else:
 		# lock
 		rooms = room_list.get_list()
 		print(len(rooms))
 		for i in range(0,len(rooms)):
 			if user_code_str[0]==rooms[i][0]: #find same room
-				(rooms[i][-1]).remove(user_code_str[1]) # rooms[i][-1]== player_list
-				user_code_str[-1]=rooms[i][-1] # update player_list
-				if len(user_code_str[-1])==0: # if all arrived
+				# 應該不會發生同一位玩家重複傳訊息來,所以直接-1不用check(前端的join btn按完就會鎖)
+				if user_code_str[1]==rooms[i][1]: #怕怕的,還是check一下,如果已經有 userId就直接 return -1(不用update因為是一樣的東西)
+					return -1
+
+				rooms[i][-1] -=1 #應到人數-1，結果代表還剩幾位玩家可以加入
+				user_code_str[-1]=rooms[i][-1]
+				if user_code_str[-1]==0: # if all arrived
 					room_list.insert(i,user_code_str)
-					return i # arrived_index
+					return i #arrived_index
 			else:
 				pass
 		room_list.push(user_code_str) # no same room, then append to the last
-		
 	return -1
 	
 	
@@ -113,7 +119,7 @@ def sandbox(compiler,path_, filename):
 	# sh test.sh cce238a618539(imageID) python3.7 output.py 
 	
 	from subprocess import Popen, PIPE
-	image='cce238a618539'
+	image='test/centos:v2.1'
 	try:
 		p = Popen('sh sandbox/script.sh ' + image + ' ' + compiler + ' ' + path_ + ' '+ filename + '',shell=True, stdout=PIPE, stderr=PIPE)
 		stdout, stderr = p.communicate()
@@ -152,7 +158,7 @@ def save_code(code,log_id,user_id,category_id,game_id,language):
 		
 	with open("%s%s"%(path,filename), "wb") as f:
 		f.write(decoded)
-		f.write(b"\n global paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
+		f.write(b"\nglobal paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
 		# with open('%s%s%s'%(path,game_lib_id,language)) as fin: # lib應該是改取資料庫, 而非開文件
 		# 	lines = fin.readlines() 
 		# 	for i, line in enumerate(lines):
@@ -173,7 +179,7 @@ def code_address(server,data):
 		msg=test_result[1].decode('utf-8')
 		
 		log_id_index = push_to_room_list([data['log_id'],data['user_id'],\
-		data['category_id'],compiler,path,filename,data['player_list']]) # player_list must put on last
+		data['category_id'],compiler,path,filename,data['player_num']]) # player_list must put on last
 		if log_id_index >= 0: # arrived 
 
 			popped_codes_list = pop_code_in_room(log_id_index, data['log_id'])
