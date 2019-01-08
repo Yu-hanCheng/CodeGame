@@ -17,7 +17,7 @@ def aws_container(log_id, userId, compiler, path_, filename, link_dc):
 	image = "test/centos:v2.1"
 	
 	try:
-		p = Popen('sh game_exec/exec_script.sh ' + image + ' ' + compiler + ' ' + path_ + ' '+ filename + ' '+ link_dc + ' '+log_id+ ' '+str(userId)+ ' ',shell=True)
+		p = Popen('sh game_exec/exec_script.sh ' + image + ' ' + compiler + ' ' + path_ + ' '+ filename + ' '+ link_dc + ' '+str(log_id)+ ' '+str(userId)+ ' ',shell=True)
 		return 0
 	except Exception as e:
 		print('e: ',e)
@@ -26,29 +26,27 @@ def aws_container(log_id, userId, compiler, path_, filename, link_dc):
 def msg_handler(msg):
 	# 每個 element的 內容：[data['log_id'],data['user_id'],\
 	#	data['game_lib_id'],language_res[0],path,filename,data['player_list']]
-	# ['3', 2, 1, 'python3.7', '1/1/1/', '3_2.py', []]
+	# [3, 2, 1, 'python3.7', '1/1/1/', '3_2.py', 2]
 	# 開 subprocess 
 	
 	msg_converted = json.loads(msg)
 	print('msg_handler type',msg_converted)
 	for i,element in enumerate(msg_converted): # msg is elephant
-		
+		print('element i:',i)
 		if i==0:
 			
 			aws_container(element[0],element[1],element[3],element[4],"gamemain.py","0")
 			time.sleep(15)
 			print('msg_handler in if')
 
-		print('msg_handler in loop')
 		with open(""+element[4]+element[5],'r+') as user_file:
-			print('msg_handler in open')
 			code = user_file.read()
 			user_file.write("\nwho='P"+str(i+1)+"'\n")
-			print('write')
+			
 		# 執行package
 		
 		merge_com_lib(code,element[4],element[5],element[3])
-		link_msg = element[0]+'gamemain.py'
+		link_msg = str(element[0])+'gamemain.py'
 		aws_container(element[0],element[1],element[3],element[4],element[5],link_msg)
 
 def merge_com_lib(code,path,filename,compiler):
