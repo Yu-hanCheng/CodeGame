@@ -88,8 +88,55 @@ def joined(message):
         pass
     else: # only invited
         pass
+@socketio.on('check_code' ,namespace = '/test')
+def check_code(message): # mode_id
+    log_id = session.get('log_id', '')
+    l=Log.query.filter_by(id=log_id).first()
+    checked_code =Code.query.with_entities(Code.id, Code.commit_msg).filter_by(game_id=l.game_id, user_id=current_user.id,compile_language_id=message).join(Log,(Log.id==log_id)).order_by(Code.id.desc()).first()
+        if checked_code :
+            code_id=checked_code[0]
+            flash(code_id)
 
-@socketio.on('text' ,namespace = '/test')
+@socketio.on('commit' ,namespace = '/test')
+def commit_code(message):
+   
+    log_id = session.get('log_id', '')
+    l=Log.query.filter_by(id=log_id).first()
+    editor_content = message['code']
+    
+    commit_msg =  message['commit_msg']
+        
+    code = Code(log_id=log_id, body=editor_content, commit_msg=commit_msg,game_id=l.game_id,user_id=current_user.id)
+    
+    try:
+        db.session.add(code)
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        # db.session.close()
+        pass
+    game = Game.query.filter_by(id=l.game_id).first()
+    players = l.current_users
+    player_list = []
+
+    # player_list 原因, TypeError: Object of type 'User' is not JSON serializable
+    # gameserver那邊, 如果 player_list已空 表示 arrived
+    for i,player in enumerate(players):
+        if player.id == current_user.id:
+            print("no append ",player.id)
+        else:
+            print("append: ",player.id)
+            player_list.append(player.id)
+
+    ws = create_connection("ws://140.116.82.226:6005")
+    ws.send(json.dumps({'from':'webserver','code':editor_content,'log_id':log_id,'user_id':current_user.id,'category_id':game.category_id,'game_id':l.game_id,'language':message['glanguage'],'player_list':player_list}))
+    result =  ws.recv() #
+    print("Received '%s'" % result)
+    ws.close()
+    
+    
+    @socketio.on('text' ,namespace = '/test')
 def text(message):
     """Sent by a client when the user entered a new message.
     The message is sent to all people in the room."""

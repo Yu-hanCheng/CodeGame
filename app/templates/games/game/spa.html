@@ -22,27 +22,8 @@
         <option>C</option>
         <option>python</option>
         <option>SCRIPT</option>
-        
     </select>
-<form enctype="multipart/form-data">
-    <input class="btn btn-info" id="chooseFile" type="file">
-</form>
-
-<form id= "upload_to_server" enctype="multipart/form-data" action='#'>
-    <input class="btn btn-primary" type="submit" value="upload_to_server"  > 
-</form>
-<br>
-<div class="row">
-    <div class="col-md-4">
-        <form id="join" method="POST" action='#' style="visibility:hidden;" >
-            <input type="hidden" name="join_room" id="join_room" value={{room_id}}>
-            <input type="hidden" name="join_code_id" id="join_code_id" >
-            <input class="btn btn-success" type="submit" value="Join Room" >
-        </form>
-    </div>
-</div>
-
-{% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages() %}
     {% if messages %}
     <ul>
         {% for message in messages %}
@@ -59,46 +40,67 @@
     <p>To join game, need to upload available code</p>
     {% endif %}
 {% endwith %}
+<section id="2">
+    <form enctype="multipart/form-data">
+        <input class="btn btn-info" id="chooseFile" type="file">
+    </form>
 
-<div class="popup"id="myPopup_dom" >the popup!
-  </div>
-<div class="container" id="game_playground" style="display:none">
-    <h2> game_playground </h2>
-    <div id="game_display">
-       
-        <div class="row" style="height:500px">
-    
-                <div class =playground>
-                <div class="ball"></div>
-                <div class = "left-goalkeeper goalkeeper"></div>
-                <div class = "right-goalkeeper goalkeeper"></div>
+    <form id= "upload_to_server" enctype="multipart/form-data" action='#'>
+        <input class="btn btn-primary" type="submit" value="upload_to_server"  > 
+    </form>
+    <br>
+    <div class="row">
+        <div class="col-md-4">
+            <form id="join" method="POST" action='#' style="visibility:hidden;" >
+                <input type="hidden" name="join_room" id="join_room" value={{room_id}}>
+                <input type="hidden" name="join_code_id" id="join_code_id" >
+                <input class="btn btn-success" type="submit" value="Join Room" >
+            </form>
+        </div>
+    </div>
+
+</section>
+<section id="3">
+    <div class="popup"id="myPopup_dom" >the popup!
+    </div>
+    <div class="container" id="game_playground" style="display:none">
+        <h2> game_playground </h2>
+        <div id="game_display">
+        
+            <div class="row" style="height:500px">
+        
+                    <div class =playground>
+                    <div class="ball"></div>
+                    <div class = "left-goalkeeper goalkeeper"></div>
+                    <div class = "right-goalkeeper goalkeeper"></div>
+                    </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h2>game_object_pos_msg logId: {{ room }}</h2>
+                    <textarea id="chat" class="col-md-10" rows="10"></textarea><br><br>
+                    <textarea id="showgame" class="col-md-10" rows="10"></textarea><br><br>
+                    <input id="text"  placeholder="Enter your message here"><br><br>
+                    <a href="#" onclick="leave_room();">Leave this room</a>
                 </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6">
-                <h2>game_object_pos_msg logId: {{ room }}</h2>
-                <textarea id="chat" class="col-md-10" rows="10"></textarea><br><br>
-                <textarea id="showgame" class="col-md-10" rows="10"></textarea><br><br>
-                <input id="text"  placeholder="Enter your message here"><br><br>
-                <a href="#" onclick="leave_room();">Leave this room</a>
-            </div>
-            <div class="col-md-4">
+                <div class="col-md-4">
+                </div>
             </div>
         </div>
+        <div id="game_code">
+            
+            
+            
+            <pre id="editor" style="height:255px"></pre>
+            <br>
+            <form id="commit"  method="POST" action='#'>
+                            <input type="text" name="commit_msg" id="commit_msg" placeholder="commit msg">
+                            <input type="submit" value="commit"  > 
+            </form>
+            
+        </div>
     </div>
-    <div id="game_code">
-        
-        
-        
-        <pre id="editor" style="height:255px"></pre>
-        <br>
-        <form id="commit"  method="POST" action='#'>
-                        <input type="text" name="commit_msg" id="commit_msg" placeholder="commit msg">
-                        <input type="submit" value="commit"  > 
-        </form>
-        
-    </div>
-</div>
+</section>
 <script src="{{ url_for('static', filename='src-noconflict/ace.js') }}" type="text/javascript" charset="utf-8">
 </script>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
