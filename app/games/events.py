@@ -92,10 +92,10 @@ def joined(message):
 def check_code(message): # mode_id
     log_id = session.get('log_id', '')
     l=Log.query.filter_by(id=log_id).first()
-    checked_code =Code.query.with_entities(Code.id, Code.commit_msg).filter_by(game_id=l.game_id, user_id=current_user.id,compile_language_id=message).join(Log,(Log.id==log_id)).order_by(Code.id.desc()).first()
-        if checked_code :
-            code_id=checked_code[0]
-            flash(code_id)
+    checked_code =Code.query.with_entities(Code.id, Code.commit_msg,Language.languuage_name).filter_by(game_id=l.game_id, user_id=current_user.id,compile_language_id=message['language']).join(Log,(Log.id==log_id)).join(Language).order_by(Code.id.desc()).first()
+    if checked_code :
+        code_id=checked_code[0]
+        flash(code_id,'test')
 
 @socketio.on('commit' ,namespace = '/test')
 def commit_code(message):
@@ -136,7 +136,7 @@ def commit_code(message):
     ws.close()
     
     
-    @socketio.on('text' ,namespace = '/test')
+@socketio.on('text' ,namespace = '/test')
 def text(message):
     """Sent by a client when the user entered a new message.
     The message is sent to all people in the room."""

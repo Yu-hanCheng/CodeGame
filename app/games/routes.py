@@ -100,7 +100,7 @@ def wait_to_play(log_id):
 	checked_code =Code.query.with_entities(Code.id).filter_by(game_id=Log.game_id, user_id=current_user.id).join(Log,(Log.id==log_id)).order_by(Code.id.desc()).first()
 	if checked_code :
 		code_id=checked_code[0]
-		flash(code_id)
+		flash(code_id,'test')
 	
 	return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id)
 
