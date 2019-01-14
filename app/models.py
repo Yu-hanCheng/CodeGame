@@ -295,7 +295,7 @@ class Log(db.Model):
 
 class Language(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    languuage_name = db.Column(db.String(30)) 
+    language_name = db.Column(db.String(30)) 
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     gamename = db.Column(db.String(30))
