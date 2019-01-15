@@ -18,10 +18,10 @@
         </div>
 </div>
 <label for="mode" class="control-label">Language Mode:</label>
-    <select id="mode" class="form-control"onChange="changeMode()">
-        <option>C</option>
-        <option>python</option>
-        <option>SCRIPT</option>
+    <select id="mode" class="form-control">
+        {% for code_id,code_msg,lan_name in all_codes %}
+        <option value={{code_id}}>{{ lan_name }}</option>
+        {% endfor %}
     </select>
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -30,8 +30,9 @@
         <p>{{ category }}</p>
         <p>{{ message }}</p>
         <script>
-        document.getElementById("join").style.visibility="visible";
-        document.getElementById('join_code_id').value={{ message }};
+        // document.getElementById("join").style.visibility="visible";
+        // document.getElementById('join_code_id').value={{ message }};
+
         </script>
         {% endfor %}
     </ul>
@@ -51,10 +52,9 @@
     <br>
     <div class="row">
         <div class="col-md-4">
-            <form id="join" method="POST" action='#' style="visibility:hidden;" >
+            <form id="select_code" method="POST" action='#' style="display:none;" >
                 <input type="hidden" name="join_room" id="join_room" value={{room_id}}>
-                <input type="hidden" name="join_code_id" id="join_code_id" >
-                <input class="btn btn-success" type="submit" value="Join Room" >
+                <input class="btn btn-success" type="submit" value="Select code" >
             </form>
         </div>
     </div>
