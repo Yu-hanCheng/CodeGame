@@ -68,13 +68,13 @@ $(document).ready(function(){
         document.getElementById('join').style.display = "none";
         return false;
     });
-    $('form#commit').submit(function(event) {
-        var glanguage = document.getElementById("mode").selectedIndex;
-        var editor_content=editor.getValue();
-        var commit_msg = document.getElementById('commit_msg').value; 
-        socket.emit('commit', {code: editor_content,commit_msg:commit_msg,glanguage:glanguage});
-        return false;
-    });
+    // $('form#commit').submit(function(event) {
+    //     var glanguage = document.getElementById("mode").selectedIndex;
+    //     // var editor_content=editor.getValue();
+    //     var commit_msg = document.getElementById('commit_msg').value; 
+    //     socket.emit('commit', {code: editor_content,commit_msg:commit_msg,glanguage:glanguage});
+    //     return false;
+    // });
 
     $('form#upload_to_server').submit(function(event) {
         
@@ -150,14 +150,15 @@ $("#chooseFile").change(function(){
     console.log('this.files',this.files);
 })
 
-var editor = ace.edit("editor");
-editor.setTheme("ace/theme/twilight");
-editor.session.setMode("ace/mode/javascript");
-
-// function changeMode(){
-//     console.log("changeMode")
-//     var mode = document.getElementById('mode').value;
-//     editor.session.setMode("ace/mode/"+ mode);
+// var editor = ace.edit("editor");
+// editor.setTheme("ace/theme/twilight");
+// editor.session.setMode("ace/mode/javascript");
+function changeMode(){
+    console.log("changeMode")
+    var mode = document.getElementById('mode').value;
+    
+}
+    // editor.session.setMode("ace/mode/"+ mode);
 //     var contents = {
 //         c:'main(){}',
 //         python: '\

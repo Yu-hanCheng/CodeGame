@@ -30,7 +30,7 @@ def create_app(config_class=Config):
 	app.config['MAIL_PORT']='587'
 	app.config['MAIL_USE_TLS']='1'
 	app.config['MAIL_USERNAME']='sarahcheng1231'
-	app.config['MAIL_PASSWORD']='-----edit-----'
+	app.config['MAIL_PASSWORD']='2016sarahcheng'
 	socketio.init_app(app)
 
 	db.init_app(app)

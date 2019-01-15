@@ -12,8 +12,3 @@ def run():
         paddle_vel=0
         print("ball moves right, no need to move paddle1")
 
-global paddle_vel,ball_pos,move_unit
-paddle_vel=0
-ball_pos=[[0,0],[0,0],[0,0]]
-move_unit=3
-run()
