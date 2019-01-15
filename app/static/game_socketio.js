@@ -76,21 +76,21 @@ $(document).ready(function(){
     //     return false;
     // });
 
-    $('form#upload_to_server').submit(function(event) {
+    // $('form#upload_to_server').submit(function(event) {
         
-        var glanguage = document.getElementById("mode").selectedIndex;
-        var commit_msg = document.getElementById('commit_msg').value; 
+    //     var glanguage = document.getElementById("mode").selectedIndex;
+    //     var commit_msg = document.getElementById('commit_msg').value; 
 
-        let choosed= $("#chooseFile")[0].files;
-        convertFile(choosed[0]).then(data => {
-            // 把編碼後的字串 send to webserver
-            socket.emit('commit', {code: data,commit_msg:commit_msg,glanguage:glanguage});
-        return false;
+    //     let choosed= $("#chooseFile")[0].files;
+    //     convertFile(choosed[0]).then(data => {
+    //         // 把編碼後的字串 send to webserver
+    //         socket.emit('commit', {code: data,commit_msg:commit_msg,glanguage:glanguage});
+    //     return false;
             
-          })
-          .catch(err => console.log(err))
+    //       })
+    //       .catch(err => console.log(err))
         
-    });
+    // });
 
 });
 function myPopupjs(data_msg,log_id){
@@ -112,43 +112,43 @@ function myPopupjs(data_msg,log_id){
     document.getElementById("myPopup_dom").innerHTML = mytable;
 
 }
-function previewFiles(files) {
-    if (files && files.length >= 1) {
-        $.map(files, file => {
-            convertFile(file)
-                .then(data => {
-                  // 把編碼後的字串輸出到console
-                //   const upload_file = data
-                  console.log('preview: ',data)
-                //   showPreviewImage(data, file.name)
-                })
-                .catch(err => console.log(err))
-        })
-    }
+// function previewFiles(files) {
+//     if (files && files.length >= 1) {
+//         $.map(files, file => {
+//             convertFile(file)
+//                 .then(data => {
+//                   // 把編碼後的字串輸出到console
+//                 //   const upload_file = data
+//                   console.log('preview: ',data)
+//                 //   showPreviewImage(data, file.name)
+//                 })
+//                 .catch(err => console.log(err))
+//         })
+//     }
 
-}
+// }
 
-// 使用FileReader讀取檔案，並且回傳Base64編碼後的source
-function convertFile(file) {
-    return new Promise((resolve,reject)=>{
-        // 建立FileReader物件
-        let reader = new FileReader()
-        // 註冊onload事件，取得result則resolve (會是一個Base64字串)
-        reader.onload = () => { resolve(reader.result) }
-        // 註冊onerror事件，若發生error則reject
-        reader.onerror = () => { reject(reader.error) }
-        // 讀取檔案
-        reader.readAsDataURL(file)
-    })
-}
+// // 使用FileReader讀取檔案，並且回傳Base64編碼後的source
+// function convertFile(file) {
+//     return new Promise((resolve,reject)=>{
+//         // 建立FileReader物件
+//         let reader = new FileReader()
+//         // 註冊onload事件，取得result則resolve (會是一個Base64字串)
+//         reader.onload = () => { resolve(reader.result) }
+//         // 註冊onerror事件，若發生error則reject
+//         reader.onerror = () => { reject(reader.error) }
+//         // 讀取檔案
+//         reader.readAsDataURL(file)
+//     })
+// }
 
-// 當上傳檔案改變時清除目前預覽圖，並且呼叫previewFiles()
-$("#chooseFile").change(function(){
-    console.log(this)
-    $("#previewDiv").empty() // 清空當下預覽
-    previewFiles(this.files) // this即為<input>元素
-    console.log('this.files',this.files);
-})
+// // 當上傳檔案改變時清除目前預覽圖，並且呼叫previewFiles()
+// $("#chooseFile").change(function(){
+//     console.log(this)
+//     $("#previewDiv").empty() // 清空當下預覽
+//     previewFiles(this.files) // this即為<input>元素
+//     console.log('this.files',this.files);
+// })
 
 // var editor = ace.edit("editor");
 // editor.setTheme("ace/theme/twilight");
@@ -156,7 +156,7 @@ $("#chooseFile").change(function(){
 function changeMode(){
     console.log("changeMode")
     var mode = document.getElementById('mode').value;
-    
+
 }
     // editor.session.setMode("ace/mode/"+ mode);
 //     var contents = {
