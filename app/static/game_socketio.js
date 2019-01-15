@@ -59,15 +59,19 @@ $(document).ready(function(){
         }
     });
     $('select#mode').change(function(event) {
-        socket.emit('check_code', {language: document.getElementById("mode").selectedIndex});
-        console.log("check_code",document.getElementById("mode").selectedIndex)
+        // socket.emit('check_code', {language: (document.getElementById("mode").selectedIndex+1)});
+        document.getElementById('select_code').style.display = "block";
+        // console.log('code_id',code_id);
     });
-    $('form#join').submit(function(event) {
-        socket.emit('join', {room: $('#join_room').val(),code: $('#join_code_id').val(), glanguage:document.getElementById("mode").selectedIndex});
-        console.log("join_code:",$('#join_code_id').val());
-        document.getElementById('join').style.display = "none";
+    $('form#select_code').submit(function(event) {
+        // socket.emit('select_code', {room: $('#join_room').val(),code_id: $('#join_code_id').val(), language:document.getElementById("mode").selectedIndex});
+        
+        socket.emit('select_code', {room: $('#join_room').val(),code_id:document.getElementById('mode').value});
+        document.getElementById('select_code').style.display = "none";
+        console.log('mode',document.getElementById('mode').value)
         return false;
     });
+
     // $('form#commit').submit(function(event) {
     //     var glanguage = document.getElementById("mode").selectedIndex;
     //     // var editor_content=editor.getValue();
@@ -153,11 +157,7 @@ function myPopupjs(data_msg,log_id){
 // var editor = ace.edit("editor");
 // editor.setTheme("ace/theme/twilight");
 // editor.session.setMode("ace/mode/javascript");
-function changeMode(){
-    console.log("changeMode")
-    var mode = document.getElementById('mode').value;
 
-}
     // editor.session.setMode("ace/mode/"+ mode);
 //     var contents = {
 //         c:'main(){}',

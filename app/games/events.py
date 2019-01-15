@@ -1,8 +1,8 @@
-from flask import session,redirect, url_for
+from flask import session,redirect, url_for,flash
 from flask_socketio import emit, join_room, leave_room,send
 from .. import socketio # //in CodeGame.py
 from flask_login import current_user
-from app.models import User, Game, Log, Code,Game_lib
+from app.models import User, Game, Log, Code,Game_lib, Language
 from app import db
 from websocket import create_connection
 import json
@@ -55,47 +55,15 @@ def test_connect(message):
     print(message['msg'])
     emit('gameobject', {'msg': message['msg']},namespace = '/test',room= message['log_id'])#,room= message['msg'][3]
 
-@socketio.on('join' ,namespace = '/test')
-def joined(message):
-    # 一個房間會有 n+1的連線數(n個 browser, 一個gamemain)
-    """Sent by clients when they enter a room.
-    A status message is broadcast to all people in the room."""
-    log_id = message['room'] #session.get('room') 
-    session['log_id']=log_id
-    join_room(log_id)
-    emit('enter_room', {'msg': log_id},namespace = '/test',room= log_id)
-    l= Log.query.filter_by(id=log_id).first()
-    print("log",log_id,l.privacy,l.status)
-    players = l.current_users
-
-    if l.privacy is 1: # public,可以
-        if l.status is 0 : # room滿
-            print("can't join game")
-            
-        else: # room還沒滿,可以進來參賽(新增 player_in_log data, update user的 current_log) # if s is not (0 or 1) :
-            in_list=False
-            for i,player in enumerate(players):
-                if player == current_user.id:
-                    print("already in")
-                    in_list=True
-                    break
-            if not in_list:
-                join_log(l,message['code'],message['glanguage'],players)
-            if l.status is 0 :#這需要嗎? 開始遊戲的通知？
-                # emit('arrived', {'msg': current_user.id},namespace = '/test',room= log_id)
-                pass
-    elif l.privacy == 2: # friend
-        pass
-    else: # only invited
-        pass
-@socketio.on('check_code' ,namespace = '/test')
-def check_code(message): # mode_id
-    log_id = session.get('log_id', '')
-    l=Log.query.filter_by(id=log_id).first()
-    checked_code =Code.query.with_entities(Code.id, Code.commit_msg,Language.languuage_name).filter_by(game_id=l.game_id, user_id=current_user.id,compile_language_id=message['language']).join(Log,(Log.id==log_id)).join(Language).order_by(Code.id.desc()).first()
-    if checked_code :
-        code_id=checked_code[0]
-        flash(code_id,'test')
+@socketio.on('select_code' ,namespace = '/test')
+def select_code(message):
+    """Sent by clients when they click btn.
+    call emit_code to send code to gameserver."""
+    print('msg in select_code',message)
+    l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
+    select_code =Code.query.with_entities(Code.id,Code.body, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
+    print('checked_code',select_code)
+    emit_code(l, select_code)
 
 @socketio.on('commit' ,namespace = '/test')
 def commit_code(message):
@@ -152,28 +120,13 @@ def left(message):
     leave_room(room)
     emit('status', {'msg': session.get('name') + ' has left the room.'}, room=room)
 
-def join_log(l,code_id,glanguage,players):
+def emit_code(l,code):
 # join_log(log_id,message['code'],message['commit_msg'],l.game_id,current_user.id,players)
     print('l:',type(l),l)
-    game= Game.query.with_entities(Game.player_num,Game.category_id).filter_by(id=l.game_id).first()
-    l.current_users.append(current_user) #current_users為該局的玩家名單
-    current_users_len = len(l.current_users)
-    l.status = int(game.player_num) - current_users_len
-    current_user.current_log_id = l.id
-
-    try:
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        print('update log error:',e)
-    finally:
-        # db.session.close()
-        pass
     # ws = create_connection("ws://140.116.82.226:6005")
-    code = Code.query.with_entities(Code.body).filter_by(id=code_id).first()
 
     ws = create_connection("ws://127.0.0.1:6005")
-    ws.send(json.dumps({'from':'webserver','code':code[0],'log_id':l.id,'user_id': current_user.id,'category_id':game.category_id,'game_id':l.game_id,'language':glanguage,'player_num':int(game.player_num)}))
+    ws.send(json.dumps({'from':'webserver','code':code.body,'log_id':l.id,'user_id': current_user.id,'category_id':l.category_id,'game_id':l.game_id,'language':code.language_name,'player_num':int(l.player_num)}))
     result =  ws.recv() #
     print("Received '%s'" % result)
     ws.close()
