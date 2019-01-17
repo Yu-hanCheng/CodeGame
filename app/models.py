@@ -302,7 +302,7 @@ class Game(db.Model):
     descript = db.Column(db.String(1024))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    game_lib_id = db.Column(db.Integer, db.ForeignKey('game_lib.id'))
+    game_libs = db.relationship('Game_lib', backref='game_info', lazy='dynamic')
 
     # example_code = db.Column(db.String(1024))
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'),
@@ -348,6 +348,7 @@ class Game_lib(db.Model):
     example_code_name = db.Column(db.String(1024))
     player_num = db.Column(db.Integer)
     language_id = db.Column(db.String(1024))
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)

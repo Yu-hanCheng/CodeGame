@@ -131,4 +131,14 @@ def emit_code(l,code):
     print("Received '%s'" % result)
     ws.close()
 
+#for local
+@socketio.on('get_gamelist')
+def get_gamelist(message):
+    print('get_gamelist',message['t1'])
+    g=Game.query.with_entities(Game.id,Game.gamename,Game.descript,Game.game_libs,Game_lib.language_id,Language.language_name).join(Game_lib,(Game_lib.id==Game.game_libs)).join(Language,(Language.id==Game_lib.language_id)).all()
+    
+
+
+
+
         
