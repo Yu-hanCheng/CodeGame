@@ -13,6 +13,10 @@ socket = io.connect('http://' + document.domain + ':' + location.port+namespace 
 
 $(document).ready(function(){
 
+    socket.on('clientconnect', function(data) {
+        console.log("clientconnect:",data)
+    });
+
     socket.on('arrived', function(data) {
         console.log("arrived:",data.msg)
         $('#game_playground').css("display","block");
