@@ -51,10 +51,9 @@ def create_game():
     form = CreateGameForm()
     if form.validate_on_submit():
         game = Game(user_id=form.user_id.data,gamename=form.gamename.data,descript=form.descript.data, player_num=form.player_num.data,\
-        category_id=form.category_id.data,game_lib_id=form.game_lib_id.data)
+        category_id=form.category_id.data)
         db.session.add(game)
         db.session.commit()
-
 
         # '''obj_to_json'''
         g_query=Game.query.filter_by(gamename=form.gamename.data).first()
@@ -100,6 +99,7 @@ def wait_to_play(log_id):
     log_id = session.get('log_id', '')
     l=Log.query.filter_by(id=log_id).first()
     all_codes =Code.query.with_entities(Code.id, Code.commit_msg,Language.language_name).filter_by(game_id=l.game_id, user_id=current_user.id).join(Log,(Log.id==log_id)).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).all()
+    print("wait_to_play/all_codes:",all_codes)
     all_lan=[]
     have_code=False
     try: 
@@ -110,10 +110,11 @@ def wait_to_play(log_id):
             have_code=True
         else:
             flash("you need to upload code from the local app first",'test')
-            return
+            return redirect(url_for('games.index'))
     except Exception as e:
         print('error:',e)
-        return
+
+        return redirect(url_for('games.index'))
     finally:
         if have_code:
             l= Log.query.filter_by(id=log_id).first()
@@ -124,7 +125,7 @@ def wait_to_play(log_id):
             if l.privacy is 1: # public,可以
                 if l.status is 0 : 
                     print("sorry room is full, can't join game")
-                    
+                    return redirect(url_for('games.index'))
                 else: # room還沒滿,可以進來參賽(新增 player_in_log data, update user的 current_log) # if s is not (0 or 1) :
                     in_list=False
                     for i,player in enumerate(players):
