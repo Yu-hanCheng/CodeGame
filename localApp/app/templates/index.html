@@ -3,6 +3,13 @@
         <title>{{ title }} - Microblog</title>
     </head>
     <body>
-        <h1>Hello</h1>
+        <h1>Hello {{ glist[0] }}</h1>
+        <h2>Hello</h2>
+        <select id="lan" class="form-control">
+            {% for gameId,gameName,gameDescript in glist[0] %}
+            <option value={{gameId}}>{{ gameName }}</option>
+            <div><h3>{{ gameDescript }}</h3></div>
+            {% endfor %}
+        </select> 
     </body>
 </html>

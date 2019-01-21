@@ -1,4 +1,4 @@
-from flask import session,redirect, url_for,flash
+from flask import session,redirect, url_for,flash,request
 from flask_socketio import emit, join_room, leave_room,send
 from .. import socketio # //in CodeGame.py
 from flask_login import current_user
@@ -9,7 +9,8 @@ import json
 
 @socketio.on('connect', namespace='/test')
 def new_connect():
-    print("client connect")
+    sid = request.sid
+    emit('clientconnect',"clientconnect", room=sid)
 
 @socketio.on('gamemain_connect')
 def gamemain_connect(message):
@@ -134,9 +135,11 @@ def emit_code(l,code):
 #for local
 @socketio.on('get_gamelist')
 def get_gamelist(message):
-    print('get_gamelist',message['t1'])
-    g=Game.query.with_entities(Game.id,Game.gamename,Game.descript,Game.game_libs,Game_lib.language_id,Language.language_name).join(Game_lib,(Game_lib.id==Game.game_libs)).join(Language,(Language.id==Game_lib.language_id)).all()
-    
+    sid = request.sid
+    g_list=Game.query.with_entities(Game.id,Game.gamename,Game.descript).all()
+    print("g_list:",g_list)
+    emit('g_list',g_list, room=sid)
+
 
 
 
