@@ -7,3 +7,4 @@ app.db
 *.pem
 .DS_Store
 *test_code
+*localApp/app/static/src-noconflict
