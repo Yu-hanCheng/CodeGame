@@ -66,16 +66,10 @@ def select_code(message):
     print('checked_code',select_code)
     emit_code(l, select_code)
 
-@socketio.on('commit' ,namespace = '/test')
+@socketio.on('commit' ,namespace = '/local')
 def commit_code(message):
-   
-    log_id = session.get('log_id', '')
-    l=Log.query.filter_by(id=log_id).first()
-    editor_content = message['code']
-    
-    commit_msg =  message['commit_msg']
-        
-    code = Code(log_id=log_id, body=editor_content, commit_msg=commit_msg,game_id=l.game_id,user_id=current_user.id)
+    print('commit:',message)
+    code = Code(body=message['code'], commit_msg=message['commit_msg'],game_id=message['game_id'],compile_language_id=message['glanguage'],user_id=current_user.id)
     
     try:
         db.session.add(code)
@@ -139,6 +133,13 @@ def get_gamelist(message):
     g_list=Game.query.with_entities(Game.id,Game.gamename,Game.descript).all()
     print("g_list:",g_list)
     emit('g_list',g_list, room=sid)
+
+@socketio.on('get_lanlist')
+def get_lanlist(message):
+    sid = request.sid
+    lan_list=Game_lib.query.with_entities(Game_lib.id, Language.id, Language.language_name).filter_by(game_id=message['game_id']).join(Language,(Game_lib.language_id==Language.id)).all()
+    print("lan_list:",lan_list)
+    emit('lan_list',lan_list, room=sid)
 
 
 
