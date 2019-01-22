@@ -128,7 +128,7 @@ def emit_code(l,code):
 
 #for local
 @socketio.on('get_gamelist')
-def get_gamelist(message):
+def get_gamelist():
     sid = request.sid
     g_list=Game.query.with_entities(Game.id,Game.gamename,Game.descript).all()
     print("g_list:",g_list)

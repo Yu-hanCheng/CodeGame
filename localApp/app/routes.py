@@ -13,7 +13,7 @@ def index():
             global g_list            
             g_list=args
         socketIO.on('g_list', on_g_list)
-        socketIO.emit('get_gamelist',{'t1':'t1'})
+        socketIO.emit('get_gamelist')
         socketIO.wait(1)
     except Exception as e:
         print('e',e)

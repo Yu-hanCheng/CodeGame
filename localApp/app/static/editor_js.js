@@ -9,7 +9,7 @@ var buff_min=20,buff_normal=50;
 web_port=5000
 
 namespace = '/local';
-socket = io.connect('http://' + document.domain + ':' + web_port+namespace );
+socket = io.connect('http://' + document.domain + ':' + web_port );
 
 $(document).ready(function(){
 
@@ -127,10 +127,10 @@ function changeGame(){
     socket.emit('get_lanlist', {game_id: game_selected.value});
 }
 function set_lan_list(language_list) {
-    var game_selected = document.getElementById('Game')
+    var mode_selected = document.getElementById('mode')
     for (let index = 0; index < language_list.length; index++) {
         const lan_obj = language_list[index];
-        game_selected.options[index] = new Option(lan_obj[2], lan_obj[1]);//(text,value)
+        mode_selected.options[index] = new Option(lan_obj[2], lan_obj[1]);//(text,value)
     }
 }
 

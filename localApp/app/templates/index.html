@@ -9,8 +9,7 @@
         <h2>Hello</h2>
         <select id="Game" class="form-control"onChange="changeGame()">
             {% for gameId,gameName,gameDescript in glist[0] %}
-            <option value={{gameId}}>{{ gameName }}</option>
-            <div><h3>{{ gameDescript }}</h3></div>
+            <option value={{gameId}}>{{ gameName }}({{ gameDescript }})</option>
             {% endfor %}
         </select>
         <select id="mode" class="form-control"onChange="changeMode()">
