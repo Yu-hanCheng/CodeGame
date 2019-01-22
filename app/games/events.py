@@ -1,3 +1,4 @@
+# 處理 browser, localapp, gamemain的 socketio溝通, 目前browser 會用 namespace='/test', 其他沒用
 from flask import session,redirect, url_for,flash,request
 from flask_socketio import emit, join_room, leave_room,send
 from .. import socketio # //in CodeGame.py
@@ -6,11 +7,6 @@ from app.models import User, Game, Log, Code,Game_lib, Language
 from app import db
 from websocket import create_connection
 import json
-
-@socketio.on('connect', namespace='/test')
-def new_connect():
-    sid = request.sid
-    emit('clientconnect',"clientconnect", room=sid)
 
 @socketio.on('gamemain_connect')
 def gamemain_connect(message):
@@ -118,8 +114,6 @@ def left(message):
 def emit_code(l,code):
 # join_log(log_id,message['code'],message['commit_msg'],l.game_id,current_user.id,players)
     print('l:',type(l),l)
-    # ws = create_connection("ws://140.116.82.226:6005")
-
     ws = create_connection("ws://127.0.0.1:6005")
     ws.send(json.dumps({'from':'webserver','code':code.body,'log_id':l.id,'user_id': current_user.id,'category_id':l.category_id,'game_id':l.game_id,'language':code.language_name,'player_num':int(l.player_num)}))
     result =  ws.recv() #
