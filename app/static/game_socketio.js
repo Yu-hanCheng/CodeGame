@@ -65,14 +65,14 @@ $(document).ready(function(){
     $('select#mode').change(function(event) {
         // socket.emit('check_code', {language: (document.getElementById("mode").selectedIndex+1)});
         document.getElementById('select_code').style.display = "block";
-        // console.log('code_id',code_id);
+        console.log('mode',document.getElementById('mode').value);
     });
     $('form#select_code').submit(function(event) {
         // socket.emit('select_code', {room: $('#join_room').val(),code_id: $('#join_code_id').val(), language:document.getElementById("mode").selectedIndex});
         
         socket.emit('select_code', {room: $('#join_room').val(),code_id:document.getElementById('mode').value});
         document.getElementById('select_code').style.display = "none";
-        console.log('mode',document.getElementById('mode').value)
+        
         return false;
     });
 
