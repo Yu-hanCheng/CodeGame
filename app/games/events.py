@@ -16,7 +16,8 @@ def gamemain_connect(message):
 @socketio.on('over') 
 def game_over(message):
     # msg：tuple([l_score,r_score,gametime])??
-    # 使 webserver切換至 gameover路由
+    # alert myPopupjs(玩家成績報告) on browser
+    # save all report not only record content -- 0122/2019
     # print('message[msg][score]:',type(json.loads(message['msg']['l_report'])),json.loads(message['msg']['l_report']))
     l_report=json.loads(message['msg']['l_report'])
     r_report=json.loads(message['msg']['r_report'])
@@ -38,24 +39,20 @@ def game_over(message):
     except:
         db.session.rollback()
     finally:
-        # db.session.close()
         pass
 
-    # if 
-    # l[0].winner=
-    # return redirect(url_for('games.gameover',log_id= message['log_id']))
 
 @socketio.on('info')
 def test_connect(message):
-    # 接收來自 exec主機 gamemain傳送的訊息並再傳至browser
-    # msg:??
+    # 接收來自 gamemain的訊息並再傳至browser
+    # msg={'type':type_class,'who':who,'content':content, 'cnt':cnt} -- 0122/2019
     print(message['msg'])
     emit('gameobject', {'msg': message['msg']},namespace = '/test',room= message['log_id'])#,room= message['msg'][3]
 
 @socketio.on('select_code' ,namespace = '/test')
 def select_code(message):
-    """Sent by clients when they click btn.
-    call emit_code to send code to gameserver."""
+    # Sent by clients when they click btn.
+    # call emit_code to send code to gameserver.-- 0122/2019
     print('msg in select_code',message)
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
     select_code =Code.query.with_entities(Code.id,Code.body, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
@@ -64,6 +61,7 @@ def select_code(message):
 
 @socketio.on('commit' ,namespace = '/local')
 def commit_code(message):
+    # 接收並儲存 localApp上傳的程式碼 -- 0122/2019
     print('commit:',message)
     code = Code(body=message['code'], commit_msg=message['commit_msg'],game_id=message['game_id'],compile_language_id=message['glanguage'],user_id=current_user.id)
     
@@ -73,36 +71,8 @@ def commit_code(message):
     except:
         db.session.rollback()
     finally:
-        # db.session.close()
         pass
-    game = Game.query.filter_by(id=l.game_id).first()
-    players = l.current_users
-    player_list = []
-
-    # player_list 原因, TypeError: Object of type 'User' is not JSON serializable
-    # gameserver那邊, 如果 player_list已空 表示 arrived
-    for i,player in enumerate(players):
-        if player.id == current_user.id:
-            print("no append ",player.id)
-        else:
-            print("append: ",player.id)
-            player_list.append(player.id)
-
-    ws = create_connection("ws://140.116.82.226:6005")
-    ws.send(json.dumps({'from':'webserver','code':editor_content,'log_id':log_id,'user_id':current_user.id,'category_id':game.category_id,'game_id':l.game_id,'language':message['glanguage'],'player_list':player_list}))
-    result =  ws.recv() #
-    print("Received '%s'" % result)
-    ws.close()
-    
-    
-@socketio.on('text' ,namespace = '/test')
-def text(message):
-    """Sent by a client when the user entered a new message.
-    The message is sent to all people in the room."""
-    room = session.get('room')
-    emit('message', {'msg': session.get('name') + ':' + message['msg']}, room=room)
-
-
+# -- 0122/2019
 @socketio.on('left',namespace = '/test' )
 def left(message):
     """Sent by clients when they leave a room.
