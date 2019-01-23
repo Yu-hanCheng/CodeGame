@@ -8,11 +8,13 @@
         <h1>Hello {{ glist[0] }}</h1>
         <h2>Hello</h2>
         <select id="Game" class="form-control"onChange="changeGame()">
+            <option>choose game name</option>
             {% for gameId,gameName,gameDescript in glist[0] %}
             <option value={{gameId}}>{{ gameName }}({{ gameDescript }})</option>
             {% endfor %}
         </select>
         <select id="mode" class="form-control"onChange="changeMode()">
+                <option>choose language</option>
         </select>
         <form enctype="multipart/form-data">
             <input class="btn btn-info" id="chooseFile" type="file">
@@ -23,7 +25,7 @@
         <div id="game_code">
             <pre id="editor" style="height:255px"></pre>
             <br>
-            <form id="commit"  method="POST" action='#'>
+            <form id="commit" action='#'>
                 <input type="text" name="commit_msg" id="commit_msg" placeholder="commit msg">
                 <input type="submit" value="commit"  > 
             </form>

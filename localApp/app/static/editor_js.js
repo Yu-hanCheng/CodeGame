@@ -19,11 +19,12 @@ $(document).ready(function(){
     });
     $('form#commit').submit(function(event) {
         console.log("commit")
-        var glanguage = document.getElementById("mode").selectedIndex;
-        var editor_content=editor.getValue();
-        var commit_msg = document.getElementById('commit_msg').value; 
-        socket.emit('commit', {code: editor_content,commit_msg:commit_msg,game_id:game_id,glanguage:glanguage});
-        return false;
+        const game_id = document.getElementById("Game").value;
+        const glanguage = document.getElementById("mode").value;
+        const editor_content=editor.getValue();
+        const commit_msg = document.getElementById('commit_msg').value; 
+        socket.emit('commit', {code: editor_content, commit_msg:commit_msg, game_id:game_id, glanguage:glanguage, user_id:1});
+        
     });
 
     $('form#upload_to_server').submit(function(event) {
@@ -85,11 +86,13 @@ $("#chooseFile").change(function(){
 var editor = ace.edit("editor");    
 console.log("editor",editor)
 editor.setTheme("ace/theme/twilight");
-editor.session.setMode("ace/mode/javascript");
+editor.session.setMode("ace/mode/python");
 
 function changeMode(){
-    console.log("changeMode");
-    var mode = document.getElementById('mode').text;
+    
+    var mode_selected = document.getElementById('mode');
+    mode = mode_selected.options[mode_selected.selectedIndex].text;
+    console.log("changeMode:",mode);
     editor.session.setMode("ace/mode/"+ mode);
     var contents = {
         c:'main(){}',
@@ -127,10 +130,15 @@ function changeGame(){
     socket.emit('get_lanlist', {game_id: game_selected.value});
 }
 function set_lan_list(language_list) {
-    var mode_selected = document.getElementById('mode')
-    for (let index = 0; index < language_list.length; index++) {
-        const lan_obj = language_list[index];
-        mode_selected.options[index] = new Option(lan_obj[2], lan_obj[1]);//(text,value)
+    //先清空舊的語言選項,在新增新的語言選項,保留第一個option為 default
+    var mode_select = document.getElementById('mode')
+    while (mode_select.length > 1) {
+        mode_select.remove(mode_select.length-1);
+      }
+    for (let index = 1; index < language_list.length+1; index++) {
+        const lan_obj = language_list[index-1];
+        console.log('lan_obj[1]:',lan_obj[1])
+        mode_select.options[index] = new Option(lan_obj[2], lan_obj[1]);//(text,value)
     }
 }
 

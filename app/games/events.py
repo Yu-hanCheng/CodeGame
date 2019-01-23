@@ -59,11 +59,11 @@ def select_code(message):
     print('checked_code',select_code)
     emit_code(l, select_code)
 
-@socketio.on('commit' ,namespace = '/local')
+@socketio.on('commit')# ,namespace = '/local'
 def commit_code(message):
     # 接收並儲存 localApp上傳的程式碼 -- 0122/2019
-    print('commit:',message)
-    code = Code(body=message['code'], commit_msg=message['commit_msg'],game_id=message['game_id'],compile_language_id=message['glanguage'],user_id=current_user.id)
+    
+    code = Code(body=message['code'], commit_msg=message['commit_msg'],game_id=message['game_id'],compile_language_id=message['glanguage'],user_id=message['user_id'])
     
     try:
         db.session.add(code)
