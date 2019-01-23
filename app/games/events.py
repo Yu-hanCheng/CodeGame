@@ -105,6 +105,20 @@ def get_lanlist(message):
     print("lan_list:",lan_list)
     emit('lan_list',lan_list, room=sid)
 
+@socketio.on('check_user')# '/local'
+def check_user(message):
+    # localApp使用者登入確認 -- 0123/2019
+    print("check_user")
+    sid = request.sid
+    user = User.query.filter_by(username=message['uname']).first()
+    if user is None:
+        emit('checked_user',{'checked':False,'msg':'uname'}, room=sid)
+        
+    elif  not user.check_password(message['password']):
+        emit('checked_user',{'checked':False,'msg':'pwd'}, room=sid)
+
+    else:
+        emit('checked_user',{'checked':True,'user_id':user.id}, room=sid)
 
 
 
