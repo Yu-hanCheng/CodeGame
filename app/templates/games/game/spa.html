@@ -5,36 +5,13 @@
 <script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 <h1 id="page_title">room wait</h1>
-<div class="scores">
-        <div class="left-score">
-            <div>
-                <span>0</span>
-            </div>
-        </div>
-        <div class="right-score">
-            <div>
-                <span>0</span>
-            </div>
-        </div>
-</div>
-<label for="mode" class="control-label">Language Mode:</label>
-    <select id="mode" class="form-control">
-        <option value="code_id">"choose language"</option>
-        {% for code_id,code_msg,lan_name in all_codes %}
-        <option value={{code_id}}>{{ lan_name }}</option>
-        {% endfor %}
-    </select>
+
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <ul>
         {% for category,message in messages %}
         <p>{{ category }}</p>
         <p>{{ message }}</p>
-        <script>
-        // document.getElementById("join").style.visibility="visible";
-        // document.getElementById('join_code_id').value={{ message }};
-
-        </script>
         {% endfor %}
     </ul>
 
@@ -42,7 +19,14 @@
     <p>To join game, need to upload available code</p>
     {% endif %}
 {% endwith %}
-<section id="2">
+<section id="section_code">
+    <label for="mode" class="control-label">Language Mode:</label>
+    <select id="mode" class="form-control">
+        <option value="code_id">"choose language"</option>
+        {% for code_id,code_msg,lan_name in all_codes %}
+        <option value={{code_id}}>{{ lan_name }}</option>
+        {% endfor %}
+    </select>
     <form enctype="multipart/form-data">
         <input class="btn btn-info" id="chooseFile" type="file">
     </form>
@@ -61,7 +45,19 @@
     </div>
 
 </section>
-<!-- <section id="3">
+<section id="section_game">
+    <div class="scores">
+            <div class="left-score">
+                <div>
+                    <span>0</span>
+                </div>
+            </div>
+            <div class="right-score">
+                <div>
+                    <span>0</span>
+                </div>
+            </div>
+    </div>
     <div class="popup"id="myPopup_dom" >the popup!
     </div>
     <div class="container" id="game_playground" style="display:none">
@@ -101,7 +97,7 @@
             
         </div>
     </div>
-</section> -->
+</section>
 <script src="{{ url_for('static', filename='src-noconflict/ace.js') }}" type="text/javascript" charset="utf-8">
 </script>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">

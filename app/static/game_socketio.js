@@ -68,6 +68,7 @@ $(document).ready(function(){
         
         socket.emit('select_code', {room: $('#join_room').val(),code_id:document.getElementById('mode').value});
         document.getElementById('select_code').style.display = "none";
+        document.getElementById('section_game').style.display = "block";
         
         return false;
     });
