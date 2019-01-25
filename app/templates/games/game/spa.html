@@ -5,7 +5,7 @@
 <script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 <h1 id="page_title">room wait</h1>
-
+<section id="section_code">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <ul>
@@ -18,8 +18,7 @@
     {% else %}
     <p>To join game, need to upload available code</p>
     {% endif %}
-{% endwith %}
-<section id="section_code">
+    {% endwith %}
     <label for="mode" class="control-label">Language Mode:</label>
     <select id="mode" class="form-control">
         <option value="code_id">"choose language"</option>
@@ -45,7 +44,7 @@
     </div>
 
 </section>
-<section id="section_game">
+<section id="section_game" style="display:none">
     <div class="scores">
             <div class="left-score">
                 <div>
@@ -60,7 +59,7 @@
     </div>
     <div class="popup"id="myPopup_dom" >the popup!
     </div>
-    <div class="container" id="game_playground" style="display:none">
+    <div class="container" id="game_playground"  width="600" height="800" >
         <h2> game_playground </h2>
         <div id="game_display">
         
