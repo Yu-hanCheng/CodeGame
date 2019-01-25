@@ -46,13 +46,14 @@ def game_over(message):
 def test_connect(message):
     # 接收來自 gamemain的訊息並再傳至browser
     # msg={'type':type_class,'who':who,'content':content, 'cnt':cnt} -- 0122/2019
-    print(message['msg'])
-    emit('gameobject', {'msg': message['msg']},namespace = '/test',room= message['log_id'])#,room= message['msg'][3]
+    print(message['log_id'])
+    emit('gameobject', {'msg': message['msg']},namespace = '/test',room= message['log_id'])#,room= message['log_id']
 
 @socketio.on('select_code' ,namespace = '/test')
 def select_code(message):
     # Sent by clients when they click btn.
     # call emit_code to send code to gameserver.-- 0122/2019
+    join_room(message['room'])
     print('msg in select_code',message)
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
     select_code =Code.query.with_entities(Code.id,Code.body, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
