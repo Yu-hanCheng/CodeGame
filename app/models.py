@@ -296,6 +296,7 @@ class Log(db.Model):
 class Language(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     language_name = db.Column(db.String(30)) 
+    filename_extension = db.Column(db.String(30)) 
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     gamename = db.Column(db.String(30))

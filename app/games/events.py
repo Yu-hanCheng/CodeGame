@@ -102,7 +102,7 @@ def get_gamelist():
 @socketio.on('get_lanlist')
 def get_lanlist(message):
     sid = request.sid
-    lan_list=Game_lib.query.with_entities(Game_lib.id, Language.id, Language.language_name).filter_by(game_id=message['game_id']).join(Language,(Game_lib.language_id==Language.id)).all()
+    lan_list=Game_lib.query.with_entities(Game_lib.id, Language.id, Language.language_name, Language.filename_extension).filter_by(game_id=message['game_id']).join(Language,(Game_lib.language_id==Language.id)).all()
     print("lan_list:",lan_list)
     emit('lan_list',lan_list, room=sid)
 

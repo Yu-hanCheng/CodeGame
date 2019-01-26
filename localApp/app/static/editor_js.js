@@ -131,6 +131,7 @@ function changeGame(){
 }
 function set_lan_list(language_list) {
     //先清空舊的語言選項,在新增新的語言選項,保留第一個option為 default
+    //[Game_lib.id, Language.id, Language.language_name, Language.language_compiler]
     var mode_select = document.getElementById('mode')
     while (mode_select.length > 1) {
         mode_select.remove(mode_select.length-1);
@@ -138,7 +139,7 @@ function set_lan_list(language_list) {
     for (let index = 1; index < language_list.length+1; index++) {
         const lan_obj = language_list[index-1];
         console.log('lan_obj[1]:',lan_obj[1])
-        mode_select.options[index] = new Option(lan_obj[2], lan_obj[1]);//(text,value)
+        mode_select.options[index] = new Option(lan_obj[2], lan_obj[3]);//(text,value)
     }
 }
 
