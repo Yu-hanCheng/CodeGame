@@ -90,6 +90,7 @@ editor.session.setMode("ace/mode/python");
 
 function changeMode(){
     
+    document.getElementById('commit').style.display="block";
     var mode_selected = document.getElementById('mode');
     mode = mode_selected.options[mode_selected.selectedIndex].text;
     console.log("changeMode:",mode);
