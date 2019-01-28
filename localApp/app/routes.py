@@ -1,7 +1,7 @@
 from app import app
 from flask import render_template,request,redirect, url_for,flash,session
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
-import base64
+import base64,json
 import os
 socketIO = SocketIO('localhost', 5000, LoggingNamespace)
 app.secret_key = "secretkey"
@@ -60,18 +60,24 @@ def library():
 @app.route('/commit',methods=['GET','POST'])
 def commit():
     # save
-    # {"encodedData":encodedData,"game_id":game_id,"lan_compiler":lan_compiler,"endname":endname,'user_id':1}
+    # {"encodedData":encodedData,"lan_compiler":lan_compiler,'obj':obj,'user_id':1,}
     # socket.emit('commit', {code: editor_content, commit_msg:commit_msg, game_id:game_id, glanguage:glanguage, user_id:1});
-    print("sandbox recv:",request.content_type)
     
-    data = request.get_json()
-    print("get_json:",data)
-    decoded = base64.b64decode(data.get('encodedData').split(",")[1])
+    data = request.data
+    print("request.data:",data)
+    json_obj=json.loads(data)
+    obj=json_obj["obj"]
+    print("obj:",obj)
+    save_path = obj[1]+"/"+obj[3]+"/"+obj[5]
     # str(data.get('lan_compiler'))
+    print("save_path:",save_path)
+    save_code(save_path,filename,file_end,code)
+
     try:
         os.makedirs( path )
     except Exception as e:
         print('e',e)
+
     with open("%s%s"%(path,filename), "wb") as f:
         f.write(decoded)
         f.write(b"\nglobal paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
@@ -83,9 +89,11 @@ def commit():
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)
+            flash("oops, there is an error--",stderr)
             return [0,stderr]
         else:
             print('stdout:', stdout)
+            flash("great, execuse successfully:",stdout)
             return [1,stdout]
     except Exception as e:
         print('e: ',e)

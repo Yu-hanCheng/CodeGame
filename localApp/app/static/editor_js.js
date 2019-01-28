@@ -36,13 +36,14 @@ $(document).ready(function(){
             });
     $('form#commit').submit(function(event) {
         
-        const lan_list_obj = document.getElementById("mode").value;
-        // Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension
+        const obj = document.getElementById("mode").value;
+        // 0Game_lib.id,1Category.id,2Category.name,3Game.id,4Game.gamename,5Language.id, 6Language.language_name, 7Language.filename_extension
+        
         const editor_content=editor.getValue();
         var encodedData = window.btoa(editor_content);
         console.log("encodedData:",encodedData)
         var lan_compiler
-        switch(lan_list_obj[-1]) {
+        switch(obj[-1]) {
             case ".py":
             lan_compiler = "python3"
               break;
@@ -56,7 +57,7 @@ $(document).ready(function(){
         console.log('endname:',lan_compiler)
         const commit_msg = document.getElementById('commit_msg').value; 
         // need to send back to localapp to sandbox
-        content_to_send=JSON.stringify({"encodedData":encodedData,"game_id":game_id,"lan_compiler":lan_compiler,"endname":endname,'user_id':1})
+        content_to_send=JSON.stringify({"encodedData":encodedData,"lan_compiler":lan_compiler,'obj':obj,'user_id':1,})
         send_to_back(content_to_send,"application/json","commit")
 
 
