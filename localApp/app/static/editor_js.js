@@ -14,17 +14,52 @@ socket = io.connect('http://' + document.domain + ':' + web_port );
 $(document).ready(function(){
 
     socket.on('lan_list', function(data) {
+//Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension)
         console.log("lan_list:",data)
         set_lan_list(data)
     });
+    socket.on('library', function(data) {
+        //Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension)
+                var FD  = new FormData();
+                FD.append("path", data[0]);
+                FD.append("end", data[1]);
+                FD.append("lib", data[2]);
+                FD.append("gamemain", data[3]);
+                for (var value of FD.values()) {
+                    console.log(value); 
+                }
+                // console.log('FD:',FD)
+                document.getElementById('commit').style.display="block";
+                
+                send_to_back(FD,"multipart/form-data","library")
+                // send_to_back(content_to_send,"text/plain","gamemain")
+            });
     $('form#commit').submit(function(event) {
-        console.log("commit")
-        const game_id = document.getElementById("Game").value;
-        const glanguage = document.getElementById("mode").value;
-        const editor_content=editor.getValue();
-        const commit_msg = document.getElementById('commit_msg').value; 
-        socket.emit('commit', {code: editor_content, commit_msg:commit_msg, game_id:game_id, glanguage:glanguage, user_id:1});
         
+        const lan_list_obj = document.getElementById("mode").value;
+        // Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension
+        const editor_content=editor.getValue();
+        var encodedData = window.btoa(editor_content);
+        console.log("encodedData:",encodedData)
+        var lan_compiler
+        switch(lan_list_obj[-1]) {
+            case ".py":
+            lan_compiler = "python3"
+              break;
+            case ".c":
+            lan_compiler = "gcc"
+              break;
+            default:
+            lan_compiler = "python"
+          }
+        
+        console.log('endname:',lan_compiler)
+        const commit_msg = document.getElementById('commit_msg').value; 
+        // need to send back to localapp to sandbox
+        content_to_send=JSON.stringify({"encodedData":encodedData,"game_id":game_id,"lan_compiler":lan_compiler,"endname":endname,'user_id':1})
+        send_to_back(content_to_send,"application/json","commit")
+
+
     });
 
     $('form#upload_to_server').submit(function(event) {
@@ -89,12 +124,14 @@ editor.setTheme("ace/theme/twilight");
 editor.session.setMode("ace/mode/python");
 
 function changeMode(){
+    // Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension
+    // filename = "%s_%s%s"%(log_id,user_id,language_res[1]) 
     
-    document.getElementById('commit').style.display="block";
-    var mode_selected = document.getElementById('mode');
-    mode = mode_selected.options[mode_selected.selectedIndex].text;
-    console.log("changeMode:",mode);
-    editor.session.setMode("ace/mode/"+ mode);
+    var mode = document.getElementById('mode').value.split(",");
+    console.log("type:",mode)
+    
+    socket.emit('get_lib', {category_id: mode[1],game_id: mode[3],language_id:mode[5], filename_extension:mode[7], user_id:1});
+    editor.session.setMode("ace/mode/"+ mode[6]);
     var contents = {
         c:'main(){}',
         python: '\
@@ -114,14 +151,13 @@ def run():\n\
         
         sh: '<value attr="something">Write something here...</value>'
     };
-    editor.setValue(contents[mode]);
+    editor.setValue(contents[mode[6]]);
     
 }
 
 function leave_room() {
     socket.emit('left', {}, function() {
         socket.disconnect();
-
         // go back to the login page
         window.location.href = "{{ url_for('games.index') }}";
     });
@@ -130,17 +166,29 @@ function changeGame(){
     var game_selected = document.getElementById('Game')
     socket.emit('get_lanlist', {game_id: game_selected.value});
 }
+function send_to_back(content,Content_type,dest){
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("sandbox_res").innerHTML = this.responseText;
+        // check code in Docker container first
+        // socket.emit('commit', {code: editor_content, commit_msg:commit_msg, game_id:game_id, glanguage:glanguage, user_id:1});
+    }
+    };
+    
+    xhttp.open("POST", dest, true);
+    xhttp.send(content);
+}
 function set_lan_list(language_list) {
     //先清空舊的語言選項,在新增新的語言選項,保留第一個option為 default
-    //[Game_lib.id, Language.id, Language.language_name, Language.language_compiler]
+    // Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension)
     var mode_select = document.getElementById('mode')
     while (mode_select.length > 1) {
         mode_select.remove(mode_select.length-1);
       }
     for (let index = 1; index < language_list.length+1; index++) {
         const lan_obj = language_list[index-1];
-        console.log('lan_obj[1]:',lan_obj[1])
-        mode_select.options[index] = new Option(lan_obj[2], lan_obj[3]);//(text,value)
+        console.log('lan_ob:',lan_obj)
+        mode_select.options[index] = new Option(lan_obj[6], lan_obj);//(text,value(str))
     }
 }
-
