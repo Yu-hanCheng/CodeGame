@@ -9,9 +9,10 @@ from app.models import Log,Code,Language,User,Game,Game_lib
 # add code
 # test check code
 
+
 # Language
-lan1 = Language(language_name='C')
-lan2 = Language(language_name='Python')
+lan1 = Language(language_name='c',filename_extension=".c")
+lan2 = Language(language_name='python', filename_extension=".py")
 db.session.add_all([lan1,lan2])
 db.session.commit()
 
@@ -24,13 +25,18 @@ db.session.commit()
 #db.session.add(user)
 #db.session.commit()
 
+#Catagory
+cat = Category(name="brainstorming")
+cat2 = Category(name="acting")
+db.session.add_all([cat,cat2])
+db.session.commit()
+
 #game = Game(user_id=form.user_id.data,gamename=form.gamename.data,descript=form.descript.data,\ #player_num=form.player_num.data,category_id=form.category_id.data,game_lib_id=form.game_lib_id.data)
 
-game_lib = Game_lib(language_id=1,player_num=2)
-game_lib2 = Game_lib(language_id=2,player_num=2)
-game_lib3 = Game_lib(language_id=2,player_num=2)
+game_lib = Game_lib(language_id=1,player_num=2,game_info=game[0])
+game_lib2 = Game_lib(language_id=2,player_num=2,game_info=game[0])
 game = Game(user_id=1,gamename='t1',descript='t1',player_num=2,category_id=1)
-db.session.add_all([game,game_lib,game_lib2,game_lib3])
+db.session.add_all([game,game_lib,game_lib2])
 db.session.commit()
 
 
