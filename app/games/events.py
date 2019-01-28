@@ -3,7 +3,7 @@ from flask import session,redirect, url_for,flash,request
 from flask_socketio import emit, join_room, leave_room,send
 from .. import socketio # //in CodeGame.py
 from flask_login import current_user
-from app.models import User, Game, Log, Code,Game_lib, Language
+from app.models import User, Game, Log, Code, Game_lib, Language, Category
 from app import db
 from websocket import create_connection
 import json
@@ -102,9 +102,22 @@ def get_gamelist():
 @socketio.on('get_lanlist')
 def get_lanlist(message):
     sid = request.sid
-    lan_list=Game_lib.query.with_entities(Game_lib.id, Language.id, Language.language_name, Language.filename_extension).filter_by(game_id=message['game_id']).join(Language,(Game_lib.language_id==Language.id)).all()
+    lan_list=Game_lib.query.with_entities(Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension).filter_by(game_id=message['game_id']).join(Language,(Game_lib.language_id==Language.id)).join(Game,(Game.id==message['game_id'])).join(Category,(Category.id==Game.category_id)).all()
+    # 取Category.name,Game.gamename是為了localapp端將code存成檔案的路徑
     print("lan_list:",lan_list)
     emit('lan_list',lan_list, room=sid)
+
+@socketio.on('get_lib')
+def get_lib(msg):
+    sid = request.sid
+    path = "%s/%s/%s/"%(msg['category_id'],msg['game_id'],msg['language_id'])
+    end = msg['filename_extension']
+    global library,gamemain
+    with open("gameserver/%slib%s"%(path,end), "r") as f:
+        library = f.read()
+    with open("gameserver/%sgamemain%s"%(path,end), "r") as f_game:
+        gamemain = f_game.read()
+    emit('library',[path,end,library,gamemain], room=sid)
 
 @socketio.on('check_user')# '/local'
 def check_user(message):
