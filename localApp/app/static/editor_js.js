@@ -21,18 +21,15 @@ $(document).ready(function(){
     socket.on('library', function(data) {
         //Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension)
                 var FD  = new FormData();
+
                 FD.append("path", data[0]);
                 FD.append("end", data[1]);
-                FD.append("lib", data[2]);
-                FD.append("gamemain", data[3]);
-                for (var value of FD.values()) {
-                    console.log(value); 
-                }
-                // console.log('FD:',FD)
+                FD.append("lib", String.fromCharCode.apply(null,  new Uint8Array(data[2])));
+                FD.append("gamemain", String.fromCharCode.apply(null,  new Uint8Array(data[3])));
+
                 document.getElementById('commit').style.display="block";
                 
                 send_to_back(FD,"multipart/form-data","library")
-                // send_to_back(content_to_send,"text/plain","gamemain")
             });
     $('form#commit').submit(function(event) {
         

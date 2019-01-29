@@ -1,6 +1,6 @@
 import app
 from app import db
-from app.models import Log,Code,Language,User,Game,Game_lib
+from app.models import Log,Code,Language,User,Game,Game_lib,Category
 
 # add language
 # add user

@@ -3,6 +3,7 @@ from flask import render_template,request,redirect, url_for,flash,session
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 import base64,json
 import os
+from os import walk
 socketIO = SocketIO('localhost', 5000, LoggingNamespace)
 app.secret_key = "secretkey"
 @app.route('/')
@@ -49,7 +50,6 @@ def index():
 @app.route('/library',methods=['GET','POST'])
 def library():
     
-    print("type_path",request.form.get('end',False))
     savepath = request.form.get('path',False)
     file_end = request.form.get('end',False) 
     save_code(savepath,"gamemain",file_end,request.form.get('gamemain',False))
@@ -61,31 +61,30 @@ def library():
 def commit():
     # save
     # {"encodedData":encodedData,"lan_compiler":lan_compiler,'obj':obj,'user_id':1,}
+    # // 0Game_lib.id,1Category.id,2Category.name,3Game.id,4Game.gamename,5Language.id, 6Language.language_name, 7Language.filename_extension
     # socket.emit('commit', {code: editor_content, commit_msg:commit_msg, game_id:game_id, glanguage:glanguage, user_id:1});
     
     data = request.data
-    print("request.data:",data)
     json_obj=json.loads(data)
-    obj=json_obj["obj"]
-    print("obj:",obj)
-    save_path = obj[1]+"/"+obj[3]+"/"+obj[5]
+    obj=json_obj["obj"].split(",")
+    code = json_obj['encodedData']
+    save_path = obj[1]+"/"+obj[3]+"/"+obj[5]+"/"
+    file_end = obj[7]
     # str(data.get('lan_compiler'))
-    print("save_path:",save_path)
-    save_code(save_path,filename,file_end,code)
-
-    try:
-        os.makedirs( path )
-    except Exception as e:
-        print('e',e)
-
-    with open("%s%s"%(path,filename), "wb") as f:
-        f.write(decoded)
-        f.write(b"\nglobal paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
     
+    f = []
+    for (dirpath, dirnames, filenames) in walk(save_path):
+        f.extend(filenames)
+        break
+    filename=str(len(f)-2)#['.DS_Store', 'gamemain.py', 'lib.py']
+    save_code(save_path,filename,file_end,code)
+    compiler = json_obj['lan_compiler']
+    
+
     from subprocess import Popen, PIPE
 
     try:
-        p = Popen(compiler + ' ' + path_ + ' '+ filename + '',shell=True, stdout=PIPE, stderr=PIPE)
+        p = Popen(compiler + ' ' + save_path + filename + file_end,shell=True, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)
@@ -110,13 +109,18 @@ def set_language(language):
     return language_obj
 
 def save_code(save_path,filename,file_end,code):
+    
     try:
         os.makedirs( save_path )
     except Exception as e:
-        print('e',e)
-    with open("%s%s%s"%(save_path,filename,file_end), "w+") as f:
-        f.write(code)
-        
+        print('mkdir error:',e)
+    decode = base64.b64decode(code)
+    try:
+        with open("%s%s%s"%(save_path,filename,file_end), "wb") as f:
+            f.write(decode)
+    except Exception as e:
+        print('write error:',e)
+            
     
 
     

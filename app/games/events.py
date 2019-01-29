@@ -6,7 +6,7 @@ from flask_login import current_user
 from app.models import User, Game, Log, Code, Game_lib, Language, Category
 from app import db
 from websocket import create_connection
-import json
+import json,base64
 
 @socketio.on('gamemain_connect')
 def gamemain_connect(message):
@@ -114,9 +114,9 @@ def get_lib(msg):
     end = msg['filename_extension']
     global library,gamemain
     with open("gameserver/%slib%s"%(path,end), "r") as f:
-        library = f.read()
+        library = base64.b64encode(bytes(f.read(), 'utf8'))
     with open("gameserver/%sgamemain%s"%(path,end), "r") as f_game:
-        gamemain = f_game.read()
+        gamemain = base64.b64encode(bytes(f_game.read(), 'utf8'))
     emit('library',[path,end,library,gamemain], room=sid)
 
 @socketio.on('check_user')# '/local'
