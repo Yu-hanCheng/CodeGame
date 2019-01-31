@@ -22,7 +22,6 @@ def game_over(message):
     l_report=json.loads(message['msg']['l_report'])
     r_report=json.loads(message['msg']['r_report'])
     emit('gameover', {'msg': message['msg'],'log_id':message['log_id']},namespace = '/test',room= message['log_id'])
-    print('message[log_id]:',message['log_id'])
     if l_report['score']>r_report['score']:
         winner=l_report['user_id']
     else:
@@ -54,21 +53,26 @@ def select_code(message):
     # Sent by clients when they click btn.
     # call emit_code to send code to gameserver.-- 0122/2019
     join_room(message['room'])
-    print('msg in select_code',message)
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
     select_code =Code.query.with_entities(Code.id,Code.body, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
-    print('checked_code',select_code)
+    
     emit_code(l, select_code)
 
-@socketio.on('commit')# ,namespace = '/local'
+@socketio.on('commit_code')# ,namespace = '/local'
 def commit_code(message):
     # 接收並儲存 localApp上傳的程式碼 -- 0122/2019
-    
-    code = Code(body=message['code'], commit_msg=message['commit_msg'],game_id=message['game_id'],compile_language_id=message['glanguage'],user_id=message['user_id'])
+    # {'code':code,'user_id':json_obj['user_id'],'commit_msg':commit_msg,'game_id':obj[3],'file_end':obj[7]}
+    # Language.filename_extension
+    print("commit_code!!")
+    sid = request.sid
+
+    lan_id = set_language_id(message['file_end'])
+    code = Code(body=message['code'], commit_msg=message['commit_msg'],game_id=message['game_id'],compile_language_id=lan_id,user_id=message['user_id'])
     
     try:
         db.session.add(code)
         db.session.commit()
+        emit('commit_res',"ok, code save in web", room=sid)
     except:
         db.session.rollback()
     finally:
@@ -93,10 +97,10 @@ def emit_code(l,code):
 
 #for local
 @socketio.on('get_gamelist')
-def get_gamelist():
+def get_gamelist(msg):
     sid = request.sid
     g_list=Game.query.with_entities(Game.id,Game.gamename,Game.descript).all()
-    print("g_list:",g_list)
+    
     emit('g_list',g_list, room=sid)
 
 @socketio.on('get_lanlist')
@@ -104,7 +108,7 @@ def get_lanlist(message):
     sid = request.sid
     lan_list=Game_lib.query.with_entities(Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension).filter_by(game_id=message['game_id']).join(Language,(Game_lib.language_id==Language.id)).join(Game,(Game.id==message['game_id'])).join(Category,(Category.id==Game.category_id)).all()
     # 取Category.name,Game.gamename是為了localapp端將code存成檔案的路徑
-    print("lan_list:",lan_list)
+    
     emit('lan_list',lan_list, room=sid)
 
 @socketio.on('get_lib')
@@ -135,6 +139,12 @@ def check_user(message):
         emit('checked_user',{'checked':True,'user_id':user.id}, room=sid)
 
 
-
-
+def set_language_id(filename_extension):
+    compiler = {
+        ".c":0,
+        ".py":1,
+        ".sh":2
+    }
+    language_id = compiler.get(filename_extension, "Invalid language ID")
+    return language_id
         

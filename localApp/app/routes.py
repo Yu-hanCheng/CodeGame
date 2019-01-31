@@ -19,10 +19,8 @@ def login():
             def checked_user(*args):
                 global canlogin
                 canlogin=args[0]
-
-            socketIO.on('checked_user',checked_user)
-            socketIO.emit('check_user',{'uname':uname,'password':password})
-            socketIO.wait(1)
+            data_to_send = {'uname':uname,'password':password}
+            send_to_web("check_user",data_to_send,"checked_user",checked_user)
         except Exception as e:
             print('e',e)
     
@@ -40,9 +38,8 @@ def index():
         def on_g_list(*args):
             global g_list            
             g_list=args
-        socketIO.on('g_list', on_g_list)
-        socketIO.emit('get_gamelist')
-        socketIO.wait(1)
+        data_to_send=""
+        send_to_web("get_gamelist",data_to_send,"g_list",on_g_list)
     except Exception as e:
         print('e',e)
     return render_template('index.html', title='Home',glist=g_list)
@@ -54,13 +51,13 @@ def library():
     file_end = request.form.get('end',False) 
     save_code(savepath,"gamemain",file_end,request.form.get('gamemain',False))
     save_code(savepath,"lib",file_end,request.form.get('lib',False))
-    return render_template('login.html')
+    return "set library ok"
 
 
 @app.route('/commit',methods=['GET','POST'])
 def commit():
     # save
-    # {"encodedData":encodedData,"lan_compiler":lan_compiler,'obj':obj,'user_id':1,}
+    # {"encodedData":encodedData,"commit_msg":commit_msg,"lan_compiler":lan_compiler,'obj':obj,'user_id':1,}
     # // 0Game_lib.id,1Category.id,2Category.name,3Game.id,4Game.gamename,5Language.id, 6Language.language_name, 7Language.filename_extension
     # socket.emit('commit', {code: editor_content, commit_msg:commit_msg, game_id:game_id, glanguage:glanguage, user_id:1});
     
@@ -72,6 +69,7 @@ def commit():
     file_end = obj[7]
     # str(data.get('lan_compiler'))
     
+    # set filename
     f = []
     for (dirpath, dirnames, filenames) in walk(save_path):
         f.extend(filenames)
@@ -80,11 +78,22 @@ def commit():
     save_code(save_path,filename,file_end,code)
     compiler = json_obj['lan_compiler']
     
+    dirpath=save_path+filename+file_end
+    code_res = test_code(compiler,dirpath)
+    if code_res[0]:
+        def send_code_ok(msg):
+                print("in callback send_code_ok")
+                # flash to web
+                flash("send_code_ok")
+        data_to_send={'code':code,'user_id':json_obj['user_id'],'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
+        send_to_web("commit_code",data_to_send,"commit_res",send_code_ok)
+    return "received code"
 
+
+def test_code(compiler,filetoexec):
     from subprocess import Popen, PIPE
-
     try:
-        p = Popen(compiler + ' ' + save_path + filename + file_end,shell=True, stdout=PIPE, stderr=PIPE)
+        p = Popen(compiler + ' ' + filetoexec,shell=True, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)
@@ -93,20 +102,12 @@ def commit():
         else:
             print('stdout:', stdout)
             flash("great, execuse successfully:",stdout)
+            # browser
+            
             return [1,stdout]
     except Exception as e:
         print('e: ',e)
-        return e
-    return "received code"
-
-def set_language(language):
-    compiler = {
-        "0": ["gcc",".c"],
-        "1": ["python3",".py"],
-        "2": ["sh",".sh"]
-    }
-    language_obj = compiler.get(language, "Invalid language ID")
-    return language_obj
+        return [-1,e]
 
 def save_code(save_path,filename,file_end,code):
     
@@ -120,7 +121,14 @@ def save_code(save_path,filename,file_end,code):
             f.write(decode)
     except Exception as e:
         print('write error:',e)
-            
-    
+
+def send_to_web(event_name,send_data,listen_name,callback):
+    print('sendtoweb')
+    try:
+        socketIO.on(listen_name,callback)
+        socketIO.emit(event_name,send_data)
+        socketIO.wait(1)
+    except Exception as e:
+        print('write error:',e)
 
     

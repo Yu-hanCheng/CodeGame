@@ -32,45 +32,20 @@ $(document).ready(function(){
                 send_to_back(FD,"multipart/form-data","library")
             });
     $('form#commit').submit(function(event) {
-        
-        const obj = document.getElementById("mode").value;
-        // 0Game_lib.id,1Category.id,2Category.name,3Game.id,4Game.gamename,5Language.id, 6Language.language_name, 7Language.filename_extension
-        
         const editor_content=editor.getValue();
         var encodedData = window.btoa(editor_content);
-        console.log("encodedData:",encodedData)
-        var lan_compiler
-        switch(obj[-1]) {
-            case ".py":
-            lan_compiler = "python3"
-              break;
-            case ".c":
-            lan_compiler = "gcc"
-              break;
-            default:
-            lan_compiler = "python"
-          }
-        
-        console.log('endname:',lan_compiler)
-        const commit_msg = document.getElementById('commit_msg').value; 
+
+        before_sendback(encodedData,"application/json","commit")
         // need to send back to localapp to sandbox
-        content_to_send=JSON.stringify({"encodedData":encodedData,"lan_compiler":lan_compiler,'obj':obj,'user_id':1,})
-        send_to_back(content_to_send,"application/json","commit")
-
-
     });
 
     $('form#upload_to_server').submit(function(event) {
         
-        var glanguage = document.getElementById("mode").selectedIndex;
-        var commit_msg = document.getElementById('commit_msg').value; 
-
         let choosed= $("#chooseFile")[0].files;
         convertFile(choosed[0]).then(data => {
             // 把編碼後的字串 send to webserver
-            socket.emit('commit', {code: data,commit_msg:commit_msg,glanguage:glanguage});
-        return false;
-            
+            before_sendback(data,"application/json","commit")
+            return false;//return回哪裡QAQ
           })
           .catch(err => console.log(err))
         
@@ -189,4 +164,22 @@ function set_lan_list(language_list) {
         console.log('lan_ob:',lan_obj)
         mode_select.options[index] = new Option(lan_obj[6], lan_obj);//(text,value(str))
     }
+}
+function before_sendback(Data,content_type,post_dest){
+    const obj = document.getElementById("mode").value;
+        // 0Game_lib.id,1Category.id,2Category.name,3Game.id,4Game.gamename,5Language.id, 6Language.language_name, 7Language.filename_extension
+    var commit_msg = document.getElementById('commit_msg').value; 
+    var lan_compiler
+        switch(obj[-1]) {
+            case ".py":
+            lan_compiler = "python3"
+              break;
+            case ".c":
+            lan_compiler = "gcc"
+              break;
+            default:
+            lan_compiler = "python"
+        }
+    content_to_send=JSON.stringify({"encodedData":Data,"commit_msg":commit_msg,"lan_compiler":lan_compiler,'obj':obj,'user_id':1,})
+    send_to_back(content_to_send,content_type,post_dest)
 }
