@@ -8,17 +8,23 @@
             {{ wtf.quick_form(form) }}
         </div>
     </div>
-        <script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
+    <script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
     <script type="text/javascript">
     $('select#game_category').change(function(event) {
-
+        
         var selected_category = document.getElementById('game_category').value;
-       
+        
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            console.log("response")
+            response = JSON.parse(this.responseText)['g_list']
             
+            var g_select = document.getElementById('game')
+            for (let index =0; index < response.length; index++) {
+                const lan_obj = response[index];
+                
+                g_select.options[index] = new Option(lan_obj[1], lan_obj[0]);//(text,value(str))
+            }
             // document.getElementById("sandbox_res").innerHTML = this.response.Text;
             // check code in Docker container first
             // socket.emit('commit', {code: editor_content, commit_msg:commit_msg, game_id:game_id, glanguage:glanguage, user_id:1});

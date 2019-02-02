@@ -8,30 +8,12 @@ from app.games import current_game,current_log,current_code
 
 class ChooseGameForm(FlaskForm):
 	game_category = SelectField('Game Category',# ) coerce=int
-		choices=[('1', 'one player'), ('2', 'two players'), ('3','3 players')])
+		choices=[] )
 	game =  SelectField('Game',# ) coerce=int
-		choices=[('1', 'maze'), ('2', 'pinpong'), ('3', 'shoot')])
+		choices=[])
 	user_id = HiddenField('User id', default=current_user)
 	player_list = TextAreaField('player_list')
 	start = SubmitField('choose Game')
-
-	# def __init__(self, arg):
-	# 	super(StartGameForm, self).__init__()
-	# 	self.arg = arg
-		# user = Game.query.filter_by(username=self.username.data).first()
-		# form = ChooseGameForm() # 這樣寫對嗎？
-		# form.game_category.choices = [(g.id, g.gamename) for g in Game.query.order_by('category_id')]	 
-
-
-	# def game_list(self,request, game_category):
-	# 	user = Game.query.filter_by(username=self.username.data).first()
-	# 	form = ChooseGameForm() # 這樣寫對嗎？
-	# 	form.game_category.choices = [(c.id, c.name) for c in Category.query.order_by('category_id')]	
-	# 	form.game.choices = [(g.id, g.gamename) for g in Game.query.order_by('game_id')] # join Game_Category
-	# 	form.game.choices = [(g.id, g.gamename) for g in Game.query.order_by('category_id')]	
-		
-	# 	submit = SubmitField('Enter Gameroom')
-
 
 class CreateGameForm(FlaskForm):
 	user_id = HiddenField('User id', default=current_user)
@@ -47,7 +29,7 @@ class CreateGameForm(FlaskForm):
 		choices=[('cpp', 'C++'), ('py', 'Python'), ('js', 'Javascript')]
 	)
 	create = SubmitField('Create Game')
-
+	
 class CommentCodeForm(FlaskForm):
 	body = TextAreaField('Comment', validators=[DataRequired(),Length(min=0, max=1024)])
 	user_id = HiddenField('User id', default=current_user)
@@ -66,15 +48,15 @@ class CommentCodeForm(FlaskForm):
 	# 			raise ValidationError('Please use a different username.')
 class AddRoomForm(FlaskForm):
 	game_category = SelectField('Game Category',# ) coerce=int
-		choices=[('1', 'one player'), ('2', 'two players'), ('3','3 players')])
+		choices=[])
 	game =  SelectField('Game',# ) coerce=int
-		choices=[('1', 'maze'), ('2', 'pinpong'), ('3', 'shoot')])
+		choices=[])
 	user_id = HiddenField('User id', default=current_user)
 	privacy =  SelectField('privacy',
 		choices=[('1', 'public'), ('2', 'friends'), ('3', 'invited')])
 	players_status = IntegerField('players_status')
 	submit = SubmitField('Enter Gameroom')
-	
+
 
   #   def validate_gamename(self, room_name):
 		# room = Room.query.filter_by(room_name=room_name.data).first()
