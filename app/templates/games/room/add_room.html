@@ -8,4 +8,24 @@
             {{ wtf.quick_form(form) }}
         </div>
     </div>
+        <script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
+    <script type="text/javascript">
+    $('select#game_category').change(function(event) {
+
+        var selected_category = document.getElementById('game_category').value;
+       
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            console.log("response")
+            
+            // document.getElementById("sandbox_res").innerHTML = this.response.Text;
+            // check code in Docker container first
+            // socket.emit('commit', {code: editor_content, commit_msg:commit_msg, game_id:game_id, glanguage:glanguage, user_id:1});
+        }
+        };
+        xhttp.open("POST", "add_room", true);
+        xhttp.send(selected_category);
+    })
+    </script>
 {% endblock %}

@@ -68,25 +68,34 @@ def create_game():
 
         flash('Congratulations, the game is created!')
         return redirect(url_for('games.add_room', gameObj=game_result))
+
     return render_template('games/create_game.html', title='Register', form=form)
 
 @bp.route('/add_room', methods=['GET','POST'])
 @login_required
 def add_room():
     # 開房間, add log data with game,user
+    
     add_form = AddRoomForm()
-    if add_form.validate_on_submit():
-        if add_form.privacy.data is 3:
-            players = (add_form.players_status.data).split(',')
-        else:
-            game_player_num = Game.query.with_entities(Game.player_num).filter_by(id=add_form.game.data).first()
-            players = game_player_num[0]
-        log = Log(game_id=add_form.game.data,privacy=add_form.privacy.data,status=players)
-        db.session.add(log)
-        # 若是設定 privacy==friends(指定玩家), log.current_users.append((choose_form.player_list).split(','))
-        db.session.commit()
-        return redirect(url_for('games.wait_to_play',log_id=log.id))
-        # return redirect(url_for('games.room_wait',log_id=log.id))
+    if request.method == 'POST':
+        if "text/plain" in request.headers['Content-Type']:
+            print("======")
+
+            return json.dumps({'g_list':'g_list'})
+        else
+            if add_form.validate_on_submit():
+                print("!!!!!!!!")
+                if add_form.privacy.data is 3:
+                    players = (add_form.players_status.data).split(',')
+                else:
+                    game_player_num = Game.query.with_entities(Game.player_num).filter_by(id=add_form.game.data).first()
+                    players = game_player_num[0]
+                log = Log(game_id=add_form.game.data,privacy=add_form.privacy.data,status=players)
+                db.session.add(log)
+                # 若是設定 privacy==friends(指定玩家), log.current_users.append((choose_form.player_list).split(','))
+                db.session.commit()
+                return redirect(url_for('games.wait_to_play',log_id=log.id))
+                # return redirect(url_for('games.room_wait',log_id=log.id))
 
     return render_template('games/room/add_room.html', title='add_room',form=add_form)
 
@@ -200,7 +209,7 @@ def upload_file():
         f = request.files['file']
         f.save(secure_filename(f.filename))
         return 'file uploaded successfully'
-        
+
 def join_log(l):
     game= Game.query.with_entities(Game.player_num,Game.category_id).filter_by(id=l.game_id).first()
     l.current_users.append(current_user) #current_users為該局的玩家名單
