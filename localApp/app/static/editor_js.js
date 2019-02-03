@@ -12,7 +12,7 @@ namespace = '/local';
 socket = io.connect('http://' + document.domain + ':' + web_port );
 
 $(document).ready(function(){
-
+    
     socket.on('lan_list', function(data) {
 //Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension)
         console.log("lan_list:",data)
@@ -101,9 +101,7 @@ function changeMode(){
     // filename = "%s_%s%s"%(log_id,user_id,language_res[1]) 
     
     var mode = document.getElementById('mode').value.split(",");
-    console.log("type:",mode)
-    
-    socket.emit('get_lib', {category_id: mode[1],game_id: mode[3],language_id:mode[5], filename_extension:mode[7], user_id:1});
+    socket.emit('get_lib', {category_id: mode[1],game_id: mode[3],language_id:mode[5], filename_extension:mode[7]});
     editor.session.setMode("ace/mode/"+ mode[6]);
     var contents = {
         c:'main(){}',
@@ -180,6 +178,7 @@ function before_sendback(Data,content_type,post_dest){
             default:
             lan_compiler = "python"
         }
-    content_to_send=JSON.stringify({"encodedData":Data,"commit_msg":commit_msg,"lan_compiler":lan_compiler,'obj':obj,'user_id':1,})
+    var user_id = document.getElementById('user_id').value;
+    content_to_send=JSON.stringify({"encodedData":Data,"commit_msg":commit_msg,"lan_compiler":lan_compiler,'obj':obj,'user_id':user_id})
     send_to_back(content_to_send,content_type,post_dest)
 }

@@ -42,7 +42,7 @@ def index():
         send_to_web("get_gamelist",data_to_send,"g_list",on_g_list)
     except Exception as e:
         print('e',e)
-    return render_template('index.html', title='Home',glist=g_list)
+    return render_template('index.html', title='Home',glist=g_list,user_id=session['user_id'])
 
 @app.route('/library',methods=['GET','POST'])
 def library():
@@ -85,7 +85,7 @@ def commit():
                 print("in callback send_code_ok")
                 # flash to web
                 flash("send_code_ok")
-        data_to_send={'code':code,'user_id':json_obj['user_id'],'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
+        data_to_send={'code':code,'user_id':int(json_obj['user_id']),'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
         send_to_web("commit_code",data_to_send,"commit_res",send_code_ok)
     return "received code"
 
