@@ -4,8 +4,25 @@ from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 import base64,json
 import os
 from os import walk
+from functools import wraps
 socketIO = SocketIO('localhost', 5000, LoggingNamespace)
 app.secret_key = "secretkey"
+
+
+
+def login_required(func):
+    @wraps(func)
+    def wrapper(*args, **kargs):
+        try:
+            if session['user_id']:
+                print("session:",session['user_id'])
+                return func(*args, **kargs)
+        except Exception as e:
+            print("please login first")
+            return redirect(url_for('login'))
+    return wrapper
+
+
 @app.route('/')
 @app.route('/login',methods=['GET','POST'])
 def login():
@@ -31,7 +48,10 @@ def login():
             flash('Your '+canlogin['msg']+' is not found')
             return render_template('login.html')
 
+
+
 @app.route('/index')
+@login_required
 def index():
     global g_list
     try:
@@ -45,6 +65,7 @@ def index():
     return render_template('index.html', title='Home',glist=g_list,user_id=session['user_id'])
 
 @app.route('/library',methods=['GET','POST'])
+@login_required
 def library():
     
     savepath = request.form.get('path',False)
@@ -55,6 +76,7 @@ def library():
 
 
 @app.route('/commit',methods=['GET','POST'])
+@login_required
 def commit():
     # save
     # {"encodedData":encodedData,"commit_msg":commit_msg,"lan_compiler":lan_compiler,'obj':obj,'user_id':1,}
