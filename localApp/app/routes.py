@@ -2,12 +2,11 @@ from app import app
 from flask import render_template,request,redirect, url_for,flash,session
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 import base64,json
-import os
+import os,time
 from os import walk
 from functools import wraps
 socketIO = SocketIO('localhost', 5000, LoggingNamespace)
 app.secret_key = "secretkey"
-
 
 
 def login_required(func):
@@ -76,7 +75,6 @@ def library():
 
 
 @app.route('/commit',methods=['GET','POST'])
-@login_required
 def commit():
     # save
     # {"encodedData":encodedData,"commit_msg":commit_msg,"lan_compiler":lan_compiler,'obj':obj,'user_id':1,}
@@ -101,7 +99,7 @@ def commit():
     compiler = json_obj['lan_compiler']
     
     dirpath=save_path+filename+file_end
-    code_res = test_code(compiler,dirpath)
+    code_res = test_code(compiler,save_path,filename,file_end)
     if code_res[0]:
         def send_code_ok(msg):
                 print("in callback send_code_ok")
@@ -111,11 +109,27 @@ def commit():
         send_to_web("commit_code",data_to_send,"commit_res",send_code_ok)
     return "received code"
 
+def append_lib(save_path,filename,file_end):
+    with open("%s%s%s"%(save_path,filename,file_end), "a") as f:
+        f.write("\nglobal paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
+        with open(save_path+"lib"+file_end) as fin: 
+            print("append lib:",filename)
+            lines = fin.readlines() 
+            for i, line in enumerate(lines):
+                if i >= 0 and i < 6800:
+                    f.write(line)
 
-def test_code(compiler,filetoexec):
+def test_code(compiler,save_path,filename,file_end):
+    filetoexec=save_path+filename+file_end
     from subprocess import Popen, PIPE
+    print("test_code")
+    append_lib(save_path,filename,file_end)
+    
     try:
-        p = Popen(compiler + ' ' + filetoexec,shell=True, stdout=PIPE, stderr=PIPE)
+        print("to exec code")
+        # p_gamemain = Popen(compiler + ' ' +'gamemain'+file_end,shell=True, stdout=PIPE, stderr=PIPE)
+        # time.sleep(3)
+        p = Popen(compiler + ' ' + filetoexec+' 127.0.0.1 0',shell=True, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)
@@ -139,6 +153,7 @@ def save_code(save_path,filename,file_end,code):
         print('mkdir error:',e)
     decode = base64.b64decode(code)
     try:
+        print("save code:",decode)
         with open("%s%s%s"%(save_path,filename,file_end), "wb") as f:
             f.write(decode)
     except Exception as e:

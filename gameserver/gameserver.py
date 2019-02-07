@@ -159,11 +159,11 @@ def save_code(code,log_id,user_id,category_id,game_id,language):
 	with open("%s%s"%(path,filename), "wb") as f:
 		f.write(decoded)
 		f.write(b"\nglobal paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
-		# with open('%s%s%s'%(path,game_lib_id,language)) as fin: # lib應該是改取資料庫, 而非開文件
-		# 	lines = fin.readlines() 
-		# 	for i, line in enumerate(lines):
-		# 		if i >= 0 and i < 6800:
-		# 			f.write(line)
+		with open('%s%s%s'%(path,game_lib_id,language)) as fin: # lib應該是改取資料庫, 而非開文件
+			lines = fin.readlines() 
+			for i, line in enumerate(lines):
+				if i >= 0 and i < 6800:
+					f.write(line)
 	return path,filename,language_res[0]
 
 
