@@ -18,10 +18,11 @@ def game_over(message):
     # msg：tuple([l_score,r_score,gametime])??
     # alert myPopupjs(玩家成績報告) on browser
     # save all report not only record content -- 0122/2019
-    # print('message[msg][score]:',type(json.loads(message['msg']['l_report'])),json.loads(message['msg']['l_report']))
-    l_report=json.loads(message['msg']['l_report'])
-    r_report=json.loads(message['msg']['r_report'])
+    print('message[msg][score]:',message['msg']['l_report']['score'])
+    l_report=message['msg']['l_report']
+    r_report=message['msg']['r_report']
     emit('gameover', {'msg': message['msg'],'log_id':message['log_id']},namespace = '/test',room= message['log_id'])
+    print('l_report[\'score\']:',l_report['score'])
     if l_report['score']>r_report['score']:
         winner=l_report['user_id']
     else:
@@ -117,9 +118,10 @@ def get_lib(msg):
     path = "%s/%s/%s/"%(msg['category_id'],msg['game_id'],msg['language_id'])
     end = msg['filename_extension']
     global library,gamemain
+    print("path:",path)
     with open("gameserver/%slib%s"%(path,end), "r") as f:
         library = base64.b64encode(bytes(f.read(), 'utf8'))
-    with open("gameserver/%sgamemain%s"%(path,end), "r") as f_game:
+    with open("gameserver/%stest_game%s"%(path,end), "r") as f_game:
         gamemain = base64.b64encode(bytes(f_game.read(), 'utf8'))
     emit('library',[path,end,library,gamemain], room=sid)
 
@@ -131,12 +133,14 @@ def check_user(message):
     user = User.query.filter_by(username=message['uname']).first()
     if user is None:
         emit('checked_user',{'checked':False,'msg':'uname'}, room=sid)
+        print("user none")
         
     elif  not user.check_password(message['password']):
         emit('checked_user',{'checked':False,'msg':'pwd'}, room=sid)
-
+        print("false pwd")
     else:
         emit('checked_user',{'checked':True,'user_id':user.id}, room=sid)
+        print("ok user")
 
 
 def set_language_id(filename_extension):
