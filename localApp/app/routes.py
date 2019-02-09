@@ -69,7 +69,7 @@ def library():
     
     savepath = request.form.get('path',False)
     file_end = request.form.get('end',False) 
-    save_code(savepath,"gamemain",file_end,request.form.get('gamemain',False))
+    save_code(savepath,"test_game",file_end,request.form.get('test_game',False))
     save_code(savepath,"lib",file_end,request.form.get('lib',False))
     return "set library ok"
 
@@ -112,6 +112,7 @@ def commit():
 def append_lib(save_path,filename,file_end):
     with open("%s%s%s"%(save_path,filename,file_end), "a") as f:
         f.write("\nglobal paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
+        f.write("\nwho='P1'\n")
         with open(save_path+"lib"+file_end) as fin: 
             print("append lib:",filename)
             lines = fin.readlines() 
@@ -122,14 +123,13 @@ def append_lib(save_path,filename,file_end):
 def test_code(compiler,save_path,filename,file_end):
     filetoexec=save_path+filename+file_end
     from subprocess import Popen, PIPE
-    print("test_code")
+    
     append_lib(save_path,filename,file_end)
     
-    try:
-        print("to exec code")
-        # p_gamemain = Popen(compiler + ' ' +'gamemain'+file_end,shell=True, stdout=PIPE, stderr=PIPE)
-        # time.sleep(3)
-        p = Popen(compiler + ' ' + filetoexec+' 127.0.0.1 0',shell=True, stdout=PIPE, stderr=PIPE)
+    try: 
+        p_gamemain = Popen(compiler+' '+save_path+'test_game'+file_end,shell=True, stdout=PIPE, stderr=PIPE)
+        time.sleep(2)
+        p = Popen(compiler + ' ' + filetoexec+' 0.0.0.0 1',shell=True, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)

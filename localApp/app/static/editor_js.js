@@ -25,7 +25,7 @@ $(document).ready(function(){
                 FD.append("path", data[0]);
                 FD.append("end", data[1]);
                 FD.append("lib", String.fromCharCode.apply(null,  new Uint8Array(data[2])));
-                FD.append("gamemain", String.fromCharCode.apply(null,  new Uint8Array(data[3])));
+                FD.append("test_game", String.fromCharCode.apply(null,  new Uint8Array(data[3])));
 
                 document.getElementById('commit').style.display="block";
                 
@@ -92,7 +92,6 @@ $("#chooseFile").change(function(){
 })
 
 var editor = ace.edit("editor");    
-console.log("editor",editor)
 editor.setTheme("ace/theme/twilight");
 editor.session.setMode("ace/mode/python");
 
@@ -109,17 +108,12 @@ function changeMode(){
 def run():\n\
     global paddle_vel,ball_pos,move_unit\n\
     if (ball_pos[-1][0]-ball_pos[-2][0]) <0: \n\
-        print("ball moves left")\n\
         if (ball_pos[-1][1]-ball_pos[-2][1]) >0:\n\
-            print("ball moves down")\n\
             paddle_vel=move_unit\n\
         elif (ball_pos[-1][1]-ball_pos[-2][1])<0:\n\
-            print("ball moves up")\n\
             paddle_vel=-move_unit\n\
     else: \n\
-        paddle_vel=0\n\
-        print("ball moves right, no need to move paddle1")\n',
-        
+        paddle_vel=0\n',
         sh: '<value attr="something">Write something here...</value>'
     };
     editor.setValue(contents[mode[6]]);
