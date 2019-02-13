@@ -182,3 +182,100 @@ function before_sendback(Data,content_type,post_dest){
     content_to_send=JSON.stringify({"encodedData":Data,"commit_msg":commit_msg,"lan_compiler":lan_compiler,'obj':obj,'user_id':user_id})
     send_to_back(content_to_send,content_type,post_dest)
 }
+
+function myPopupjs(data_msg,log_id){
+
+    console.log('msg type parse:'+typeof(JSON.parse(data_msg.l_report)))
+    var mytable = "<table class=\"popuptext\" ><tbody><tr>" ;
+    var l_data = JSON.parse(data_msg.l_report)
+    var r_data = JSON.parse(data_msg.r_report)
+    
+    mytable += "</tr><tr><td></td><td>SCORE</td></tr><tr>";
+    mytable += "</tr><tr><td></td><td>P1</td><td>P2</td></tr><tr>";
+
+    for(key in l_data){
+        mytable += "</tr><tr><td>" +key+ "</td>"+ "<td>" + l_data[key]+ "</td>"+"<td>" + r_data[key]+ "</td>";
+    }
+    
+    mytable += "</tr><tr><td></td><td><button onclick=\"javascript:location.href='/games/rank_list/"+log_id+"'\" >rank</button></td></tr></tbody></table>";
+    
+    document.getElementById("myPopup_dom").innerHTML = mytable;
+
+}
+
+function leave_room() {
+    socket.emit('left', {}, function() {
+        socket.disconnect();
+
+        // go back to the login page
+        window.location.href = "{{ url_for('games.index') }}";
+    });
+}
+
+
+function ball_update(position){
+    var width = $(".ball").outerWidth();
+    var height = $(".ball").outerHeight();
+    // console.log($(".ball").left())
+    $(".ball").css({"left":position[0]-width/2,"top":position[1]-height/2});
+}
+function left_update(position){
+    var windowHeight = $(window).height();
+    var height = $(".left-goalkeeper").outerHeight();
+    var p_top = position-height/2;
+    var topMax = windowHeight - p_top - 5;
+    if (p_top < 5) p_top = 5;
+    if (p_top > topMax) p_top = topMax;
+    $(".left-goalkeeper").css("top",p_top);	
+}
+function right_update(position){
+    var windowHeight = $(window).height();
+    var height = $(".right-goalkeeper").outerHeight();
+    var p_top = position-height/2;
+    var topMax = windowHeight - height - 5;
+    if (p_top < 5) p_top = 5;
+    if (p_top > topMax) p_top = topMax;
+    $(".right-goalkeeper").css("top",p_top);	
+}
+function score_update(newscores){
+    Scores.setLeft(newscores[0]);
+    Scores.setRight(newscores[1]);
+}
+
+
+var Scores = {
+	// set lsef tscore with animation
+	setLeft: function(n) {
+		n = n || 0;
+        if ($(".left-score span").text() == n) {return;}
+        else{
+            $(".left-score span").text(n);
+        }
+
+	},
+	// set right score with animation
+	setRight: function(n) {
+		n = n || 0;
+		if ($(".right-score span").text() == n) {return;}
+		else {
+            $(".right-score span").text(n);
+        }
+	},
+	// returns left score
+	getLeft: function() {
+		return parseInt($(".left-score span").text());
+	},
+	// returns right score
+	getRight: function() {
+		return parseInt($(".right-score span").text());
+	},
+	// resets the scores [ 0 - 0 ]
+	reset: function() {
+		$(".left-score span").text(0);
+		$(".right-score span").text(0);
+	},
+	// plays the audio
+	play: function() {
+		$("#score")[0].play();
+	}
+}
