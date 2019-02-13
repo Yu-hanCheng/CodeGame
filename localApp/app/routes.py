@@ -1,10 +1,11 @@
-from app import app
+from app import app, socketio
 from flask import render_template,request,redirect, url_for,flash,session
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 import base64,json
 import os,time
 from os import walk
 from functools import wraps
+from flask_socketio import emit
 socketIO = SocketIO('localhost', 5000, LoggingNamespace)
 app.secret_key = "secretkey"
 
@@ -108,6 +109,17 @@ def commit():
         data_to_send={'code':code,'user_id':int(json_obj['user_id']),'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
         send_to_web("commit_code",data_to_send,"commit_res",send_code_ok)
     return "received code"
+
+@socketio.on('conn')
+def connect(message):
+
+    print("conn msg:",message['msg'])
+    socketio.emit('gameobject', {'msg': "gameobj"})
+
+@socketio.on('gameobj')
+def gameobj(message):
+    print("recv socketio msg:",message['msg'])
+    socketio.emit('gameobject', {'msg': "gameobj"})
 
 def append_lib(save_path,filename,file_end):
     with open("%s%s%s"%(save_path,filename,file_end), "a") as f:

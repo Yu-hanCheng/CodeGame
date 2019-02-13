@@ -7,12 +7,13 @@ var socket;
 var left_buff=[],right_buff=[],ball_buff=[];
 var buff_min=20,buff_normal=50;
 web_port=5000
-
+local_port=5500
 namespace = '/local';
 socket = io.connect('http://' + document.domain + ':' + web_port );
-
+socket_local = io.connect('http://' + document.domain + ':' + local_port );
+socket_local.emit('conn', {msg: "conn"});
 $(document).ready(function(){
-    
+
     socket.on('lan_list', function(data) {
 //Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension)
         console.log("lan_list:",data)
@@ -30,6 +31,11 @@ $(document).ready(function(){
                 document.getElementById('commit').style.display="block";
                 
                 send_to_back(FD,"multipart/form-data","library")
+            });
+    socket_local.on('gameobject', function(data) {
+        //Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension)
+                console.log("gameobj:",data)
+                
             });
     $('form#commit').submit(function(event) {
         const editor_content=editor.getValue();

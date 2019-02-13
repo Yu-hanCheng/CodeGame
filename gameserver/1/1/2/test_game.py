@@ -3,8 +3,8 @@ import socket,json,time,sys
 import threading,math, random
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
-socketIO=SocketIO('127.0.0.1', 5000, LoggingNamespace)
-socketIO.emit('info',{'msg':'www','log_id':1})
+socketIO=SocketIO('127.0.0.1', 5500, LoggingNamespace)
+socketIO.emit('gameobj',{'msg':'www'})
 log_id =0
 bind_ip = '0.0.0.0'
 bind_port = 8800
@@ -234,21 +234,6 @@ def handle_client_connection(client_socket):
                         finally:
                             #lock.release()
                             pass
-
-                    # elif msg['who']=='P2':
-                    #     # print('P2 content',msg['content'])
-                    #     paddle2_move=msg['content']
-                    #     p2_rt=time.time()
-                    #     #lock.acquire()
-                    #     try:
-                    #         barrier[1]=1
-                    #         if barrier[0]==1:
-                    #             send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2]),log_id)
-                    #             record_content.append([ball,paddle1,paddle2])
-                    #             game('on_p2')
-                    #     finally:
-                    #         #lock.release()
-                    #         pass
 
             except(RuntimeError, TypeError, NameError)as e: 
                 print('error',e)
