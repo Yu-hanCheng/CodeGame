@@ -89,7 +89,7 @@ def commit():
     save_path = obj[1]+"/"+obj[3]+"/"+obj[5]+"/"
     file_end = obj[7]
     # str(data.get('lan_compiler'))
-    
+
     # set filename
     f = []
     for (dirpath, dirnames, filenames) in walk(save_path):
@@ -110,23 +110,26 @@ def commit():
         send_to_web("commit_code",data_to_send,"commit_res",send_code_ok)
     return "received code"
 
-@socketio.on('conn')
+@socketio.on('conn') #from localbrowser
 def connect(message):
 
-    print("conn msg:",message['msg'])
-    socketio.emit('gameobject', {'msg': "gameobj"})
+    print("conn from browser:",message['msg'])
 
-@socketio.on('gameobj')
-def gameobj(message):
+@socketio.on('game_connect') #from test_game
+def game_connect(message):
+
+    print("conn from test game:",message['msg'])
+
+@socketio.on('info')#from test_game
+def gameobject(message):
     print("recv socketio msg:",message['msg'])
-    socketio.emit('gameobject', {'msg': "gameobj"})
+    socketio.emit('info', {'msg': message['msg']})
 
 def append_lib(save_path,filename,file_end):
     with open("%s%s%s"%(save_path,filename,file_end), "a") as f:
         f.write("\nglobal paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
         f.write("\nwho='P1'\n")
         with open(save_path+"lib"+file_end) as fin: 
-            print("append lib:",filename)
             lines = fin.readlines() 
             for i, line in enumerate(lines):
                 if i >= 0 and i < 6800:

@@ -32,17 +32,25 @@ $(document).ready(function(){
                 
                 send_to_back(FD,"multipart/form-data","library")
             });
-    socket_local.on('gameobject', function(data) {
-        //Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension)
-                console.log("gameobj:",data)
+    socket_local.on('game_connect', function(data) {
+        //tuple([ball,paddle1,paddle2])
+                console.log("game connect:",data)
+            });
+    socket_local.on('info', function(data) {
+        //tuple([ball,paddle1,paddle2])
+                ball_update(data['msg'][0])
+                left_update(data['msg'][1])
+                right_update(data['msg'][2])
                 
             });
     $('form#commit').submit(function(event) {
         const editor_content=editor.getValue();
         var encodedData = window.btoa(editor_content);
-
         before_sendback(encodedData,"application/json","commit")
         // need to send back to localapp to sandbox
+        document.getElementById('section_code').style.display = "none";
+        document.getElementById('section_game').style.display = "block";
+        
     });
 
     $('form#upload_to_server').submit(function(event) {

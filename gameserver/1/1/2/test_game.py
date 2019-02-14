@@ -4,7 +4,7 @@ import threading,math, random
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
 socketIO=SocketIO('127.0.0.1', 5500, LoggingNamespace)
-socketIO.emit('gameobj',{'msg':'www'})
+socketIO.emit('game_connect',{'msg':'test game init'})
 log_id =0
 bind_ip = '0.0.0.0'
 bind_port = 8800
@@ -18,7 +18,7 @@ print('Listening on {}:{}'.format(bind_ip, bind_port))
 
 playerlist = []
 
-WIDTH = 800
+WIDTH = 1000
 HEIGHT = 400
 BALL_RADIUS = 20
 PAD_WIDTH = 8
@@ -201,7 +201,7 @@ def handle_client_connection(client_socket):
                     if barrier[1]==1:
                         print("p1_start")
                         start=1
-                        send_to_webserver('gamemain_connect',identify,log_id)
+                        send_to_webserver('game_connect',identify,log_id)
                         send_to_Players("gameinfo")
                         break
                 finally:
@@ -212,7 +212,7 @@ def handle_client_connection(client_socket):
     while True:
         barrier[1]=1
         print("second loop")
-        
+        time.sleep(0.003)
         if start == 1:
             try:
                 print('current:',threading.current_thread())
