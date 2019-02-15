@@ -12,15 +12,20 @@ namespace = '/test';
 socket = io.connect('http://' + document.domain + ':' + location.port+namespace );
 
 $(document).ready(function(){
-
+    socket.emit('join_room',  {room: $('#join_room').val(),status: $('#room_status').val()});
+    
     socket.on('arrived', function(data) {
         console.log("arrived:",data.msg)
         $('#game_playground').css("display","block");
         $('#page_title').html("Game Start");
     });
     socket.on('enter_room', function(data){
-        console.log("enter rooom", data.msg)
         $('#page_title').html("enter room");
+        document.getElementById('section_code').style.display = "block";
+        timeout_initial()
+    }) 
+    socket.on('wait_room', function(data){
+        $('#page_title').html("wait for others");
     }) 
     socket.on('connect_start', function(data){
         console.log("map Player:", data.msg)        
@@ -62,22 +67,34 @@ $(document).ready(function(){
             socket.emit('text', {msg: text});
         }
     });
-    $('select#mode').change(function(event) {
-        // socket.emit('check_code', {language: (document.getElementById("mode").selectedIndex+1)});
-        document.getElementById('select_code').style.display = "block";
-        console.log('mode',document.getElementById('mode').value);
-    });
-    $('form#select_code').submit(function(event) {
-        // socket.emit('select_code', {room: $('#join_room').val(),code_id: $('#join_code_id').val(), language:document.getElementById("mode").selectedIndex});
-        document.getElementById('select_code').style.display = "none";
-        document.getElementById('section_code').style.display = "none";
-        document.getElementById('section_game').style.display = "block";
-        socket.emit('select_code', {room: $('#join_room').val(),code_id:document.getElementById('mode').value});
-        
-        return false;
-    });
 
 });
+function select_code(){
+    var code_selected = document.getElementById('mode').value;
+    if(code_selected=="code_id"){
+        code_selected=document.getElementById("mode").options[1].value;
+    }
+    document.getElementById('section_code').style.display = "none";
+    document.getElementById('section_game').style.display = "block";
+    socket.emit('select_code', {room: $('#join_room').val(),code_id:code_selected});
+}
+var countdownnumber=5;
+var countdownid,x;
+function timeout_initial(){
+    x=document.getElementById("countdown");
+    x.innerHTML=countdownnumber;
+    countdownnumber--;
+    countdownid=window.setInterval(countdownfunc,1000);
+}
+function countdownfunc(){ 
+x.innerHTML=countdownnumber;
+if (countdownnumber==0){
+    clearInterval(countdownid);
+    $('#page_title').html("send code");
+    select_code()
+}
+countdownnumber--;
+}
 function myPopupjs(data_msg,log_id){
 
     console.log('msg type parse:'+typeof(JSON.parse(data_msg.l_report)))

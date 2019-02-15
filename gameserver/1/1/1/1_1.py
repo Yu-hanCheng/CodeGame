@@ -1,14 +1,13 @@
+# positove down 
 def run():
-    global paddle_vel,ball_pos,move_unit
-    if (ball_pos[-1][0]-ball_pos[-2][0]) <0: 
-        print("ball moves left")
-        if (ball_pos[-1][1]-ball_pos[-2][1]) >0:
-            print("ball moves down")
+    global paddle_vel,paddle_pos,ball_pos,move_unit
+    paddle_vel=0
+    if (ball_pos[-1][1]-ball_pos[-2][1]) >0:
+        if ball_pos[-2][1]>paddle_pos-5:
             paddle_vel=move_unit
-        elif (ball_pos[-1][1]-ball_pos[-2][1])<0:
-            print("ball moves up")
+    elif (ball_pos[-1][1]-ball_pos[-2][1])<0:
+        if ball_pos[-2][1]<paddle_pos+5:
             paddle_vel=-move_unit
     else: 
         paddle_vel=0
-        print("ball moves right, no need to move paddle1")
-
+    

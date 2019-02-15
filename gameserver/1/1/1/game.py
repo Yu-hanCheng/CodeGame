@@ -3,11 +3,18 @@ import socket,json,time,sys
 import threading,math, random
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
-socketIO=SocketIO('18.220.184.154', 5000, LoggingNamespace)
-socketIO.emit('info',{'msg':'www','log_id':1})
-log_id = sys.argv[1]
-bind_ip = '0.0.0.0'
-bind_port = 8800
+# socketIO=SocketIO('18.220.184.154', 5000, LoggingNamespace)
+
+game_exec_ip = sys.argv[1]
+game_exec_port = sys.argv[2]
+log_id = sys.argv[3]
+
+socketIO=SocketIO('127.0.0.1', 5000, LoggingNamespace)
+socketIO.emit('info',{'msg':'gameconnected','log_id':log_id})
+
+
+bind_ip = '127.0.0.1'
+bind_port = int(game_exec_port)+1
 identify={}
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -15,6 +22,8 @@ server.bind((bind_ip, bind_port))
 server.listen(3)  # max backlog of connections
 
 print('Listening on {}:{}'.format(bind_ip, bind_port))
+
+
 
 playerlist = []
 
@@ -210,135 +219,149 @@ def play():
         return
     
 def game(where):
+    global start
     try:
         print(where)
         play()
     except:
         return
-    send_to_Players('gameinfo')
+    if start==1:
+        send_to_Players('gameinfo')
 
 def handle_client_connection(client_socket):
-    
+    # connect就進入 socket就進入 handler了, 為什麼connect後還要recv？ 為了判斷是p1連進來 還是p2
     global paddle1_move,barrier,p1_rt,paddle2_move,p2_rt, playerlist, start,r_report,l_report
-    
-    client_socket.send(b'connectserver')
-    while True:
-        print("first loop")
-        request = client_socket.recv(1024)
-        msg = json.loads(request.decode())
-        if msg['type']=='connect':
-            if msg['who']=='P1':
-                print('P1 in',barrier)
-                p1_rt=time.time()
-                identify['P1']=msg['user_id']
-                #lock.acquire()
-                try:
-                    barrier[0]=1
-                    if barrier[1]==1:
-                        print("p1_start")
-                        start=1
-                        send_to_webserver('gamemain_connect',identify,log_id)
-                        send_to_Players("gameinfo")
-                        break
-                finally:
-                    #lock.release()
-                    pass
+    client_socket.send(json.dumps({'type':"conn",'msg':"connected to server"}).encode())
 
-            elif msg['who']=='P2':
-                print('P2 in',barrier)
-                p2_rt=time.time()
-                identify['P2']=msg['user_id']
-                #lock.acquire()
-                try:
-                    barrier[1]=1
-                    if barrier[0]==1:
-                        print("p2_start")
-                        start=1
-                        send_to_webserver('gamemain_connect',identify,log_id)
-                        send_to_Players("gameinfo")
-                        break
-                finally:
-                    #lock.release()
+    request = client_socket.recv(1024)
+    msg = json.loads(request.decode())
+    print("which subserver:",client_socket.getpeername(), msg)
+    if msg['type']=='connect':
+        if msg['who']=='P1':
+            p1_rt=time.time()
+            identify['P1']=msg['user_id']
+            #lock.acquire()
+            try:
+                barrier[0]=1
+                print('P1 in',barrier)
+                if barrier[1]!=1:
                     pass
+                else:
+                    print("p1_start")
+                    start=1
+                    send_to_webserver('gamemain_connect',identify,log_id)
+                    send_to_Players("gameinfo")
+            finally:
+                pass
+
+        elif msg['who']=='P2':
+            print('P2 in',barrier)
+            p2_rt=time.time()
+            identify['P2']=msg['user_id']
+            #lock.acquire()
+            try:
+                barrier[1]=1
+                if barrier[0]!=1:
+                    pass
+                else:
+                    print("p2_start")
+                    start=1
+                    send_to_webserver('gamemain_connect',identify,log_id)
+                    send_to_Players("gameinfo")
+                    # break
+            finally:
+                #lock.release()
+                pass
                     
     
     while True:
-        print("second loop")
+        # print(client_socket.getpeername(),"communicate loop")
         if start == 1:
             try:
-                print('current:',threading.current_thread())
                 request = client_socket.recv(1024)
-                msg = json.loads(request.decode())
+                print("re:",request)
+                if request==b'':
+                    print("break")
+                    break
+                else:
+                    msg = json.loads(request.decode())
 
-                if msg['type']=='info':
-                    print('info',msg['who'],msg['content'])#paddle_vel
-                    if msg['who']=='P1':
-                        paddle1_move=msg['content']
-                        p1_rt=time.time()
-                        #lock.acquire()
-                        try:
-                            barrier[0]=1
-                            if barrier[1]==1:
-                                send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2]),log_id)
-                                record_content.append([ball,paddle1,paddle2])
-                                game('on_p1')
-                        finally:
-                            #lock.release()
-                            pass
+                    if msg['type']=='info':
+                        print('info',msg['who'],msg['content'])#paddle_vel
+                        if msg['who']=='P1':
+                            paddle1_move=msg['content']
+                            p1_rt=time.time()
+                            #lock.acquire()
+                            try:
+                                barrier[0]=1
+                                if barrier[1]==1:
+                                    send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2]),log_id)
+                                    record_content.append([ball,paddle1,paddle2])
+                                    game('on_p1')
+                            finally:
+                                #lock.release()
+                                pass
 
-                    elif msg['who']=='P2':
-                        # print('P2 content',msg['content'])
-                        paddle2_move=msg['content']
-                        p2_rt=time.time()
-                        #lock.acquire()
-                        try:
-                            barrier[1]=1
-                            if barrier[0]==1:
-                                send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2]),log_id)
-                                record_content.append([ball,paddle1,paddle2])
-                                game('on_p2')
-                        finally:
-                            #lock.release()
-                            pass
+                        elif msg['who']=='P2':
+                            # print('P2 content',msg['content'])
+                            paddle2_move=msg['content']
+                            p2_rt=time.time()
+                            #lock.acquire()
+                            try:
+                                barrier[1]=1
+                                if barrier[0]==1:
+                                    send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2]),log_id)
+                                    record_content.append([ball,paddle1,paddle2])
+                                    game('on_p2')
+                            finally:
+                                #lock.release()
+                                pass
 
-                elif msg['type']=='score':
-                    print("score")
-                    if msg['who']=='P1':
-                        l_report = msg['content']
-                        print('l_report',l_report)
-                        if r_report!="":
-                            print("send report")
-                            send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
-                            send_to_gameserver(score)
-                            start=0
-                            break
-
-                    elif msg['who']=='P2':
-                        r_report = msg['content']
-                        print('r_report',r_report)
-                        if l_report!="":
-                            print("ok send report")
-                            send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
-                            send_to_gameserver(score)
-                            start=0
-                            break
-
-                elif msg['type']=='disconnect':
-                    if msg['who']=='P1':
-                        print('P1 leave',cnt)
-                        # client_socket.close()
-                    elif msg['who']=='P2':
-                        print('P2 leave',cnt)
-                        # client_socket.close()
             except(RuntimeError, TypeError, NameError)as e: 
                 print('error',e)
                 sys.exit()
         else:
-            print("game not start, or had over")
-    
+            try:
+                request = client_socket.recv(1024)
+                if request :
+                    msg = json.loads(request.decode())
+                    if msg['type']=='score':
+                        client_socket.send(json.dumps({'type':"score_recved"}).encode())
+                        if msg['who']=='P1':
+                            l_report = msg['content']
+                            print('l_report',l_report)
+                            if r_report!="":
+                                send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
+                                send_to_gameserver(score)
+                                start=0
 
-        
-        # client_socket.close()
+                                game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+                                game_exec_address = (game_exec_ip, game_exec_port)
+                                game_exec=game_exec_client.connect(game_exec_address)
+                                game_exec_client.send(json.dumps({'type':'over'}).encode())
+                                break
+
+                        elif msg['who']=='P2':
+                            r_report = msg['content']
+                            print('r_report',r_report)
+                            if l_report!="":
+                                print("ok send report")
+                                send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
+                                send_to_gameserver(score)
+                                start=0
+                                break
+
+                    elif msg['type']=='disconnect':
+                        if msg['who']=='P1':
+                            print('P1 leave',cnt)
+                            # client_socket.close()
+                        elif msg['who']=='P2':
+                            print('P2 leave',cnt)
+                            # client_socket.close()
+            except(RuntimeError, TypeError, NameError)as e: 
+                print('error',e)
+                sys.exit()
+            print("game not start, or had over")
 
 def serve_app():
     while True:
@@ -402,7 +425,7 @@ if __name__ == '__main__':
     wst = threading.Thread(target=serve_app)
     wst.daemon = True
     wst.start()
-    # wst.join()
+    wst.join()
     # timeout= threading.Thread(target=timeout_check)
     # timeout.start()
     StartTime=time.time()
@@ -425,7 +448,7 @@ class setInterval :
     def cancel(self) :
         self.stopEvent.set()
 
-# # start action every 0.6s
+# start action every 0.6s
 inter=setInterval(0.03,timeout_check)
 print('just after setInterval -> time : {:.1f}s'.format(time.time()-StartTime))
 

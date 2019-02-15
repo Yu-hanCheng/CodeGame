@@ -28,7 +28,7 @@ $(document).ready(function(){
                 FD.append("lib", String.fromCharCode.apply(null,  new Uint8Array(data[2])));
                 FD.append("test_game", String.fromCharCode.apply(null,  new Uint8Array(data[3])));
 
-                document.getElementById('commit').style.display="block";
+                document.getElementById('section_code').style.display="block";
                 
                 send_to_back(FD,"multipart/form-data","library")
             });
@@ -43,15 +43,22 @@ $(document).ready(function(){
                 right_update(data['msg'][2])
                 
             });
-    $('form#commit').submit(function(event) {
-        const editor_content=editor.getValue();
-        var encodedData = window.btoa(editor_content);
-        before_sendback(encodedData,"application/json","commit")
-        // need to send back to localapp to sandbox
-        document.getElementById('section_code').style.display = "none";
-        document.getElementById('section_game').style.display = "block";
-        
-    });
+    socket_local.on('code_ok', function(data) {
+            function popup_box() {
+                var to_upload;
+                if (confirm("upload the code to Web!")) {
+                    to_upload = 1;
+                } else {
+                    to_upload = 0;
+                }
+                return to_upload
+              }
+            if (popup_box()){
+                socket.emit('commit_code',data);
+                console.log("emit upload_code_to_web")
+                // send_to_back(data['msg'],"text/plain","upload_toweb")
+            }
+            });
 
     $('form#upload_to_server').submit(function(event) {
         
@@ -67,6 +74,14 @@ $(document).ready(function(){
 
 });
 
+function commit_code(){
+    const editor_content=editor.getValue();
+    var encodedData = window.btoa(editor_content);
+    before_sendback(encodedData,"application/json","commit")
+    // need to send back to localapp to sandbox
+    document.getElementById('section_code').style.display = "none";
+    document.getElementById('section_game').style.display = "block";
+}
 function previewFiles(files) {
     if (files && files.length >= 1) {
         $.map(files, file => {
@@ -120,13 +135,19 @@ function changeMode(){
         c:'main(){}',
         python: '\
 def run():\n\
-    global paddle_vel,ball_pos,move_unit\n\
-    if (ball_pos[-1][0]-ball_pos[-2][0]) <0: \n\
-        if (ball_pos[-1][1]-ball_pos[-2][1]) >0:\n\
-            paddle_vel=move_unit\n\
-        elif (ball_pos[-1][1]-ball_pos[-2][1])<0:\n\
-            paddle_vel=-move_unit\n\
-    else: \n\
+    global paddle_vel,paddle_pos,ball_pos,move_unit\n\
+    paddle_vel=0\n\
+    if (ball_pos[-1][1]-ball_pos[-2][1]) >0:\n\
+        if ball_pos[-1][1]-paddle_pos<8:\n\
+            paddle_vel=0\n\
+        elif ball_pos[-1][1]-paddle_pos>8:\n\
+            paddle_vel=move_unit*2\n\
+    elif (ball_pos[-1][1]-ball_pos[-2][1])<0:\n\
+        if ball_pos[-1][1]-paddle_pos>-8:\n\
+            paddle_vel=0\n\
+        elif ball_pos[-1][1]-paddle_pos<-8:\n\
+            paddle_vel=-move_unit*2\n\
+    else:\n\
         paddle_vel=0\n',
         sh: '<value attr="something">Write something here...</value>'
     };

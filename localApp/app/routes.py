@@ -9,7 +9,6 @@ from flask_socketio import emit
 socketIO = SocketIO('localhost', 5000, LoggingNamespace)
 app.secret_key = "secretkey"
 
-
 def login_required(func):
     @wraps(func)
     def wrapper(*args, **kargs):
@@ -96,23 +95,21 @@ def commit():
         f.extend(filenames)
         break
     filename=str(len(f)-2)#['.DS_Store', 'gamemain.py', 'lib.py']
+    code_path=save_path+filename+file_end
+   
     save_code(save_path,filename,file_end,code)
     compiler = json_obj['lan_compiler']
+    code_res = test_code(compiler,save_path,filename,file_end) # run code and display on browser
     
-    dirpath=save_path+filename+file_end
-    code_res = test_code(compiler,save_path,filename,file_end)
     if code_res[0]:
-        def send_code_ok(msg):
-                print("in callback send_code_ok")
-                # flash to web
-                flash("send_code_ok")
         data_to_send={'code':code,'user_id':int(json_obj['user_id']),'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
-        send_to_web("commit_code",data_to_send,"commit_res",send_code_ok)
+        socketio.emit('code_ok',data_to_send)
+    else:
+        flash("Can't upload")
     return "received code"
 
 @socketio.on('conn') #from localbrowser
 def connect(message):
-
     print("conn from browser:",message['msg'])
 
 @socketio.on('game_connect') #from test_game
@@ -125,9 +122,17 @@ def gameobject(message):
     print("recv socketio msg:",message['msg'])
     socketio.emit('info', {'msg': message['msg']})
 
+
+
 def append_lib(save_path,filename,file_end):
-    with open("%s%s%s"%(save_path,filename,file_end), "a") as f:
-        f.write("\nglobal paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
+    with open("%s%s%s"%(save_path,'test_usercode',file_end), "w") as f:
+        
+        with open(save_path+filename+file_end) as f_usercode: 
+            lines = f_usercode.readlines() 
+            for i, line in enumerate(lines):
+                if i >= 0 and i < 6800:
+                    f.write(line)
+        f.write("\nglobal paddle_vel,ball_pos,move_unit\npaddle_pos=0\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")
         f.write("\nwho='P1'\n")
         with open(save_path+"lib"+file_end) as fin: 
             lines = fin.readlines() 
@@ -144,19 +149,25 @@ def test_code(compiler,save_path,filename,file_end):
     try: 
         p_gamemain = Popen(compiler+' '+save_path+'test_game'+file_end,shell=True, stdout=PIPE, stderr=PIPE)
         time.sleep(2)
-        p = Popen(compiler + ' ' + filetoexec+' 0.0.0.0 1',shell=True, stdout=PIPE, stderr=PIPE)
+        p = Popen(compiler + ' '+save_path + 'test_usercode'+file_end+' 0.0.0.0 1',shell=True, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)
+            p_gamemain.kill()
+            p.kill()
             flash("oops, there is an error--",stderr)
             return [0,stderr]
         else:
             print('stdout:', stdout)
+            p_gamemain.kill()
+            p.kill()
             flash("great, execuse successfully:",stdout)
             # browser
-            
+
             return [1,stdout]
     except Exception as e:
+        p_gamemain.kill()
+        p.kill()
         print('e: ',e)
         return [-1,e]
 
@@ -168,7 +179,6 @@ def save_code(save_path,filename,file_end,code):
         print('mkdir error:',e)
     decode = base64.b64decode(code)
     try:
-        print("save code:",decode)
         with open("%s%s%s"%(save_path,filename,file_end), "wb") as f:
             f.write(decode)
     except Exception as e:

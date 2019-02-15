@@ -71,7 +71,6 @@ def push_to_room_list(user_code_str):
 	else:
 		# lock
 		rooms = room_list.get_list()
-		print(len(rooms))
 		for i in range(0,len(rooms)):
 			if user_code_str[0]==rooms[i][0]: #find same room
 				# 應該不會發生同一位玩家重複傳訊息來,所以直接-1不用check(前端的join btn按完就會鎖)
@@ -134,9 +133,9 @@ def sandbox(compiler,path_, filename):
 		return e
 def set_language(language):
 	compiler = {
-		"0": ["gcc",".c"],
-		"1": ["python3",".py"],
-		"2": ["sh",".sh"]
+		"gcc": [1,".c"],
+		"python": [2,".py"],
+		"sh": [3,".sh"]
 	}
 	language_obj = compiler.get(language, "Invalid language ID")
 	
@@ -149,48 +148,35 @@ def save_code(code,log_id,user_id,category_id,game_id,language):
 
 	language_res = set_language(str(language))
 	path = "%s/%s/%s/"%(category_id,game_id,language)
-	filename = "%s_%s%s"%(log_id,user_id,language_res[1])
+	filename = "%s_%s"%(log_id,user_id)
 	try:
 		os.makedirs( path )
 	except:
 		pass
-	decoded = base64.b64decode(code.split(",")[1])
+	decoded = base64.b64decode(code)
 		
-	with open("%s%s"%(path,filename), "wb") as f:
+	with open("%s%s%s"%(path,filename,language_res[1]), "wb") as f:
 		f.write(decoded)
-		f.write(b"\nglobal paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
-		with open('%s%s%s'%(path,game_lib_id,language)) as fin: # lib應該是改取資料庫, 而非開文件
-			lines = fin.readlines() 
-			for i, line in enumerate(lines):
-				if i >= 0 and i < 6800:
-					f.write(line)
-	return path,filename,language_res[0]
+	return path,filename,language_res[1],language
 
 
 
 def code_address(server,data):
 	# 先經過 sandbox, 將結果回傳給user, (確定要使用)再排進 room_list
 	global webserver_id,room_list
-	
-	path, filename, compiler = save_code(data['code'],data['log_id'],data['user_id'],data['category_id'],data['game_id'],data['language'])
-	# filename include .xxx
-	test_result = sandbox(compiler,path,filename)
-	if test_result[0]: # 1: ok / 0: error 
-		msg=test_result[1].decode('utf-8')
-		
-		log_id_index = push_to_room_list([data['log_id'],data['user_id'],\
-		data['category_id'],compiler,path,filename,data['player_num']]) # player_list must put on last
-		if log_id_index >= 0: # arrived 
 
-			popped_codes_list = pop_code_in_room(log_id_index, data['log_id'])
-			print("popped_codes_list:",popped_codes_list)
-			push_to_serv_list(popped_codes_list)
-		else:
-			msg +="wait for other players..." 
-			
+	path, filename, fileEnd, compiler = save_code(data['code'],data['log_id'],data['user_id'],data['category_id'],data['game_id'],data['language'])
+
+	msg=""	
+	log_id_index = push_to_room_list([data['log_id'],data['user_id'],\
+	data['category_id'],compiler,path,filename,fileEnd,data['player_num']]) # player_list must put on last
+	if log_id_index >= 0: # arrived 
+		popped_codes_list = pop_code_in_room(log_id_index, data['log_id'])
+		print("popped_codes_list:",popped_codes_list)
+		push_to_serv_list(popped_codes_list) 
 	else:
-		msg ="sandbox error output: "+ test_result[1].decode("utf-8")
-		
+		msg +="wait for other players..." 
+
 	server.send_message(webserver_id,msg) # 回傳程式碼處理結果給user
 
 def message_received(client, server, message):
@@ -199,8 +185,6 @@ def message_received(client, server, message):
 	# 2. gamemain: 某 room遊戲結束, 通知 game_exec kill 該 room的 dc container, 並執行< movetoserv_q >;
 	# 續上：同時傳遞遊戲結果的訊息給 webserver (games/event.py 接收)
 
-	#msg include code room logId language(compiler, Filename Extension)
-	print("Client(%d) said: %s" % (client['id'], message))
 	global game_exec_id
 	data = json.loads(message)
 	

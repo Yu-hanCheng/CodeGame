@@ -6,15 +6,6 @@ from flask_login import current_user
 from app.games import current_game,current_log,current_code
 
 
-class ChooseGameForm(FlaskForm):
-	game_category = SelectField('Game Category',# ) coerce=int
-		choices=[] )
-	game =  SelectField('Game',# ) coerce=int
-		choices=[])
-	user_id = HiddenField('User id', default=current_user)
-	player_list = TextAreaField('player_list')
-	start = SubmitField('choose Game')
-
 class CreateGameForm(FlaskForm):
 	user_id = HiddenField('User id', default=current_user)
 	gamename = TextAreaField('gamename', validators=[DataRequired()])
@@ -47,13 +38,10 @@ class CommentCodeForm(FlaskForm):
 	# 		if user is not None:
 	# 			raise ValidationError('Please use a different username.')
 class AddRoomForm(FlaskForm):
-	game_category = SelectField('Game Category',# ) coerce=int
-		choices=[])
-	game =  SelectField('Game',# ) coerce=int
-		choices=[])
+	game_category = SelectField('Game Category',coerce=int,choices=[])
+	game =  SelectField('Game',coerce=int,choices=[])
 	user_id = HiddenField('User id', default=current_user)
-	privacy =  SelectField('privacy',
-		choices=[('1', 'public'), ('2', 'friends'), ('3', 'invited')])
+	privacy =  SelectField('privacy',choices=[('1', 'public'), ('2', 'friends'), ('3', 'invited')])
 	players_status = IntegerField('players_status')
 	submit = SubmitField('Enter Gameroom')
 

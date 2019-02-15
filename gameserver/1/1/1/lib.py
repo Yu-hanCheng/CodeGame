@@ -1,23 +1,13 @@
 #!/usr/bin/python
 import socket , time, json,sys
-
-
-address = (sys.argv[1], 8800)  # 127.0.0.1
+address = (sys.argv[1], 5502)
 user_id = sys.argv[2]
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
-
 s_sucess=""
 s_sucess=s.connect(address)
 
      
 def gameover():
-    # time.sleep(8)
-    # pass
-    # msg_leave={'type':'disconnect','who':who,'content':'0'} 
-    # str_leave = json.dumps(msg_leave)
-    # binary_leave =str_leave.encode()
-    # s.send(binary_leave) 
-    # s.close()  
     sys.exit()
 
 print(s_sucess)
@@ -28,17 +18,15 @@ binary =str_.encode()
 s.send(binary)
 
 
-ball_pos=[[0,0],[0,0],[0,0]]
-paddle1_pos=[0] # paddle only Y axis
-move_unit=3
-paddle_vel=0
-
 def on_gameinfo(message):
-    global paddle_vel
+    global paddle_vel,paddle_pos
     tuple_msg=message['content']
-    
-    # # tuple([ball,paddle1[1],paddle2[1],cnt])
     cnt = tuple_msg[-1]
+    print("paddle_pos:",tuple_msg[1])
+    if who=="P1":
+        paddle_pos=tuple_msg[1]
+    else:
+        paddle_pos=tuple_msg[2]
     print("ball pos:",tuple_msg[0],cnt)
     if cnt>2:
         del ball_pos[0]
@@ -68,27 +56,41 @@ def score(msg_from_gamemain):# CPU, MEM Utility
         score = msg_from_gamemain['score'][1]
      
     communicate('score',json.dumps({'user_id':user_id,'score':score,'cpu':'50','mem':'30','time':'554400'}))#json.dumps({'cpu':'50','mem':'30','time':'554400'})
-    gameover()
-  
-
+    
+def recvall(sock):
+    global cnt
+    BUFF_SIZE = 2048 # 4 KiB
+    data = b''
+    while True:
+        part = sock.recv(BUFF_SIZE)
+        cnt+=1
+        data += part
+        if len(part) < BUFF_SIZE:
+            # either 0 or end of data
+            break
+    return data  
 
 cnt =6000
 while cnt>0:
-    data = s.recv(2048)
+    data = recvall(s)
     if data==b"":
         print("no")
-        continue
+        gameover()
     else:
-        msg_recv = json.loads(data.decode())
-        # 判斷 msg 類型, gameinfo or gameover
-        # msg={'type':'info','content':tuple([ball,paddle1[1],paddle2[1],cnt])}
-        # msg={'type':'over','content':"www"}
-        if msg_recv['type']=='info':
-            on_gameinfo(msg_recv)
-        elif msg_recv['type']=='over':
-            score(msg_recv['content'])
-        else:
-            pass
+        try:
+            msg_recv = json.loads(data.decode())
+            if msg_recv['type']=='info':
+                on_gameinfo(msg_recv)
+            elif msg_recv['type']=='over':
+                print("over")
+                score(msg_recv['content'])
+            elif msg_recv['type']=='score_recved':
+                gameover()
+            else:
+                pass
+        except(RuntimeError, TypeError, NameError) as e:
+            print('e:',e)
+            print("except data:",data)
     cnt-=1
 
 msg_leave={'type':'disconnect','who':who,'content':'0'} 
