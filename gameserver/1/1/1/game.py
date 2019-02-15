@@ -221,7 +221,7 @@ def handle_client_connection(client_socket):
     
     global paddle1_move,barrier,p1_rt,paddle2_move,p2_rt, playerlist, start,r_report,l_report
     
-    client_socket.send(b'connectserver')
+    client_socket.send(json.dumps({'type':"conn",'msg':"connected to server"}).encode())
     while True:
         print("first loop")
         request = client_socket.recv(1024)
