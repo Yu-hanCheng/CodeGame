@@ -3,11 +3,12 @@ import socket,json,time,sys
 import threading,math, random
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
-socketIO=SocketIO('18.220.184.154', 5000, LoggingNamespace)
+# socketIO=SocketIO('18.220.184.154', 5000, LoggingNamespace)
+socketIO=SocketIO('127.0.0.1', 5000, LoggingNamespace)
 socketIO.emit('info',{'msg':'www','log_id':1})
 log_id = sys.argv[1]
 bind_ip = '0.0.0.0'
-bind_port = 8800
+bind_port = 5502
 identify={}
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

@@ -1,23 +1,13 @@
 #!/usr/bin/python
 import socket , time, json,sys
-
-
-address = (sys.argv[1], 8800)  # 127.0.0.1
+address = (sys.argv[1], 5502)
 user_id = sys.argv[2]
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
-
 s_sucess=""
 s_sucess=s.connect(address)
 
      
 def gameover():
-    # time.sleep(8)
-    # pass
-    # msg_leave={'type':'disconnect','who':who,'content':'0'} 
-    # str_leave = json.dumps(msg_leave)
-    # binary_leave =str_leave.encode()
-    # s.send(binary_leave) 
-    # s.close()  
     sys.exit()
 
 print(s_sucess)
@@ -36,8 +26,6 @@ paddle_vel=0
 def on_gameinfo(message):
     global paddle_vel
     tuple_msg=message['content']
-    
-    # # tuple([ball,paddle1[1],paddle2[1],cnt])
     cnt = tuple_msg[-1]
     print("ball pos:",tuple_msg[0],cnt)
     if cnt>2:
@@ -80,9 +68,6 @@ while cnt>0:
         continue
     else:
         msg_recv = json.loads(data.decode())
-        # 判斷 msg 類型, gameinfo or gameover
-        # msg={'type':'info','content':tuple([ball,paddle1[1],paddle2[1],cnt])}
-        # msg={'type':'over','content':"www"}
         if msg_recv['type']=='info':
             on_gameinfo(msg_recv)
         elif msg_recv['type']=='over':
