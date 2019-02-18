@@ -46,7 +46,7 @@ def game_over(message):
 def test_connect(message):
     # 接收來自 gamemain的訊息並再傳至browser
     # msg={'type':type_class,'who':who,'content':content, 'cnt':cnt} -- 0122/2019
-    print(message['log_id'])
+    print("from game:",message['msg'])
     emit('gameobject', {'msg': message['msg']},namespace = '/test',room= message['log_id'])#,room= message['log_id']
 
 @socketio.on('select_code' ,namespace = '/test')

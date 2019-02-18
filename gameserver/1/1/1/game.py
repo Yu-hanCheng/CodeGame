@@ -219,55 +219,55 @@ def game(where):
     send_to_Players('gameinfo')
 
 def handle_client_connection(client_socket):
-    
+    # connect就進入 socket就進入 handler了, 為什麼connect後還要recv？ 為了判斷是p1連進來 還是p2
     global paddle1_move,barrier,p1_rt,paddle2_move,p2_rt, playerlist, start,r_report,l_report
-    
     client_socket.send(json.dumps({'type':"conn",'msg':"connected to server"}).encode())
-    while True:
-        print("first loop")
-        request = client_socket.recv(1024)
-        msg = json.loads(request.decode())
-        if msg['type']=='connect':
-            if msg['who']=='P1':
-                print('P1 in',barrier)
-                p1_rt=time.time()
-                identify['P1']=msg['user_id']
-                #lock.acquire()
-                try:
-                    barrier[0]=1
-                    if barrier[1]==1:
-                        print("p1_start")
-                        start=1
-                        send_to_webserver('gamemain_connect',identify,log_id)
-                        send_to_Players("gameinfo")
-                        break
-                finally:
-                    #lock.release()
-                    pass
 
-            elif msg['who']=='P2':
-                print('P2 in',barrier)
-                p2_rt=time.time()
-                identify['P2']=msg['user_id']
-                #lock.acquire()
-                try:
-                    barrier[1]=1
-                    if barrier[0]==1:
-                        print("p2_start")
-                        start=1
-                        send_to_webserver('gamemain_connect',identify,log_id)
-                        send_to_Players("gameinfo")
-                        break
-                finally:
-                    #lock.release()
+    request = client_socket.recv(1024)
+    msg = json.loads(request.decode())
+    print("which subserver:",client_socket.getpeername(), msg)
+    if msg['type']=='connect':
+        if msg['who']=='P1':
+            p1_rt=time.time()
+            identify['P1']=msg['user_id']
+            #lock.acquire()
+            try:
+                barrier[0]=1
+                print('P1 in',barrier)
+                if barrier[1]!=1:
                     pass
+                else:
+                    print("p1_start")
+                    start=1
+                    send_to_webserver('gamemain_connect',identify,log_id)
+                    send_to_Players("gameinfo")
+            finally:
+                pass
+
+        elif msg['who']=='P2':
+            print('P2 in',barrier)
+            p2_rt=time.time()
+            identify['P2']=msg['user_id']
+            #lock.acquire()
+            try:
+                barrier[1]=1
+                if barrier[0]!=1:
+                    pass
+                else:
+                    print("p2_start")
+                    start=1
+                    send_to_webserver('gamemain_connect',identify,log_id)
+                    send_to_Players("gameinfo")
+                    # break
+            finally:
+                #lock.release()
+                pass
                     
     
     while True:
-        print("second loop")
+        print(client_socket.getpeername(),"communicate loop")
         if start == 1:
             try:
-                print('current:',threading.current_thread())
                 request = client_socket.recv(1024)
                 msg = json.loads(request.decode())
 
@@ -336,9 +336,7 @@ def handle_client_connection(client_socket):
                 sys.exit()
         else:
             print("game not start, or had over")
-    
-
-        
+            time.sleep(1)
         # client_socket.close()
 
 def serve_app():
@@ -403,7 +401,7 @@ if __name__ == '__main__':
     wst = threading.Thread(target=serve_app)
     wst.daemon = True
     wst.start()
-    # wst.join()
+    wst.join()
     # timeout= threading.Thread(target=timeout_check)
     # timeout.start()
     StartTime=time.time()
@@ -426,7 +424,7 @@ class setInterval :
     def cancel(self) :
         self.stopEvent.set()
 
-# # start action every 0.6s
+# start action every 0.6s
 inter=setInterval(0.03,timeout_check)
 print('just after setInterval -> time : {:.1f}s'.format(time.time()-StartTime))
 
