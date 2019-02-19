@@ -4,11 +4,17 @@ import threading,math, random
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
 # socketIO=SocketIO('18.220.184.154', 5000, LoggingNamespace)
+
+game_exec_ip = sys.argv[1]
+game_exec_port = sys.argv[2]
+log_id = sys.argv[3]
+
 socketIO=SocketIO('127.0.0.1', 5000, LoggingNamespace)
-socketIO.emit('info',{'msg':'www','log_id':1})
-log_id = sys.argv[1]
-bind_ip = '0.0.0.0'
-bind_port = 5502
+socketIO.emit('info',{'msg':'gameconnected','log_id':log_id})
+
+
+bind_ip = '127.0.0.1'
+bind_port = int(game_exec_port)+1
 identify={}
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -16,6 +22,8 @@ server.bind((bind_ip, bind_port))
 server.listen(3)  # max backlog of connections
 
 print('Listening on {}:{}'.format(bind_ip, bind_port))
+
+
 
 playerlist = []
 
@@ -312,6 +320,11 @@ def handle_client_connection(client_socket):
                             send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
                             send_to_gameserver(score)
                             start=0
+
+                            game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+                            game_exec_address = (game_exec_ip, game_exec_port)
+                            game_exec=game_exec_client.connect(game_exec_address)
+                            game_exec_client.send(json.dumps({'type':'over'}).encode())
                             break
 
                     elif msg['who']=='P2':
