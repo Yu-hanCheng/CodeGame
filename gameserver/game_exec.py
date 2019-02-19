@@ -5,7 +5,8 @@
 
 from websocket import create_connection
 import json, sys,os,time, socket, threading
-import subprocess 
+import subprocess,base64
+from subprocess import PIPE,Popen
 subserverlist=[]
 
 bind_ip = '127.0.0.1'
@@ -35,7 +36,7 @@ def ws_msg_handler(msg):
     for i,element in enumerate(msg_converted): # msg is elephant
         with open(""+element[4]+element[5]+element[6],'a') as user_file:
             user_file.write("\nwho='P"+str(i+1)+"'\n")
-            with open(path+'lib'+element[6]) as fin: 
+            with open(element[4]+'lib'+element[6]) as fin: 
                 lines = fin.readlines() 
                 for j, line in enumerate(lines):
                     if j >= 0 and j < 6800:
@@ -48,9 +49,9 @@ def ws_msg_handler(msg):
     
 
 def start_game(log_id,path,compiler,fileEnd):
-    print("start_game")
+    
     try:
-        p = Popen(''+compiler + ' ' + path+'game' + fileEnd + ' ' + str(log_id) + ' ',shell=True, stdout=PIPE, stderr=PIPE)
+        p = Popen(''+compiler + ' ' + path+'game' + fileEnd + ' ' + bind_ip+' '+ str(bind_port)+' '+str(log_id) + ' ',shell=True, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)
