@@ -56,8 +56,8 @@ def start_game(log_id,path,compiler,fileEnd):
             print('stderr:', stderr)
         else:
             print('stdout:', stdout)
-	except Exception as e:
-		print('Popen error: ',e)
+    except Exception as e:
+        print('Popen error: ',e)
 
 
 def tcp_send_to_subserver(subserver_cnt,log_id,user_id,compiler, fileEnd, code):
@@ -76,18 +76,21 @@ def tcp_serve_for_sub():
             args=(client_sock,)  # without comma you'd get a... TypeError: handle_client_connection() argument after * must be a sequence, not _socketobject
         )
         client_handler.start()
-
+subserver_cnt=0
 def tcp_client_handle(client_socket):
-    ws_recv_from_gameserv()
-    while True:
-        request = client_socket.recv(1024)
-        msg = json.loads(request.decode())
-        if msg['type']=='recved':
-            pass
-        elif msg['type']=='over':
-            ws_recv_from_gameserv()
-        else:
-            pass
+    global subserver_cnt
+    subserver_cnt+=1
+    if subserver_cnt==2: # default setting: there are two subservers
+        ws_recv_from_gameserv()
+        while True:
+            request = client_socket.recv(1024)
+            msg = json.loads(request.decode())
+            if msg['type']=='recved':
+                pass
+            elif msg['type']=='over':
+                ws_recv_from_gameserv()
+            else:
+                pass
 
 if __name__ == '__main__':
     wst = threading.Thread(target=tcp_serve_for_sub)
