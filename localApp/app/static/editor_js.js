@@ -43,6 +43,22 @@ $(document).ready(function(){
                 right_update(data['msg'][2])
                 
             });
+    socket_local.on('code_ok', function(data) {
+            function popup_box() {
+                var to_upload;
+                if (confirm("upload the code to Web!")) {
+                    to_upload = 1;
+                } else {
+                    to_upload = 0;
+                }
+                return to_upload
+              }
+            if (popup_box()){
+                socket.emit('commit_code',data);
+                console.log("emit upload_code_to_web")
+                // send_to_back(data['msg'],"text/plain","upload_toweb")
+            }
+            });
     $('form#commit').submit(function(event) {
         const editor_content=editor.getValue();
         var encodedData = window.btoa(editor_content);

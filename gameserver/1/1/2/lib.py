@@ -56,7 +56,6 @@ def communicate(type_class,content):
     str_ = json.dumps(msg)
     binary =str_.encode()
     s.send(binary)
-    time.sleep(0.015) 
 
 def score(msg_from_gamemain):# CPU, MEM Utility
     if who == 'P1':
