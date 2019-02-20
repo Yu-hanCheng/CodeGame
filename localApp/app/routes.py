@@ -126,7 +126,13 @@ def gameobject(message):
     socketio.emit('info', {'msg': message['msg']})
 
 def append_lib(save_path,filename,file_end):
-    with open("%s%s%s"%(save_path,filename,file_end), "a") as f:
+    with open("%s%s%s"%(save_path,'test_usercode',file_end), "w") as f:
+        
+        with open(save_path+filename+file_end) as f_usercode: 
+            lines = f_usercode.readlines() 
+            for i, line in enumerate(lines):
+                if i >= 0 and i < 6800:
+                    f.write(line)
         f.write("\nglobal paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
         f.write("\nwho='P1'\n")
         with open(save_path+"lib"+file_end) as fin: 
@@ -144,7 +150,7 @@ def test_code(compiler,save_path,filename,file_end):
     try: 
         p_gamemain = Popen(compiler+' '+save_path+'test_game'+file_end,shell=True, stdout=PIPE, stderr=PIPE)
         time.sleep(2)
-        p = Popen(compiler + ' ' + filetoexec+' 0.0.0.0 1',shell=True, stdout=PIPE, stderr=PIPE)
+        p = Popen(compiler + ' '+save_path + 'test_usercode'+file_end+' 0.0.0.0 1',shell=True, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)

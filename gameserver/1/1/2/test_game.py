@@ -80,8 +80,6 @@ def send_to_webserver(msg_type,msg_content,logId):
     except (RuntimeError, TypeError, NameError) as e:
         print(' send_to_webserver error:',e)
 #     #lock.release()
-def send_to_gameserver(score_msg):
-    pass
     
 
 def send_to_Players(instr):
@@ -186,36 +184,18 @@ def handle_client_connection(client_socket):
     
     client_socket.send(b'connectserver')
     barrier[1]=1
-    while True:
-        print("first loop")
-        request = client_socket.recv(1024)
-        msg = json.loads(request.decode())
-        if msg['type']=='connect':
-            if msg['who']=='P1':
-                print('P1 in',barrier)
-                p1_rt=time.time()
-                identify['P1']=msg['user_id']
-                #lock.acquire()
-                try:
-                    barrier[0]=1
-                    if barrier[1]==1:
-                        print("p1_start")
-                        start=1
-                        send_to_webserver('game_connect',identify,log_id)
-                        send_to_Players("gameinfo")
-                        break
-                finally:
-                    #lock.release()
-                    pass
-
+    request = client_socket.recv(1024)
+    msg = json.loads(request.decode())
+    if msg['type']=='connect':
+        start=1
+        send_to_webserver('game_connect',identify,log_id)
+        send_to_Players("gameinfo")
     
     while True:
         barrier[1]=1
-        print("second loop")
-        time.sleep(0.003)
+        time.sleep(0.001)
         if start == 1:
             try:
-                print('current:',threading.current_thread())
                 request = client_socket.recv(1024)
                 msg = json.loads(request.decode())
 
@@ -226,11 +206,10 @@ def handle_client_connection(client_socket):
                         p1_rt=time.time()
                         #lock.acquire()
                         try:
-                            barrier[0]=1
-                            if barrier[1]==1:
-                                send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2]),log_id)
-                                record_content.append([ball,paddle1,paddle2])
-                                game('on_p1')
+                            send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2]),log_id)
+                            record_content.append([ball,paddle1,paddle2])
+                            game('on_p1')
+                                
                         finally:
                             #lock.release()
                             pass
@@ -240,7 +219,6 @@ def handle_client_connection(client_socket):
                 sys.exit()
         else:
             try:
-                print('current:',threading.current_thread())
                 request = client_socket.recv(1024)
                 if request :
                     msg = json.loads(request.decode())
@@ -264,7 +242,7 @@ def handle_client_connection(client_socket):
                 print('error',e)
                 sys.exit()
             print("game not start, or had over")
-    
+
 
         
         # client_socket.close()
