@@ -1,6 +1,6 @@
 from flask import render_template, flash, redirect, url_for, request, current_app, session
 from app import db
-from app.games.forms import CreateGameForm, ChooseGameForm,CommentCodeForm, AddRoomForm, LoginForm, JoinForm, LeaveForm
+from app.games.forms import CreateGameForm,CommentCodeForm, AddRoomForm, LoginForm, JoinForm, LeaveForm
 from flask_login import current_user, login_user, logout_user,login_required
 from app.models import User, Game, Log, Code
 from werkzeug.urls import url_parse
@@ -89,25 +89,30 @@ def add_room():
     def room_category_list(user_id):
         
         result_cat = Code.query.with_entities(Code.id,Code.game_id,Game.category_id,Category.name).filter_by(user_id=user_id).join(Game,(Game.id==Code.game_id)).join(Category,(Category.id==Game.category_id)).group_by(Category.id).all()
-        cat_choices=[("0","default")]
-        cat_choices.extend([(str(c.category_id),c.name) for c in result_cat])
+        cat_choices=[(0,"default")]
+        cat_choices.extend([(c.category_id,c.name) for c in result_cat])
         return cat_choices
     
     def room_game_list(user_id,cat_id):
         
         code = Code.query.with_entities(Code.id,Code.game_id,Game.gamename,Game.descript,Category.name).filter(Code.user_id==user_id,Game.category_id==cat_id).join(Game,(Game.id==Code.game_id)).group_by(Game.id).all()
-        game_choices=[("0","default")]
-        game_choices.extend([(str(g.game_id),g.gamename) for g in code])
+        game_choices=[(0,"default")]
+        game_choices.extend([(g.game_id,g.gamename) for g in code])
         
         return game_choices
 
     if request.method == 'POST':
         if "text/plain" in request.headers['Content-Type']:
             set_g_option = room_game_list(current_user.id,int(request.data)) 
+            add_form.game.choices=set_g_option
             return json.dumps({'g_list':set_g_option})
         else:
+            add_form.game.choices=room_game_list(current_user.id,add_form.game_category.data) 
+            category_list=room_category_list(current_user.id)
+            add_form.game_category.choices=category_list  
+            print('submit',add_form.game_category.data, add_form.game.data, add_form.privacy.data,add_form.players_status.data)
             if add_form.validate_on_submit():
-                
+                print('validated successful')
                 if add_form.privacy.data is 3:
                     players = (add_form.players_status.data).split(',')
                 else:
@@ -123,7 +128,7 @@ def add_room():
     else:
         add_form.game_category.choices =  room_category_list(current_user.id)
         add_form.game.choices = [("0","default")]
-    
+
     return render_template('games/room/add_room.html', title='add_room',form=add_form)
 
 
