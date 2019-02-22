@@ -151,9 +151,9 @@ def check_user(message):
 
 def set_language_id(filename_extension):
     compiler = {
-        ".c":0,
-        ".py":1,
-        ".sh":2
+        ".c":1,
+        ".py":2,
+        ".sh":3
     }
     language_id = compiler.get(filename_extension, "Invalid language ID")
     return language_id

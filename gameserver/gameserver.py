@@ -134,9 +134,9 @@ def sandbox(compiler,path_, filename):
 		return e
 def set_language(language):
 	compiler = {
-		"0": ["gcc",".c"],
-		"1": ["python3",".py"],
-		"2": ["sh",".sh"]
+		"1": ["gcc",".c"],
+		"2": ["python3",".py"],
+		"3": ["sh",".sh"]
 	}
 	language_obj = compiler.get(language, "Invalid language ID")
 	
@@ -154,7 +154,9 @@ def save_code(code,log_id,user_id,category_id,game_id,language):
 		os.makedirs( path )
 	except:
 		pass
-	decoded = base64.b64decode(code.split(",")[1])
+	print("path:",path,game_lib_id)
+	# decoded = base64.b64decode(code.split(",")[1])
+	decoded = base64.b64decode(code)
 		
 	with open("%s%s"%(path,filename), "wb") as f:
 		f.write(decoded)
