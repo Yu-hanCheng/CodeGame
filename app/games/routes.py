@@ -140,7 +140,6 @@ def wait_to_play(log_id):
     log_id = session.get('log_id', '')
     l=Log.query.filter_by(id=log_id).first()
     all_codes =Code.query.with_entities(Code.id, Code.commit_msg,Language.language_name).filter_by(game_id=l.game_id, user_id=current_user.id).join(Log,(Log.id==log_id)).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).all()
-    print("wait_to_play/all_codes:",all_codes)
     all_lan=[]
     have_code=False
     try: 
@@ -184,7 +183,7 @@ def wait_to_play(log_id):
             else: # only invited
                 pass
     
-    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,all_codes=all_codes)
+    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,all_codes=all_codes)
 
 @bp.route('/rank_list/<int:log_id>', methods=['GET','POST'])
 @login_required

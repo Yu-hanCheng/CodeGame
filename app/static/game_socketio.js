@@ -12,6 +12,7 @@ namespace = '/test';
 socket = io.connect('http://' + document.domain + ':' + location.port+namespace );
 
 $(document).ready(function(){
+    socket.emit('join_room',  {room: $('#join_room').val(),status: $('#room_status').val()});
 
     socket.on('arrived', function(data) {
         console.log("arrived:",data.msg)
@@ -19,8 +20,12 @@ $(document).ready(function(){
         $('#page_title').html("Game Start");
     });
     socket.on('enter_room', function(data){
-        console.log("enter rooom", data.msg)
         $('#page_title').html("enter room");
+        document.getElementById('section_code').style.display = "block";
+    }) 
+    socket.on('wait_room', function(data){
+        alert ("wait for others")
+        $('#page_title').html("wait room");
     }) 
     socket.on('connect_start', function(data){
         console.log("map Player:", data.msg)        

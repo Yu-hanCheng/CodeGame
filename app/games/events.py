@@ -49,11 +49,23 @@ def test_connect(message):
     print("from game:",message['msg'])
     emit('gameobject', {'msg': message['msg']},namespace = '/test',room= message['log_id'])#,room= message['log_id']
 
+@socketio.on('join_room' ,namespace = '/test')
+def join_room_from_browser(message):
+
+    join_room(message['room'])
+    if int(message['status']) ==0:
+        print("enter")
+        emit('enter_room',namespace = '/test',room= message['room'])
+    else:
+        print("wait")
+        emit('wait_room',namespace = '/test',room= message['room'])    
+
+
 @socketio.on('select_code' ,namespace = '/test')
 def select_code(message):
     # Sent by clients when they click btn.
     # call emit_code to send code to gameserver.-- 0122/2019
-    join_room(message['room'])
+    
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
     select_code =Code.query.with_entities(Code.id,Code.body, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
     
@@ -96,7 +108,7 @@ def left(message):
 def emit_code(l,code):
 # join_log(log_id,message['code'],message['commit_msg'],l.game_id,current_user.id,players)
     print('l:',type(l),l)
-    ws = create_connection("ws://127.0.0.1:6005")
+    ws = create_connection("ws://127.0.0.1:6005")# to gameserver
     ws.send(json.dumps({'from':'webserver','code':code.body,'log_id':l.id,'user_id': current_user.id,'category_id':l.category_id,'game_id':l.game_id,'language':code.language_name,'player_num':int(l.player_num)}))
     result =  ws.recv() #
     print("Received '%s'" % result)
