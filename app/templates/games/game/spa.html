@@ -6,6 +6,7 @@
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 <h1 id="page_title">room wait</h1>
 <section id="section_code" style="display:none">
+    <div id="countdown"  style="font-size:40px" > </div> 
     <label for="mode" class="control-label">Language Mode:</label>
     <select id="mode" class="form-control">
         <option value="code_id">"choose language"</option>
@@ -13,15 +14,12 @@
         <option value={{code_id}}>{{ lan_name }}</option>
         {% endfor %}
     </select>
-    
     <br>
     <div class="row">
         <div class="col-md-4">
-            <form id="select_code" method="POST" action='#' >
-                <input type="hidden" name="join_room" id="join_room" value={{room_id}}>
-                <input type="hidden" name="room_status" id="room_status" value={{room_status}}>
-                <input class="btn btn-success" type="submit" value="Select code" >
-            </form>
+            <input type="hidden" name="join_room" id="join_room" value={{room_id}}>
+            <input type="hidden" name="room_status" id="room_status" value={{room_status}}>
+
         </div>
     </div>
 
