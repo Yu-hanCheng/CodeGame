@@ -3,12 +3,13 @@ import subprocess
 from subprocess import Popen, PIPE
 # tcp://0.tcp.ngrok.io:16499  
 address = (sys.argv[1], 5501)  # 127.0.0.1
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+global s
 s_sucess=""
 
 
 while True:
     try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s_sucess=s.connect(address)
         print("connected")
         break
@@ -59,7 +60,6 @@ while True:
     else:
         
         str_data = data.decode("utf-8")
-        print("str_data:",str_data)
         msg_recv = json.loads(str_data)
         code = base64.b64decode(msg_recv['code']).decode('utf-8')
         # 判斷 msg 類型, gameinfo or gameover

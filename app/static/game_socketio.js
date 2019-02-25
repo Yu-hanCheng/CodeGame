@@ -89,8 +89,8 @@ function timeout_initial(){
 function countdownfunc(){ 
 x.innerHTML=countdownnumber;
 if (countdownnumber==0){
-    alert("send code");
     clearInterval(countdownid);
+    $('#page_title').html("send code");
     select_code()
 }
 countdownnumber--;

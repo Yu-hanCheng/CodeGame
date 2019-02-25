@@ -16,11 +16,34 @@ identify={}
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((bind_ip, bind_port))
 server.listen(2)  # max backlog of connections
-ws = create_connection("ws://127.0.0.1:6005")
-def ws_recv_from_gameserv():
+global ws
+def connectto_web(intervaltime):
+    global ws
     while True:
-        ws.send(json.dumps({'from':"game_exec",'msg':"get_codes"}))
-        recv_msg = ws.recv()
+        try:
+            ws = create_connection("ws://127.0.0.1:6005")
+            break
+        except:
+            print("cannot connect now")
+            time.sleep(intervaltime)
+    print("ws create_connection")
+    
+connectto_web(1)
+def ws_recv_from_gameserv():
+    global ws
+    while True:
+        try:
+            ws.send(json.dumps({'from':"game_exec",'msg':"get_codes"}))
+        except:
+            print("cannot connect now")
+            connectto_web(0.3)
+            ws.send(json.dumps({'from':"game_exec",'msg':"get_codes"}))
+        try:
+            recv_msg = ws.recv()
+        except:
+            connectto_web(0.3)
+            recv_msg = ws.recv()
+
         if len(recv_msg) > 5:
             ws_msg_handler(recv_msg)
             return 0
