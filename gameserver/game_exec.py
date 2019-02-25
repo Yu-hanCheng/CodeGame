@@ -29,12 +29,12 @@ def ws_recv_from_gameserv():
 def ws_msg_handler(msg):
     # 每個 element的 內容：[0data['log_id'],1data['user_id'],\
     #    2)data['game_lib_id'],3)language_res[0],4)path,5)filename, 6)fileEnd, 7)data['player_list']]
-    # [3, 2, 1, 'python3.7', '1/1/1/', '3_2.py', 2]
-    
+    # [5, 1, 1, 'python', '1/1/python/', '5_1', '.py', 0]
     msg_converted = json.loads(msg) 
     log_id=0
     for i,element in enumerate(msg_converted): # msg is elephant
         with open(""+element[4]+element[5]+element[6],'a') as user_file:
+            user_file.write("\nglobal paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
             user_file.write("\nwho='P"+str(i+1)+"'\n")
             with open(element[4]+'lib'+element[6]) as fin: 
                 lines = fin.readlines() 
@@ -45,6 +45,7 @@ def ws_msg_handler(msg):
             the_code = user_file.read()
             tcp_send_to_subserver(i,element[0],element[1],element[3],element[6],the_code)
         log_id=element[0]
+        time.sleep(0.1)
     start_game(log_id,element[4],element[3],element[6])
     
 
@@ -64,11 +65,10 @@ def start_game(log_id,path,compiler,fileEnd):
 def tcp_send_to_subserver(subserver_cnt,log_id,user_id,compiler, fileEnd, code):
     # subserverlist[subserver_cnt].send(json.dumps({'log_id':log_id,'user_id':user_id,'code':code}).encode())
     codeString = base64.b64encode(code.encode('utf-8')).decode('utf-8')
-    jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'user_id':user_id,'code':codeString}).encode()
-    print('jsonStr:',len(jsonStr))
+    jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'code':codeString,'user_id':user_id}).encode()
     subserverlist[subserver_cnt].send(jsonStr)
 
-def tcp_serve_for_sub():
+def tcp_serve_for_sub():    
     while True:
         client_sock, address = server.accept()
         subserverlist.append(client_sock)
@@ -97,5 +97,4 @@ if __name__ == '__main__':
     wst = threading.Thread(target=tcp_serve_for_sub)
     wst.start()
     wst.join()
-    
     
