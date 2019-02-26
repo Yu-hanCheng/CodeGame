@@ -135,13 +135,19 @@ function changeMode(){
         c:'main(){}',
         python: '\
 def run():\n\
-    global paddle_vel,ball_pos,move_unit\n\
-    if (ball_pos[-1][0]-ball_pos[-2][0]) <0: \n\
-        if (ball_pos[-1][1]-ball_pos[-2][1]) >0:\n\
-            paddle_vel=move_unit\n\
-        elif (ball_pos[-1][1]-ball_pos[-2][1])<0:\n\
-            paddle_vel=-move_unit\n\
-    else: \n\
+    global paddle_vel,paddle_pos,ball_pos,move_unit\n\
+    paddle_vel=0\n\
+    if (ball_pos[-1][1]-ball_pos[-2][1]) >0:\n\
+        if ball_pos[-1][1]-paddle_pos<8:\n\
+            paddle_vel=0\n\
+        elif ball_pos[-1][1]-paddle_pos>8:\n\
+            paddle_vel=move_unit*2\n\
+    elif (ball_pos[-1][1]-ball_pos[-2][1])<0:\n\
+        if ball_pos[-1][1]-paddle_pos>-8:\n\
+            paddle_vel=0\n\
+        elif ball_pos[-1][1]-paddle_pos<-8:\n\
+            paddle_vel=-move_unit*2\n\
+    else:\n\
         paddle_vel=0\n',
         sh: '<value attr="something">Write something here...</value>'
     };

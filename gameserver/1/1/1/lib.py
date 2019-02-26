@@ -18,15 +18,15 @@ binary =str_.encode()
 s.send(binary)
 
 
-ball_pos=[[0,0],[0,0],[0,0]]
-paddle1_pos=[0] # paddle only Y axis
-move_unit=3
-paddle_vel=0
-
 def on_gameinfo(message):
-    global paddle_vel
+    global paddle_vel,paddle_pos
     tuple_msg=message['content']
     cnt = tuple_msg[-1]
+    print("paddle_pos:",tuple_msg[1])
+    if who=="P1":
+        paddle_pos=tuple_msg[1]
+    else:
+        paddle_pos=tuple_msg[2]
     print("ball pos:",tuple_msg[0],cnt)
     if cnt>2:
         del ball_pos[0]

@@ -132,7 +132,7 @@ def append_lib(save_path,filename,file_end):
             for i, line in enumerate(lines):
                 if i >= 0 and i < 6800:
                     f.write(line)
-        f.write("\nglobal paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
+        f.write("\nglobal paddle_vel,ball_pos,move_unit\npaddle_pos=0\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")
         f.write("\nwho='P1'\n")
         with open(save_path+"lib"+file_end) as fin: 
             lines = fin.readlines() 

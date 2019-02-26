@@ -57,7 +57,7 @@ def ws_msg_handler(msg):
     log_id=0
     for i,element in enumerate(msg_converted): # msg is elephant
         with open(""+element[4]+element[5]+element[6],'a') as user_file:
-            user_file.write("\nglobal paddle_vel,ball_pos,move_unit\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")#要給假值
+            user_file.write("\nglobal paddle_vel,ball_pos,move_unit\npaddle_pos=0\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")
             user_file.write("\nwho='P"+str(i+1)+"'\n")
             with open(element[4]+'lib'+element[6]) as fin: 
                 lines = fin.readlines() 
