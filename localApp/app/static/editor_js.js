@@ -28,7 +28,7 @@ $(document).ready(function(){
                 FD.append("lib", String.fromCharCode.apply(null,  new Uint8Array(data[2])));
                 FD.append("test_game", String.fromCharCode.apply(null,  new Uint8Array(data[3])));
 
-                document.getElementById('commit').style.display="block";
+                document.getElementById('section_code').style.display="block";
                 
                 send_to_back(FD,"multipart/form-data","library")
             });
@@ -59,15 +59,6 @@ $(document).ready(function(){
                 // send_to_back(data['msg'],"text/plain","upload_toweb")
             }
             });
-    $('form#commit').submit(function(event) {
-        const editor_content=editor.getValue();
-        var encodedData = window.btoa(editor_content);
-        before_sendback(encodedData,"application/json","commit")
-        // need to send back to localapp to sandbox
-        document.getElementById('section_code').style.display = "none";
-        document.getElementById('section_game').style.display = "block";
-        
-    });
 
     $('form#upload_to_server').submit(function(event) {
         
@@ -83,6 +74,14 @@ $(document).ready(function(){
 
 });
 
+function commit_code(){
+    const editor_content=editor.getValue();
+    var encodedData = window.btoa(editor_content);
+    before_sendback(encodedData,"application/json","commit")
+    // need to send back to localapp to sandbox
+    document.getElementById('section_code').style.display = "none";
+    document.getElementById('section_game').style.display = "block";
+}
 function previewFiles(files) {
     if (files && files.length >= 1) {
         $.map(files, file => {
