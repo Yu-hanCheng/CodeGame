@@ -209,7 +209,7 @@ def handle_client_connection(client_socket):
                             send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2]),log_id)
                             record_content.append([ball,paddle1,paddle2])
                             game('on_p1')
-                                
+                                                            
                         finally:
                             #lock.release()
                             pass
@@ -223,13 +223,13 @@ def handle_client_connection(client_socket):
                 if request :
                     msg = json.loads(request.decode())
                     if msg['type']=='score':
-                            
-                            if msg['who']=='P1':
-                                print("P1 score")
-                                l_report = msg['content']
-                                send_to_webserver('over',{'l_report':l_report,'r_report':"r_report",'record_content':str(record_content)},log_id)
-                                send_to_gameserver("score")    
-                                break
+                        client_socket.send(json.dumps({'type':"score_recved"}).encode())
+                        if msg['who']=='P1':
+                            print("P1 score")
+                            l_report = msg['content']
+                            send_to_webserver('over',{'l_report':l_report,'r_report':"r_report",'record_content':str(record_content)},log_id)
+                            send_to_gameserver("score")    
+                            break
 
                     elif msg['type']=='disconnect':
                         if msg['who']=='P1':

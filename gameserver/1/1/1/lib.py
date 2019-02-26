@@ -56,7 +56,7 @@ def score(msg_from_gamemain):# CPU, MEM Utility
         score = msg_from_gamemain['score'][1]
      
     communicate('score',json.dumps({'user_id':user_id,'score':score,'cpu':'50','mem':'30','time':'554400'}))#json.dumps({'cpu':'50','mem':'30','time':'554400'})
-    gameover()
+    
   
 
 
@@ -72,6 +72,8 @@ while cnt>0:
             on_gameinfo(msg_recv)
         elif msg_recv['type']=='over':
             score(msg_recv['content'])
+        elif msg_recv['type']=='score_recved':
+            gameover()
         else:
             pass
     cnt-=1
