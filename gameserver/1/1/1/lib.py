@@ -57,25 +57,40 @@ def score(msg_from_gamemain):# CPU, MEM Utility
      
     communicate('score',json.dumps({'user_id':user_id,'score':score,'cpu':'50','mem':'30','time':'554400'}))#json.dumps({'cpu':'50','mem':'30','time':'554400'})
     
-  
-
+def recvall(sock):
+    global cnt
+    BUFF_SIZE = 2048 # 4 KiB
+    data = b''
+    while True:
+        part = sock.recv(BUFF_SIZE)
+        cnt+=1
+        data += part
+        if len(part) < BUFF_SIZE:
+            # either 0 or end of data
+            break
+    return data  
 
 cnt =6000
 while cnt>0:
-    data = s.recv(2048)
+    data = recvall(s)
     if data==b"":
         print("no")
-        continue
+        gameover()
     else:
-        msg_recv = json.loads(data.decode())
-        if msg_recv['type']=='info':
-            on_gameinfo(msg_recv)
-        elif msg_recv['type']=='over':
-            score(msg_recv['content'])
-        elif msg_recv['type']=='score_recved':
-            gameover()
-        else:
-            pass
+        try:
+            msg_recv = json.loads(data.decode())
+            if msg_recv['type']=='info':
+                on_gameinfo(msg_recv)
+            elif msg_recv['type']=='over':
+                print("over")
+                score(msg_recv['content'])
+            elif msg_recv['type']=='score_recved':
+                gameover()
+            else:
+                pass
+        except(RuntimeError, TypeError, NameError) as e:
+            print('e:',e)
+            print("except data:",data)
     cnt-=1
 
 msg_leave={'type':'disconnect','who':who,'content':'0'} 

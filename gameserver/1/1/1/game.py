@@ -219,12 +219,14 @@ def play():
         return
     
 def game(where):
+    global start
     try:
         print(where)
         play()
     except:
         return
-    send_to_Players('gameinfo')
+    if start==1:
+        send_to_Players('gameinfo')
 
 def handle_client_connection(client_socket):
     # connect就進入 socket就進入 handler了, 為什麼connect後還要recv？ 為了判斷是p1連進來 還是p2
@@ -315,7 +317,15 @@ def handle_client_connection(client_socket):
                                 #lock.release()
                                 pass
 
-                    elif msg['type']=='score':
+            except(RuntimeError, TypeError, NameError)as e: 
+                print('error',e)
+                sys.exit()
+        else:
+            try:
+                request = client_socket.recv(1024)
+                if request :
+                    msg = json.loads(request.decode())
+                    if msg['type']=='score':
                         client_socket.send(json.dumps({'type':"score_recved"}).encode())
                         if msg['who']=='P1':
                             l_report = msg['content']
@@ -351,10 +361,7 @@ def handle_client_connection(client_socket):
             except(RuntimeError, TypeError, NameError)as e: 
                 print('error',e)
                 sys.exit()
-        else:
             print("game not start, or had over")
-            time.sleep(1)
-        # client_socket.close()
 
 def serve_app():
     while True:
