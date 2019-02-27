@@ -153,15 +153,21 @@ def test_code(compiler,save_path,filename,file_end):
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)
+            p_gamemain.kill()
+            p.kill()
             flash("oops, there is an error--",stderr)
             return [0,stderr]
         else:
             print('stdout:', stdout)
+            p_gamemain.kill()
+            p.kill()
             flash("great, execuse successfully:",stdout)
             # browser
-            
+
             return [1,stdout]
     except Exception as e:
+        p_gamemain.kill()
+        p.kill()
         print('e: ',e)
         return [-1,e]
 
