@@ -38,49 +38,68 @@ $(document).ready(function(){
             });
     socket_local.on('info', function(data) {
         //tuple([ball,paddle1,paddle2])
-                ball_update(data['msg'][0])
-                left_update(data['msg'][1])
-                right_update(data['msg'][2])
+        let left = $('.left-goalkeeper')
+        let right = $('.right-goalkeeper')
+        paddle_update(data['msg'][1], left);
+        ball_update(data['msg'][0]);
                 
             });
-    socket_local.on('code_ok', function(data) {
-            function popup_box() {
-                var to_upload;
-                if (confirm("upload the code to Web!")) {
-                    to_upload = 1;
-                } else {
-                    to_upload = 0;
-                }
-                return to_upload
-              }
-            if (popup_box()){
-                socket.emit('commit_code',data);
-                console.log("emit upload_code_to_web")
-                // send_to_back(data['msg'],"text/plain","upload_toweb")
-            }
-            });
+    socket_local.on('gameover', function(data){ 
+        console.log("gameover")
+        myPopupjs(data.msg,data.log_id);
+    });
+    socket_local.on('upload_ok', function(data){ 
+        console.log("upload_ok")
+        alert("upload to webserver successfully",function(){ window.location.reload(); })
+        // window.location.refresh();
 
-    $('form#upload_to_server').submit(function(event) {
-        
-        let choosed= $("#chooseFile")[0].files;
-        convertFile(choosed[0]).then(data => {
-            // 把編碼後的字串 send to webserver
-            before_sendback(data,"application/json","commit")
-            return false;//return回哪裡QAQ
-          })
-          .catch(err => console.log(err))
-        
+    });
+    socket_local.on('code_inavailable', function(data){ 
+        console.log("code_inavailable:"+data['msg']);
+        alert("code_inavailable");
+        // window.location.refresh();
+    });
+    
+    socket_local.on('security', function(data){ 
+        console.log("security",data);
+        // window.location.refresh();
+        if (data['msg'][0]==1){
+            document.getElementById('section_code').style.display = "none";
+            document.getElementById('section_game').style.display = "block";
+        }else{
+            alert("This code is not available: "+data['msg'][1])
+        }
+
     });
 
 });
 
+
+function upload_code(){
+    socket_local.emit('upload_toWeb', {msg: ""});
+    document.getElementById("myPopup_dom").style.display = "none";
+    
+}
+function cancel(){
+    document.getElementById("myPopup_dom").style.display = "none";
+}
 function commit_code(){
-    const editor_content=editor.getValue();
-    var encodedData = window.btoa(editor_content);
-    before_sendback(encodedData,"application/json","commit")
+    let editor_content=editor.getValue();
+    var encodedData = window.btoa(unescape(encodeURIComponent(editor_content)));
+    let choosed= $("#chooseFile")[0].files;
+    console.log('choosed:',choosed.length);
+    if(choosed.length!=0){
+        convertFile(choosed[0]).then(data => {
+            // 把編碼後的字串 send to webserver
+            before_sendback({'code':encodedData,'choosed':data},"application/json","commit")
+            return false;//return回哪裡QAQ
+          })
+          .catch(err => console.log(err))
+    }else{
+        before_sendback({'code':encodedData,'choosed':""},"application/json","commit")
+    }
+          
     // need to send back to localapp to sandbox
-    document.getElementById('section_code').style.display = "none";
-    document.getElementById('section_game').style.display = "block";
 }
 function previewFiles(files) {
     if (files && files.length >= 1) {
@@ -132,7 +151,36 @@ function changeMode(){
     socket.emit('get_lib', {category_id: mode[1],game_id: mode[3],language_id:mode[5], filename_extension:mode[7]});
     editor.session.setMode("ace/mode/"+ mode[6]);
     var contents = {
-        c:'main(){}',
+        c:'int run(struct ArrayWrapper ball_array, int paddle){ //editor 上要隱藏\n\
+            int j;\n\
+            int *ball=ball_array.arr;\n\
+            int ball_last[2]={0,0};\n\
+            if((ball[1]-ball_last[1])>0){\n\
+            if((ball[1]-paddle)<8){\n\
+                paddle_vel=0;\n\
+            }\n\
+            else if((ball[1]-paddle)>8){\n\
+                paddle_vel=MOVE_UNIT*2;\n\
+            }\n\
+        }\n\
+        else if((ball[1]-ball_last[1])<0){\n\
+            if((ball[1]-paddle)<-8){\n\
+                paddle_vel=-MOVE_UNIT*2;\n\
+            }\n\
+            else if((ball[1]-paddle)>-8){\n\
+                paddle_vel=0;\n\
+            }\n\
+        }\n\
+        else{\n\
+            paddle_vel=0;\n\
+        }\n\
+        ball_last[0]=ball[0]; //editor 上要隱藏\n\
+        ball_last[1]=ball[1]; //editor 上要隱藏\n\
+        for (j=0; j < sizeof(ball_last) / sizeof(ball_last[0]); j++ ) {\n\
+            printf("ball_last[%d] = %d\\n", j, ball_last[j] );\n\
+       }\n\
+        return paddle_vel;\n\
+    }\n',
         python: '\
 def run():\n\
     global paddle_vel,paddle_pos,ball_pos,move_unit\n\
@@ -152,14 +200,12 @@ def run():\n\
         sh: '<value attr="something">Write something here...</value>'
     };
     editor.setValue(contents[mode[6]]);
-    
 }
 
 function leave_room() {
     socket.emit('left', {}, function() {
         socket.disconnect();
         // go back to the login page
-        window.location.href = "{{ url_for('games.index') }}";
     });
 }
 function changeGame(){
@@ -175,7 +221,6 @@ function send_to_back(content,Content_type,dest){
         // socket.emit('commit', {code: editor_content, commit_msg:commit_msg, game_id:game_id, glanguage:glanguage, user_id:1});
     }
     };
-    
     xhttp.open("POST", dest, true);
     xhttp.send(content);
 }
@@ -196,8 +241,9 @@ function before_sendback(Data,content_type,post_dest){
     const obj = document.getElementById("mode").value;
         // 0Game_lib.id,1Category.id,2Category.name,3Game.id,4Game.gamename,5Language.id, 6Language.language_name, 7Language.filename_extension
     var commit_msg = document.getElementById('commit_msg').value; 
+    let res = obj.split(",");
     var lan_compiler
-        switch(obj[-1]) {
+        switch(res[7]) {
             case ".py":
             lan_compiler = "python3"
               break;
@@ -217,7 +263,7 @@ function myPopupjs(data_msg,log_id){
     console.log('msg type parse:'+typeof(JSON.parse(data_msg.l_report)))
     var mytable = "<table class=\"popuptext\" ><tbody><tr>" ;
     var l_data = JSON.parse(data_msg.l_report)
-    var r_data = JSON.parse(data_msg.r_report)
+    var r_data = {'user_id':1,'score':0,'cpu':'50','mem':'30','time':'554400'}
     
     mytable += "</tr><tr><td></td><td>SCORE</td></tr><tr>";
     mytable += "</tr><tr><td></td><td>P1</td><td>P2</td></tr><tr>";
@@ -226,8 +272,9 @@ function myPopupjs(data_msg,log_id){
         mytable += "</tr><tr><td>" +key+ "</td>"+ "<td>" + l_data[key]+ "</td>"+"<td>" + r_data[key]+ "</td>";
     }
     
-    mytable += "</tr><tr><td></td><td><button onclick=\"javascript:location.href='/games/rank_list/"+log_id+"'\" >rank</button></td></tr></tbody></table>";
+    mytable += "</tr><tr><td></td><td><button onclick=\"upload_code()\" >upload to web</button></td><td><button onclick=\"location.reload()\" >cancel</button></td></tr></tbody></table>";
     
+    document.getElementById("myPopup_dom").style.display = "block";
     document.getElementById("myPopup_dom").innerHTML = mytable;
 
 }
@@ -248,24 +295,16 @@ function ball_update(position){
     // console.log($(".ball").left())
     $(".ball").css({"left":position[0]-width/2,"top":position[1]-height/2});
 }
-function left_update(position){
+function paddle_update(position, direction){
     var windowHeight = $(window).height();
-    var height = $(".left-goalkeeper").outerHeight();
-    var p_top = position-height/2;
+    var height = direction.outerHeight();
+    var p_top = position[1]-height/2;
     var topMax = windowHeight - p_top - 5;
     if (p_top < 5) p_top = 5;
     if (p_top > topMax) p_top = topMax;
-    $(".left-goalkeeper").css("top",p_top);	
+    direction.css("top",p_top);	
 }
-function right_update(position){
-    var windowHeight = $(window).height();
-    var height = $(".right-goalkeeper").outerHeight();
-    var p_top = position-height/2;
-    var topMax = windowHeight - height - 5;
-    if (p_top < 5) p_top = 5;
-    if (p_top > topMax) p_top = topMax;
-    $(".right-goalkeeper").css("top",p_top);	
-}
+
 function score_update(newscores){
     Scores.setLeft(newscores[0]);
     Scores.setRight(newscores[1]);

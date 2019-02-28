@@ -1,5 +1,8 @@
+<body background="https://i.imgur.com/OPE70hq.jpg">
+{% extends "base.html" %}
+{% block app_content %}
 <br>
-<h3>room_list</h3>
+<h3>rank_list</h3>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='list_css.css') }}">
 <div class="container">
         <div class="modal-content">
@@ -24,7 +27,8 @@
                             <td>{{ log.username }}</td>
                             <td>{{ log.score }}</td>
                             <td>{{ log.id }}</td>
-                            <td><button onclick="javascript:location.href='{{ url_for('games.display_record',log_id=log.id ) }}'" >Record</button></td> 
+                            <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.display_record',log_id=log.id,func_type=1 ) }}'" >Record</button></td> 
+                            <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.display_record',log_id=log.id,func_type=0 ) }}'" >Download</button></td> 
                         </tr>
                     {% endfor %}
                     </tbody>
@@ -41,3 +45,5 @@
         console.log(typeof(log_id));
     }
 </script>
+{% endblock %}
+</body>

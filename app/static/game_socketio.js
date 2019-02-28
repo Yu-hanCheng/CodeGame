@@ -1,12 +1,17 @@
 
-var script = document.createElement('script');
-script.src = '../../static/jquery-3.3.1.js';
-script.type = 'text/javascript';
-document.getElementsByTagName('head')[0].appendChild(script);
+// var script = document.createElement('script');
+// script.src = '../../static/jquery-3.3.1.js';
+// script.type = 'text/javascript';
+// document.getElementsByTagName('head')[0].appendChild(script);
 
 var socket;
 var left_buff=[],right_buff=[],ball_buff=[];
 var buff_min=20,buff_normal=50;
+
+var editor = ace.edit("editor");    
+editor.setTheme("ace/theme/twilight");
+
+lan_mode = document.getElementById('mode');
 
 namespace = '/test';
 socket = io.connect('http://' + document.domain + ':' + location.port+namespace );
@@ -28,37 +33,51 @@ $(document).ready(function(){
         $('#page_title').html("wait for others");
     }) 
     socket.on('connect_start', function(data){
-        console.log("map Player:", data.msg)        
+        console.log("data.msg:",data.msg)
+        $('#map_left_user').html(data.msg['P1']); 
+        $('#map_right_user').html(data.msg['P2']); 
+
     })
     socket.on('status', function(data) {
         $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
         $('#chat').scrollTop($('#chat')[0].scrollHeight);
     });
-    socket.on('gameover', function(data){
-        alert('l_report:'+ JSON.stringify(data.msg.l_report))
+    socket.on('gameover', function(data){ 
+        // alert('l_report:'+ JSON.stringify(data.msg.l_report))
         myPopupjs(data.msg,data.log_id);
         // var popup = document.getElementById("myPopup");
         // popup.classList.toggle("show");
     });
     socket.on('gameobject', function(data) {
-    // data=tuple([ball,paddle1[1],paddle2[1],[r_score,l_score]])
-        console.log("data:",data)
-        // left_buff.push(data.msg[1][1]);
-        // right_buff.push(data.msg[2][1]);
-        // ball_buff.push(data.msg[0]);
-        left_update(data.msg[1][1]);
-        right_update(data.msg[2][1]);
+        let left = $('.left-goalkeeper')
+        let right = $('.right-goalkeeper')
+        paddle_update(data['msg'][1], left);
+        paddle_update(data['msg'][2], right);
+
         ball_update(data.msg[0]);
         score_update(data.msg[3]);
-
-        $('#showgame').val($('#showgame').val() + data.msg[1][1]+ '\n');
-        $('#showgame').scrollTop($('#showgame')[0].scrollHeight);
+        
     });
 
     socket.on('message', function(data) {
         $('#chat').val($('#chat').val() + data.msg + '\n');
         $('#chat').scrollTop($('#chat')[0].scrollHeight);
     });
+    socket.on('the_change_code', function(data) {
+        if (data['code_id']==lan_mode.value){
+            let code_decode = atob(data['code']);
+            editor.setValue(code_decode);
+        }
+    });
+    $('#mode').on('change', function() {
+        let lan_name = lan_mode.options[lan_mode.selectedIndex].text;
+        editor.session.setMode("ace/mode/"+ lan_name);
+        var code_selected = lan_mode.options[lan_mode.selectedIndex].value;
+        if(code_selected=="code_id"){
+            code_selected=lan_mode.options[1].value;
+        }
+        socket.emit('change_code', {room: $('#join_room').val(),code_id:code_selected});
+      });
     $('#text').keypress(function(e) {
         var code = e.keyCode || e.which;
         if (code == 13) {
@@ -67,18 +86,18 @@ $(document).ready(function(){
             socket.emit('text', {msg: text});
         }
     });
-
 });
+
 function select_code(){
-    var code_selected = document.getElementById('mode').value;
-    if(code_selected=="code_id"){
-        code_selected=document.getElementById("mode").options[1].value;
+    var code_selected=lan_mode.value;
+    if(lan_mode.value=="code_id"){
+        code_selected=lan_mode.options[1].value;
     }
-    document.getElementById('section_code').style.display = "none";
+    // document.getElementById('section_code').style.display = "none";
     document.getElementById('section_game').style.display = "block";
     socket.emit('select_code', {room: $('#join_room').val(),code_id:code_selected});
 }
-var countdownnumber=5;
+var countdownnumber=10;
 var countdownid,x;
 function timeout_initial(){
     x=document.getElementById("countdown");
@@ -88,7 +107,7 @@ function timeout_initial(){
 }
 function countdownfunc(){ 
 x.innerHTML=countdownnumber;
-if (countdownnumber==0){
+if (countdownnumber<1){
     clearInterval(countdownid);
     $('#page_title').html("send code");
     select_code()
@@ -109,12 +128,11 @@ function myPopupjs(data_msg,log_id){
         mytable += "</tr><tr><td>" +key+ "</td>"+ "<td>" + l_data[key]+ "</td>"+"<td>" + r_data[key]+ "</td>";
     }
     
-    mytable += "</tr><tr><td></td><td><button onclick=\"javascript:location.href='/games/rank_list/"+log_id+"'\" >rank</button></td></tr></tbody></table>";
+    mytable += "</tr><tr><td></td><td><button class=\"button\" onclick=\"javascript:location.href='/games/rank_list/"+log_id+"'\" >rank</button></td></tr></tbody></table>";
     
     document.getElementById("myPopup_dom").innerHTML = mytable;
 
 }
-
 function leave_room() {
     socket.emit('left', {}, function() {
         socket.disconnect();
@@ -123,57 +141,29 @@ function leave_room() {
         window.location.href = "{{ url_for('games.index') }}";
     });
 }
-
-
 function ball_update(position){
     var width = $(".ball").outerWidth();
     var height = $(".ball").outerHeight();
     // console.log($(".ball").left())
     $(".ball").css({"left":position[0]-width/2,"top":position[1]-height/2});
 }
-function left_update(position){
+function paddle_update(position, direction){
     var windowHeight = $(window).height();
-    var height = $(".left-goalkeeper").outerHeight();
-    var p_top = position-height/2;
+    var height = direction.outerHeight();
+    var p_top = position[1]-height/2;
     var topMax = windowHeight - p_top - 5;
     if (p_top < 5) p_top = 5;
     if (p_top > topMax) p_top = topMax;
-    $(".left-goalkeeper").css("top",p_top);	
-}
-function right_update(position){
-    var windowHeight = $(window).height();
-    var height = $(".right-goalkeeper").outerHeight();
-    var p_top = position-height/2;
-    var topMax = windowHeight - height - 5;
-    if (p_top < 5) p_top = 5;
-    if (p_top > topMax) p_top = topMax;
-    $(".right-goalkeeper").css("top",p_top);	
+    direction.css("top",p_top);	
 }
 function score_update(newscores){
+
     Scores.setLeft(newscores[0]);
     Scores.setRight(newscores[1]);
 }
 var startTime=new Date();
 var speed=10;
 var start_flag=0;
-
-// setInterval(function(){
-    
-//     if (ball_buff.length>buff_normal){ 
-//         start_flag=1;
-//         // console.clear();   
-//         speed=10;
-//     }else if(ball_buff.length<buff_min){
-//         speed=50;
-//     }
-
-//     if (start_flag==1){
-//         left_update(left_buff.shift());
-//         right_update(right_buff.shift());
-//         ball_update(ball_buff.shift());
-        
-//     }
-// },speed);
 
 var Scores = {
 	// set lsef tscore with animation
@@ -183,7 +173,6 @@ var Scores = {
         else{
             $(".left-score span").text(n);
         }
-
 	},
 	// set right score with animation
 	setRight: function(n) {

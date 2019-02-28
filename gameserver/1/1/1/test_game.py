@@ -222,8 +222,8 @@ def handle_client_connection(client_socket):
             try:
                 request = client_socket.recv(1024)
                 if request :
-                    msg = json.loads(request.decode())            
-                    if msg['type']=='score':                 
+                    msg = json.loads(request.decode())
+                    if msg['type']=='score':
                         msg_tosend=tcp_send_rule(json.dumps({'type':"score_recved"}),8)
                         client_socket.send(msg_tosend)
                         if msg['who']=='P1':

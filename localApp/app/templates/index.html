@@ -2,7 +2,7 @@
     <head>
         <title>{{ title }} - Microblog</title>
         <script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
-        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>       
+        <script type="text/javascript" src="{{ url_for('static', filename='socketio_1.3.6.js') }}"></script>       
     </head>
     <body>      
             <p id="sandbox_res"></p>
@@ -19,10 +19,7 @@
                     <option>choose language</option>
             </select>
             <form enctype="multipart/form-data">
-                <input class="btn btn-info" id="chooseFile" type="file">
-            </form>
-            <form id= "upload_to_server" enctype="multipart/form-data" action='#'>
-                <input class="btn btn-primary" type="submit" value="upload_to_server"  > 
+                <input class="btn btn-info" id="chooseFile" type="file"  accept=".sav" >
             </form>
             <div id="game_code">
                 <pre id="editor" style="height:255px"></pre>
@@ -33,19 +30,7 @@
         </section>
         <section id="section_game" style="display:none">
             
-            <div class="scores">
-                    <div class="left-score">
-                        <div>
-                            <span>0</span>
-                        </div>
-                    </div>
-                    <div class="right-score">
-                        <div>
-                            <span>0</span>
-                        </div>
-                    </div>
-            </div>
-            <div class="popup"id="myPopup_dom" >the popup!
+            <div class="popup"id="myPopup_dom" >
             </div>
             <div class="container" id="game_playground"  width="600" height="800" >
                 <h2> game_playground </h2>
@@ -66,5 +51,6 @@
         </script>
         <script src="{{ url_for('static', filename='editor_js.js') }}"></script>
         <link rel=stylesheet type=text/css href="{{ url_for('static', filename='pingpong.css') }}">
+        <link rel=stylesheet type=text/css href="{{ url_for('static', filename='gameover.css') }}">
     </body>
 </html>

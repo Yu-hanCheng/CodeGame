@@ -30,36 +30,6 @@
                 </table>
             </div>
         </div>
-        <div class="modal-content">
-            <div class="panel-body table-responsive">
-                    <table class="table ">
-                        <thead class="thead-dark">
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">RoomID</th>
-                            <th scope="col">RoomName</th>
-                            <th scope="col">目前人數</th>
-                            <th scope="col">人數上限</th>
-                        </tr>
-                        </thead>
-                    <tbody>
-                            <p>game_start</p>
-                        {% for g_room in gaming_room %}
-                            <tr>
-                                <th scope="row">1</th>
-                                <td>{{ g_room.id }}</td>
-                                <td>{{ g_room.game_id }}</td>
-                                <td>online_people</td>
-                                <td>max_people</td>
-                                <td><a href="{{ url_for('games.game_view',log_id=g_room.id) }}">@mdo</a></td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                   
-                </table>
-              
-            </div>
-        </div>
 </div>
 <script>
     function enterRoom(room_id) {

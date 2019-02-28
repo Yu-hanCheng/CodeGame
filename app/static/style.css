@@ -15,6 +15,7 @@ body {
 	height:400px;
 	position: absolute;
 	left: 50%;
+	background: black;
 	margin-left: -400px;
 	text-align: center;
 }
@@ -32,18 +33,17 @@ body {
 	width: 20px;
 	height: 30%;
 	position: relative;
-	top: 35%;
 	background: red;
 	border: 1px solid rgba(0, 0, 0, 0.5);
 	border-radius: 5px;
 }
 .left-goalkeeper {
 	float: left;
-	margin-left: 10px;
+	/* margin-left: 10px; */
 }
 .right-goalkeeper {
 	float: right;
-	margin-right: 10px;
+	/* margin-right: 10px; */
 }
 .cat {
 	height: 50px;

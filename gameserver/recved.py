@@ -1,76 +1,101 @@
 import socket, time, json, sys, base64
 import subprocess
 from subprocess import Popen, PIPE
-# tcp://0.tcp.ngrok.io:16499  
-address = (sys.argv[1], 5501)  # 127.0.0.1
+# tcp://0.tcp.ngrok.io:16499
+game_exec_ip=sys.argv[1]
+game_exec_port=int(sys.argv[2])
+game_port=game_exec_port+1
+address = (game_exec_ip, game_exec_port) 
 global s
 s_sucess=""
-
-
-while True:
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s_sucess=s.connect(address)
-        print("connected")
-        break
-    except:
-        time.sleep(0.1)
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+subprocess_str=""
+def connect_to_game():
+    while True:
+        try:
+            s_sucess=s.connect(address)
+            print("connected")
+            break
+        except:
+            time.sleep(0.1)
 
 def on_gameinfo(log_id,compiler,user_id,usercode,fileEnd):
-    
-    save_code(usercode,fileEnd)
-    try:
-        time.sleep(0.5)
-        p = Popen(''+compiler + ' ' +"usercode" + fileEnd + ' 127.0.0.1 ' + str(user_id) + ' ',shell=True, stdout=PIPE, stderr=PIPE)
-        stdout, stderr = p.communicate()
-        if stderr:
-            print('stderr:', stderr)
-        else:
-            print('stdout:', stdout)
-    except Exception as e:
-        print('Popen error: ',e)
+    global subprocess_str
+    save_code("usercode", usercode,fileEnd,"w")
+    subprocess_str=''+compiler + ' ' +"usercode" + fileEnd+ ' '  + str(game_exec_ip)+ ' '  + str(game_port)+ ' '  + str(user_id) + ' '
+    return
 
-def save_code(code, fileEnd):
+def save_code(filename, file, fileEnd,w_mode):
 	# 傳新的程式碼會直接取代掉
-    with open("usercode%s"%(fileEnd), "w") as f:
-        f.write(code)
+    with open("%s%s"%(filename,fileEnd), w_mode) as f:
+        f.write(file)
 cnt=0
 def recvall(sock):
-    global cnt
+    
     BUFF_SIZE = 4096 # 4 KiB
-    data = b''
+    data = ""
+    data_len=0
+    recv_cnt=0
+
+    part = sock.recv(BUFF_SIZE)
+    first_part_split=part.decode("utf-8").split("|")
+    data_len= int(first_part_split[0])
+    print('data_len',data_len)
+    data += first_part_split[-1]
+    if data_len < BUFF_SIZE:
+        
+        part_split=data.split("*")
+        data = part_split[0]
+        print("instruction data:",data)
+        return data
+
     while True:
         part = sock.recv(BUFF_SIZE)
-        cnt+=1
-        data += part
-        if len(part) < BUFF_SIZE:
-            # either 0 or end of data
+        # print('part',part)
+        if part==b"":
+            print("no msg")
+            break 
+        part_split=part.decode("utf-8").split("*")
+        data += part_split[0]
+        print('data_len',len(data))
+        if len(part_split) > 1 : # There is a "*" in the part
+            if len(part_split[1]) > 0:
+                next_msg = part_split[1]
             break
     return data
 
-
+connect_to_game()
 while True:
-    data = recvall(s)
-    # data = s.recv(2048)
-    print('cnt:',cnt)
-    if data==b"":
-        print("no msg")
-        time.sleep(2)
-        continue
-    else:
-        
-        str_data = data.decode("utf-8")
+    try:
+        str_data = recvall(s)
         msg_recv = json.loads(str_data)
-        code = base64.b64decode(msg_recv['code']).decode('utf-8')
+        
         # 判斷 msg 類型, gameinfo or gameover
         if msg_recv['type']=='new_code': 
             binary =json.dumps({'type':'recved'}).encode()
             s.send(binary)
+            model=""
+            if msg_recv['ml_file']!="":
+                print(msg_recv['ml_file'])
+                model = base64.b64decode(msg_recv['ml_file'])
+                save_code('model',model,".sav","wb")
+            code = base64.b64decode(msg_recv['code']).decode('utf-8')
             on_gameinfo(msg_recv['log_id'],msg_recv['compiler'],msg_recv['user_id'],code,msg_recv['fileEnd'])
-        elif msg_recv['type']=='kill_process':
-            score(msg_recv['content'])
+        elif msg_recv['type']=='fork_subprocess':
+            print("recv fork_subprocess")
+            try:
+                p = Popen(subprocess_str,shell=True)
+            except Exception as e:
+                print("Popen error:",e)
+
+
         else:
-            pass
+            print('type',msg_recv['type'])
+            
+    except Exception as e:
+        print("e:",e)
+        connect_to_game()
+        
 
 
 	

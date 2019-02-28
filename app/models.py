@@ -212,7 +212,7 @@ class Post(db.Model):
 class Code(db.Model):
     # 存
     id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.String(1024))
+    body = db.Column(db.String(4096))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     commit_msg = db.Column(db.String(140))
     game_id = db.Column(db.Integer, db.ForeignKey('game.id')) 
@@ -220,6 +220,7 @@ class Code(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     compile_language_id = db.Column(db.Integer, db.ForeignKey('language.id'))
     is_auto_compete = db.Column(db.Boolean,default=True)
+    attach_ml=db.Column(db.Boolean,default=False)
    
 
     def __repr__(self):

@@ -40,14 +40,7 @@
             {% if wait_rooms or gaming_room %}
                 {% include '/games/index/room_list.html' %}
             {% endif %}
-            <button onclick="addroom()">add room</button>
-                <script>
-                 function addroom(name)
-                    {
-                        window.open("{{ url_for('games.add_room')}}");
-                        
-                    }
-                </script>
+            <button onclick="javascript:location.href='/games/add_room'">add room</button>
         </div>
         <h1 color="white">Enter room to watch Game</h1>
         <form method="POST">
