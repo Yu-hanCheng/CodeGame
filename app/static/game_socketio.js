@@ -34,7 +34,7 @@ $(document).ready(function(){
         $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
         $('#chat').scrollTop($('#chat')[0].scrollHeight);
     });
-    socket.on('gameover', function(data){
+    socket.on('gameover', function(data){ 
         alert('l_report:'+ JSON.stringify(data.msg.l_report))
         myPopupjs(data.msg,data.log_id);
         // var popup = document.getElementById("myPopup");
@@ -42,7 +42,6 @@ $(document).ready(function(){
     });
     socket.on('gameobject', function(data) {
     // data=tuple([ball,paddle1[1],paddle2[1],[r_score,l_score]])
-        console.log("data:",data)
         // left_buff.push(data.msg[1][1]);
         // right_buff.push(data.msg[2][1]);
         // ball_buff.push(data.msg[0]);
@@ -50,9 +49,10 @@ $(document).ready(function(){
         right_update(data.msg[2][1]);
         ball_update(data.msg[0]);
         score_update(data.msg[3]);
+        
 
-        $('#showgame').val($('#showgame').val() + data.msg[1][1]+ '\n');
-        $('#showgame').scrollTop($('#showgame')[0].scrollHeight);
+        // $('#showgame').val($('#showgame').val() + data.msg[1][1]+ '\n');
+        // $('#showgame').scrollTop($('#showgame')[0].scrollHeight);
     });
 
     socket.on('message', function(data) {
@@ -150,6 +150,7 @@ function right_update(position){
     $(".right-goalkeeper").css("top",p_top);	
 }
 function score_update(newscores){
+
     Scores.setLeft(newscores[0]);
     Scores.setRight(newscores[1]);
 }
