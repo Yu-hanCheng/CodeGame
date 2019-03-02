@@ -139,7 +139,8 @@ def play():
             paddle1[1] += paddle1_move
             # print('p1 bottom')
         else:
-            print('p1 else')
+            # print('p1 else')
+            pass
 
         if paddle2[1] > HALF_PAD_HEIGHT and paddle2[1] < HEIGHT - HALF_PAD_HEIGHT:
             paddle2[1] += paddle2_move
@@ -153,7 +154,8 @@ def play():
             paddle2[1] += paddle2_move
             # print('p2 bottom')
         else:
-            print('p2 else')
+            # print('p2 else')
+            pass
 
         # print('paddle:(%d,%d,%d)'%(paddle1[1],paddle2[1],ball[0]))
 
@@ -224,7 +226,7 @@ def game(where):
 
 def handle_client_connection(client_socket):
     # connect就進入 socket就進入 handler了, 為什麼connect後還要recv？ 為了判斷是p1連進來 還是p2
-    global paddle1_move,barrier,p1_rt,paddle2_move,p2_rt, playerlist, start,endgame, r_report,l_report
+    global paddle1_move,barrier,p1_rt,paddle2_move,p2_rt, playerlist, start,endgame, l_score, r_score, r_report,l_report
     client_socket.send(json.dumps({'type':"conn",'msg':"connected to server"}).encode())
 
     request = client_socket.recv(1024)
@@ -237,7 +239,7 @@ def handle_client_connection(client_socket):
             #lock.acquire()
             try:
                 barrier[0]=1
-                print('P1 in',barrier)
+                # print('P1 in',barrier)
                 if barrier[1]!=1:
                     pass
                 else:
@@ -249,7 +251,7 @@ def handle_client_connection(client_socket):
                 pass
 
         elif msg['who']=='P2':
-            print('P2 in',barrier)
+            # print('P2 in',barrier)
             p2_rt=time.time()
             identify['P2']=msg['user_id']
             #lock.acquire()
@@ -273,6 +275,7 @@ def handle_client_connection(client_socket):
             request = client_socket.recv(1024)
             if request==b'':
                 print("sys.exit()")
+                client_socket.close()
                 sys.exit()
             else:
                 msg = json.loads(request.decode())
@@ -282,9 +285,9 @@ def handle_client_connection(client_socket):
 
 
         if start == 1:
-            print("re msg:",msg)
+            # print("re msg:",msg)
             if msg['type']=='info':
-                print('info',msg['who'],msg['content'])#paddle_vel
+                # print('info',msg['who'],msg['content'])#paddle_vel
                 if msg['who']=='P1':
                     paddle1_move=msg['content']
                     p1_rt=time.time()
@@ -292,7 +295,7 @@ def handle_client_connection(client_socket):
                     try:
                         barrier[0]=1
                         if barrier[1]==1:
-                            send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2]),log_id)
+                            send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
                             record_content.append([ball,paddle1,paddle2])
                             game('on_p1')
                     finally:
@@ -307,7 +310,7 @@ def handle_client_connection(client_socket):
                     try:
                         barrier[1]=1
                         if barrier[0]==1:
-                            send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2]),log_id)
+                            send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
                             record_content.append([ball,paddle1,paddle2])
                             game('on_p2')
                     finally:
@@ -320,34 +323,36 @@ def handle_client_connection(client_socket):
                 
                 if msg['who']=='P1':
                     l_report = msg['content']
-                    print('l_report',l_report)
+                    # print('l_report',l_report)
                     if r_report!="":
                         
                         send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
 
                         game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
-                        game_exec_address = (game_exec_ip, game_exec_port)
+                        game_exec_address = (game_exec_ip, int(game_exec_port))
                         game_exec=game_exec_client.connect(game_exec_address)
                         game_exec_client.send(json.dumps({'type':'over'}).encode())
                         send_to_Players('score_recved')
+                        sys.exit()
                         break
 
                 elif msg['who']=='P2':
                     r_report = msg['content']
-                    print('r_report',r_report)
+                    # print('r_report',r_report)
                     if l_report!="":
                         send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)                       
                         game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
-                        game_exec_address = (game_exec_ip, game_exec_port)
+                        game_exec_address = (game_exec_ip, int(game_exec_port))
                         game_exec=game_exec_client.connect(game_exec_address)
                         game_exec_client.send(json.dumps({'type':'over'}).encode())
                         send_to_Players('score_recved')
+                        sys.exit()
                         break
 
             
         else:
             time.sleep(0.5)
-            print("game not start, or had over")
+            # print("game not start, or had over")
 
 def serve_app():
     while True:
@@ -409,7 +414,7 @@ if __name__ == '__main__':
     __init__()
 
     wst = threading.Thread(target=serve_app)
-    wst.daemon = True
+    wst.daemon = False
     wst.start()
     wst.join()
     # timeout= threading.Thread(target=timeout_check)

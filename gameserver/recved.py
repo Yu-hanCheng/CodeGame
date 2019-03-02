@@ -25,10 +25,12 @@ def on_gameinfo(log_id,compiler,user_id,usercode,fileEnd):
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)
+            p.kill()
         else:
-            print('stdout:', stdout)
+            p.kill()
     except Exception as e:
         print('Popen error: ',e)
+    return
 
 def save_code(code, fileEnd):
 	# 傳新的程式碼會直接取代掉

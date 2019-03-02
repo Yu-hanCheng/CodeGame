@@ -11,12 +11,14 @@ subserverlist=[]
 
 bind_ip = '127.0.0.1'
 bind_port = 5501
+subservers=2
 identify={}
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((bind_ip, bind_port))
-server.listen(2)  # max backlog of connections
+server.listen(subservers+1)  # max backlog of connections
 global ws
+p=""
 def connectto_web(intervaltime):
     global ws
     while True:
@@ -73,14 +75,16 @@ def ws_msg_handler(msg):
     
 
 def start_game(log_id,path,compiler,fileEnd):
-    
+    global p
     try:
         p = Popen(''+compiler + ' ' + path+'game' + fileEnd + ' ' + bind_ip+' '+ str(bind_port)+' '+str(log_id) + ' ',shell=True, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)
+            p.kill()
         else:
             print('stdout:', stdout)
+            p.kill()
     except Exception as e:
         print('Popen error: ',e)
 
@@ -102,19 +106,25 @@ def tcp_serve_for_sub():
         client_handler.start()
 subserver_cnt=0
 def tcp_client_handle(client_socket):
+    print("tcp_client_handle")
     global subserver_cnt
     subserver_cnt+=1
-    if subserver_cnt==2: # default setting: there are two subservers
+    print("subserver_cnt:",subserver_cnt)
+    if subserver_cnt==subservers: # default setting: there are two subservers
         ws_recv_from_gameserv()
-        while True:
-            request = client_socket.recv(1024)
-            msg = json.loads(request.decode())
-            if msg['type']=='recved':
-                pass
-            elif msg['type']=='over':
-                ws_recv_from_gameserv()
-            else:
-                pass
+        
+    while True:
+        request = client_socket.recv(1024)
+        msg = json.loads(request.decode())
+        print("tcp client:",msg)
+        if msg['type']=='over':
+            global p
+            p.kill()
+            subserver_cnt-=1
+            client_socket.close()
+            ws_recv_from_gameserv()
+        else:
+            pass        
 
 if __name__ == '__main__':
     wst = threading.Thread(target=tcp_serve_for_sub)
