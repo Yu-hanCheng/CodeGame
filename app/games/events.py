@@ -18,11 +18,12 @@ def game_over(message):
     # msg：tuple([l_score,r_score,gametime])??
     # alert myPopupjs(玩家成績報告) on browser
     # save all report not only record content -- 0122/2019
-    print('message[msg][score]:',message['msg']['l_report']['score'])
-    l_report=message['msg']['l_report']
-    r_report=message['msg']['r_report']
+    
+    l_report=json.loads(message['msg']['l_report'])
+    r_report=json.loads(message['msg']['r_report'])
     emit('gameover', {'msg': message['msg'],'log_id':message['log_id']},namespace = '/test',room= message['log_id'])
-    print('l_report[\'score\']:',l_report['score'])
+    print('l_report[\'score\']:',(l_report))
+
     if l_report['score']>r_report['score']:
         winner=l_report['user_id']
     else:
@@ -46,7 +47,6 @@ def game_over(message):
 def test_connect(message):
     # 接收來自 gamemain的訊息並再傳至browser
     # msg={'type':type_class,'who':who,'content':content, 'cnt':cnt} -- 0122/2019
-    print("from game:",message['msg'])
     emit('gameobject', {'msg': message['msg']},namespace = '/test',room= message['log_id'])#,room= message['log_id']
 
 @socketio.on('join_room' ,namespace = '/test')

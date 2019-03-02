@@ -106,17 +106,14 @@ def tcp_serve_for_sub():
         client_handler.start()
 subserver_cnt=0
 def tcp_client_handle(client_socket):
-    print("tcp_client_handle")
     global subserver_cnt
     subserver_cnt+=1
-    print("subserver_cnt:",subserver_cnt)
     if subserver_cnt==subservers: # default setting: there are two subservers
         ws_recv_from_gameserv()
         
     while True:
         request = client_socket.recv(1024)
         msg = json.loads(request.decode())
-        print("tcp client:",msg)
         if msg['type']=='over':
             global p
             p.kill()

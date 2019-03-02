@@ -15,6 +15,7 @@ body {
 	height:400px;
 	position: absolute;
 	left: 50%;
+	background: black;
 	margin-left: -400px;
 	text-align: center;
 }
@@ -30,7 +31,7 @@ body {
 }
 .goalkeeper {
 	width: 20px;
-	height: 30%;
+	height: 33%;
 	position: relative;
 	top: 35%;
 	background: red;

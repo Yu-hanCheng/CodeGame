@@ -35,7 +35,7 @@ $(document).ready(function(){
         $('#chat').scrollTop($('#chat')[0].scrollHeight);
     });
     socket.on('gameover', function(data){ 
-        alert('l_report:'+ JSON.stringify(data.msg.l_report))
+        // alert('l_report:'+ JSON.stringify(data.msg.l_report))
         myPopupjs(data.msg,data.log_id);
         // var popup = document.getElementById("myPopup");
         // popup.classList.toggle("show");
@@ -157,24 +157,6 @@ function score_update(newscores){
 var startTime=new Date();
 var speed=10;
 var start_flag=0;
-
-// setInterval(function(){
-    
-//     if (ball_buff.length>buff_normal){ 
-//         start_flag=1;
-//         // console.clear();   
-//         speed=10;
-//     }else if(ball_buff.length<buff_min){
-//         speed=50;
-//     }
-
-//     if (start_flag==1){
-//         left_update(left_buff.shift());
-//         right_update(right_buff.shift());
-//         ball_update(ball_buff.shift());
-        
-//     }
-// },speed);
 
 var Scores = {
 	// set lsef tscore with animation
