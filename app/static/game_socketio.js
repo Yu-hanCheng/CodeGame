@@ -109,7 +109,7 @@ function myPopupjs(data_msg,log_id){
         mytable += "</tr><tr><td>" +key+ "</td>"+ "<td>" + l_data[key]+ "</td>"+"<td>" + r_data[key]+ "</td>";
     }
     
-    mytable += "</tr><tr><td></td><td><button onclick=\"javascript:location.href='/games/rank_list/"+log_id+"'\" >rank</button></td></tr></tbody></table>";
+    mytable += "</tr><tr><td></td><td><button class=\"button\" onclick=\"javascript:location.href='/games/rank_list/"+log_id+"'\" >rank</button></td></tr></tbody></table>";
     
     document.getElementById("myPopup_dom").innerHTML = mytable;
 
