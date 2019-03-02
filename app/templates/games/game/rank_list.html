@@ -1,5 +1,8 @@
+<body background="https://i.imgur.com/OPE70hq.jpg">
+{% extends "base.html" %}
+{% block app_content %}
 <br>
-<h3>room_list</h3>
+<h3>rank_list</h3>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='list_css.css') }}">
 <div class="container">
         <div class="modal-content">
@@ -41,3 +44,5 @@
         console.log(typeof(log_id));
     }
 </script>
+{% endblock %}
+</body>
