@@ -82,7 +82,7 @@ def __init__():
 
 
 def send_to_webserver(msg_type,msg_content,logId):
-    print("web:",msg_type)
+    
     global socketIO
     try:
         socketIO.emit(msg_type,{'msg':msg_content,'log_id':logId})
@@ -146,17 +146,15 @@ def play():
             paddle2[1] += paddle2_move
             # print('p2 normal')
         elif paddle2[1] <= HALF_PAD_HEIGHT and paddle2_move > 0:
-            paddle1[1] = HALF_PAD_HEIGHT
+            paddle2[1] = HALF_PAD_HEIGHT
             paddle2[1] += paddle2_move
             # print('p2 top')
         elif paddle2[1] >= HEIGHT - HALF_PAD_HEIGHT and paddle2_move < 0:
-            paddle1[1] =HEIGHT- HALF_PAD_HEIGHT
+            paddle2[1] =HEIGHT- HALF_PAD_HEIGHT
             paddle2[1] += paddle2_move
             # print('p2 bottom')
         else:
-            # print('p2 else')
             pass
-
         # print('paddle:(%d,%d,%d)'%(paddle1[1],paddle2[1],ball[0]))
 
         ball[0] += int(ball_vel[0])
@@ -208,7 +206,7 @@ def play():
                 print('ball ',ball)
                 ball_init(True)
         else:
-            print("else")
+            pass
     except(RuntimeError, TypeError, NameError):
         # raise SystemExit
         print('play except')
@@ -226,6 +224,7 @@ def game(where):
 
 def handle_client_connection(client_socket):
     # connect就進入 socket就進入 handler了, 為什麼connect後還要recv？ 為了判斷是p1連進來 還是p2
+    global ball,paddle1,paddle2,record_content
     global paddle1_move,barrier,p1_rt,paddle2_move,p2_rt, playerlist, start,endgame, l_score, r_score, r_report,l_report
     client_socket.send(json.dumps({'type':"conn",'msg':"connected to server"}).encode())
 
@@ -283,7 +282,7 @@ def handle_client_connection(client_socket):
             print('error',e)
             sys.exit()
 
-
+        lock.acquire()
         if start == 1:
             # print("re msg:",msg)
             if msg['type']=='info':
@@ -353,6 +352,7 @@ def handle_client_connection(client_socket):
         else:
             time.sleep(0.5)
             # print("game not start, or had over")
+        lock.release()
 
 def serve_app():
     while True:
