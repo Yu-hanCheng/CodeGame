@@ -1,12 +1,45 @@
 #!/usr/bin/python
-import socket , time, json,sys
+import socket , time, json,sys,os,threading,psutil
+from functools import reduce
 address = (sys.argv[1], 8800)
 user_id = sys.argv[2]
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
 s_sucess=""
 s_sucess=s.connect(address)
 
+
+
+cpu_list=[]
+mem_list=[]
      
+pid=os.getpid()
+p = psutil.Process(pid)
+def get_usage():
+    global p,cpu_list, mem_list
+    cpu_list.append(p.cpu_percent())
+    mem_list.append(p.memory_percent())
+
+class setInterval :
+    def __init__(self,interval,func) :
+        self.interval=interval
+        self.func=func
+        self.stopEvent=threading.Event()
+        thread=threading.Thread(target=self.__setInterval)
+        thread.start()
+
+    def __setInterval(self) :
+        nextTime=time.time()+self.interval
+        while not self.stopEvent.wait(nextTime-time.time()) :
+            nextTime+=self.interval
+            self.func()
+
+    def cancel(self) :
+        self.stopEvent.set()
+
+# start action every 0.6s
+inter=setInterval(0.1,get_usage)
+
+
 def gameover():
     sys.exit()
 
@@ -49,12 +82,18 @@ def communicate(type_class,content):
     time.sleep(0.015) 
 
 def score(msg_from_gamemain):# CPU, MEM Utility
+    inter.cancel
+    global p,cpu_list, mem_list
+    print('l_score',msg_from_gamemain['score'])
     if who == 'P1':
         score = msg_from_gamemain['score'][0]
+
     elif who == 'P2':
         score = msg_from_gamemain['score'][1]
-     
-    communicate('score',json.dumps({'user_id':user_id,'score':score,'cpu':'50','mem':'30','time':'554400'}))#json.dumps({'cpu':'50','mem':'30','time':'554400'})
+
+    cpu = round(reduce(lambda x, y: x + y, cpu_list) / len(cpu_list),3)
+    mem = round(reduce(lambda x, y: x + y, mem_list) / len(mem_list),3)
+    communicate('score',json.dumps({'user_id':user_id,'score':score,'cpu':cpu,'mem':mem,'time':'554400'}))
     
 def recvall(sock):
     global cnt

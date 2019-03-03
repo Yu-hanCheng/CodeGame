@@ -77,14 +77,14 @@ def ws_msg_handler(msg):
 def start_game(log_id,path,compiler,fileEnd):
     global p
     try:
-        p = Popen(''+compiler + ' ' + path+'game' + fileEnd + ' ' + bind_ip+' '+ str(bind_port)+' '+str(log_id) + ' ',shell=True, stdout=PIPE, stderr=PIPE)
-        stdout, stderr = p.communicate()
-        if stderr:
-            print('stderr:', stderr)
-            p.kill()
-        else:
-            print('stdout:', stdout)
-            p.kill()
+        p = Popen(''+compiler + ' ' + path+'game' + fileEnd + ' ' + bind_ip+' '+ str(bind_port)+' '+str(log_id) + ' ',shell=True)
+        # stdout, stderr = p.communicate()
+        # if stderr:
+        #     print('stderr:', stderr)
+        #     p.kill()
+        # else:
+        #     print('stdout:', stdout)
+        #     p.kill()
     except Exception as e:
         print('Popen error: ',e)
 
@@ -111,8 +111,23 @@ def tcp_client_handle(client_socket):
     if subserver_cnt==subservers: # default setting: there are two subservers
         ws_recv_from_gameserv()
         
+def recvall(sock):
+    global cnt
+    BUFF_SIZE = 1024 # 4 KiB
+    data = b''
     while True:
-        request = client_socket.recv(1024)
+        part = sock.recv(BUFF_SIZE)
+        cnt+=1
+        data += part
+        if len(part) < BUFF_SIZE:
+            # either 0 or end of data
+            break
+    return data  
+
+
+    while True:
+        request = recvall(client_socket)
+        
         msg = json.loads(request.decode())
         if msg['type']=='over':
             global p

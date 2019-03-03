@@ -292,7 +292,7 @@ def handle_client_connection(client_socket):
                     p1_rt=time.time()
                     #lock.acquire()
                     try:
-                        barrier[0]=1
+                        barrier[0]=1 ## return to 0 in send_to_player
                         if barrier[1]==1:
                             send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
                             record_content.append(copy.deepcopy([ball,paddle1,paddle2]))

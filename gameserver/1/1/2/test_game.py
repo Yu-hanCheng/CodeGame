@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import socket,json,time,sys
-import threading,math, random
+import threading,math, random,copy
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
 socketIO=SocketIO('127.0.0.1', 5500, LoggingNamespace)
@@ -201,7 +201,7 @@ def handle_client_connection(client_socket):
                             #lock.acquire()
                             try:
                                 send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2]),log_id)
-                                record_content.append([ball,paddle1,paddle2])
+                                record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
                                 game('on_p1')
                             finally:
                                 #lock.release()
@@ -218,9 +218,10 @@ def handle_client_connection(client_socket):
                     if msg['type']=='score':
                         client_socket.send(json.dumps({'type':"score_recved"}).encode())
                         if msg['who']=='P1':
-                            print("P1 score")
+                            print("record_content:",record_content)
                             l_report = msg['content']
-                            send_to_webserver('over',{'l_report':l_report,'r_report':"r_report",'record_content':str(record_content)},log_id)
+                            r_report = {"user_id": "2", "score": 1, "cpu": 1.425, "mem": 0.054, "time": "554400"}
+                            send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':str(record_content)},log_id)
                             break
 
                     elif msg['type']=='disconnect':
