@@ -102,8 +102,10 @@ def commit():
     code_res = test_code(compiler,save_path,filename,file_end) # run code and display on browser
     
     if code_res[0]:
-        data_to_send={'code':code,'user_id':int(json_obj['user_id']),'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
-        socketio.emit('code_ok',data_to_send)
+        print("code_ok")
+        global code_data
+        code_data={'code':code,'user_id':int(json_obj['user_id']),'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
+
     else:
         flash("Can't upload")
     return "received code"
@@ -122,6 +124,19 @@ def gameobject(message):
     print("recv socketio msg:",message['msg'])
     socketio.emit('info', {'msg': message['msg']})
 
+@socketio.on('over')#from test_game
+def gameobject(message):
+    print("over")
+    socketio.emit('gameover', {'msg': message['msg'],'log_id':message['log_id']})
+
+@socketio.on('upload_toWeb')#from localbrowser
+def upload_code(message):
+    global code_data
+    def respose_toLocalapp(*args):
+        print("upload_ok")
+        socketio.emit('upload_ok', {'msg':""})
+    send_to_web("upload_code",code_data,"upload_ok",respose_toLocalapp)
+    
 
 
 def append_lib(save_path,filename,file_end):
@@ -185,7 +200,6 @@ def save_code(save_path,filename,file_end,code):
         print('write error:',e)
 
 def send_to_web(event_name,send_data,listen_name,callback):
-    print('sendtoweb')
     try:
         socketIO.on(listen_name,callback)
         socketIO.emit(event_name,send_data)

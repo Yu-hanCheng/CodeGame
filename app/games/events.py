@@ -71,12 +71,12 @@ def select_code(message):
     
     emit_code(l, select_code)
 
-@socketio.on('commit_code')# ,namespace = '/local'
-def commit_code(message):
+@socketio.on('upload_code')# ,namespace = '/local'
+def upload_code(message):
     # 接收並儲存 localApp上傳的程式碼 -- 0122/2019
     # {'code':code,'user_id':json_obj['user_id'],'commit_msg':commit_msg,'game_id':obj[3],'file_end':obj[7]}
     # Language.filename_extension
-    print("commit_code!!")
+    print("uploaded_code!!")
     sid = request.sid
 
     lan_id = set_language_id(message['file_end'])

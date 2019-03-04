@@ -180,7 +180,8 @@ def handle_client_connection(client_socket):
             try:
                 start=1
                 send_to_Players("gameinfo")
-                    
+            except (RuntimeError, TypeError, NameError) as e:
+                print("send_to_player error",e)
     while True:
         time.sleep(0.01)
         if start == 1:

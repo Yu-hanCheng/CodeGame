@@ -41,18 +41,14 @@ $(document).ready(function(){
         // popup.classList.toggle("show");
     });
     socket.on('gameobject', function(data) {
-    // data=tuple([ball,paddle1[1],paddle2[1],[r_score,l_score]])
-        // left_buff.push(data.msg[1][1]);
-        // right_buff.push(data.msg[2][1]);
-        // ball_buff.push(data.msg[0]);
-        left_update(data.msg[1][1]);
-        right_update(data.msg[2][1]);
+        let left = $('.left-goalkeeper')
+        let right = $('.right-goalkeeper')
+        paddle_update(data['msg'][1], left);
+        paddle_update(data['msg'][2], right);
+
         ball_update(data.msg[0]);
         score_update(data.msg[3]);
         
-
-        // $('#showgame').val($('#showgame').val() + data.msg[1][1]+ '\n');
-        // $('#showgame').scrollTop($('#showgame')[0].scrollHeight);
     });
 
     socket.on('message', function(data) {
@@ -131,23 +127,14 @@ function ball_update(position){
     // console.log($(".ball").left())
     $(".ball").css({"left":position[0]-width/2,"top":position[1]-height/2});
 }
-function left_update(position){
+function paddle_update(position, direction){
     var windowHeight = $(window).height();
-    var height = $(".left-goalkeeper").outerHeight();
-    var p_top = position-height/2;
+    var height = direction.outerHeight();
+    var p_top = position[1]-height/2;
     var topMax = windowHeight - p_top - 5;
     if (p_top < 5) p_top = 5;
     if (p_top > topMax) p_top = topMax;
-    $(".left-goalkeeper").css("top",p_top);	
-}
-function right_update(position){
-    var windowHeight = $(window).height();
-    var height = $(".right-goalkeeper").outerHeight();
-    var p_top = position-height/2;
-    var topMax = windowHeight - height - 5;
-    if (p_top < 5) p_top = 5;
-    if (p_top > topMax) p_top = topMax;
-    $(".right-goalkeeper").css("top",p_top);	
+    direction.css("top",p_top);	
 }
 function score_update(newscores){
 

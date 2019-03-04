@@ -1,0 +1,56 @@
+/* Popup container - can be anything you want */
+.popup {
+    position:  absolute;
+    top: 30%;
+  left: 50%;
+  /* bring your own prefixes */
+  /* transform: translate(-50%, -50%); */
+    display: inline-block;
+    cursor: pointer;
+    z-index: 20;
+}
+
+/* The actual popup */
+.popup .popuptext {
+    width: 260px;
+    background:yellowgreen;
+    color:forestgreen;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 0;
+    position: absolute;
+    z-index: 1;
+    top: 90%;
+    left: 50%;
+  /* bring your own prefixes */
+  transform: translate(-50%, -50%);
+}
+
+/* Toggle this class - hide and show the popup */
+.popup .show {
+    visibility: visible;
+    -webkit-animation: fadeIn 1s;
+    animation: fadeIn 1s;
+}
+.button {
+    background-color:olive;
+    border:azure;
+    color: white;
+    /* padding: 15px 32px; */
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+  }
+/* Add animation (fade in the popup) */
+@-webkit-keyframes fadeIn {
+    from {opacity: 0;} 
+    to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity:1 ;}
+}

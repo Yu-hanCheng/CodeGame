@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import socket,json,time,sys
-import threading,math, random
+import threading,math, random,copy
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
 # socketIO=SocketIO('18.220.184.154', 5000, LoggingNamespace)
@@ -295,7 +295,7 @@ def handle_client_connection(client_socket):
                         barrier[0]=1
                         if barrier[1]==1:
                             send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
-                            record_content.append([ball,paddle1,paddle2])
+                            record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
                             game('on_p1')
                     finally:
                         #lock.release()
@@ -310,7 +310,7 @@ def handle_client_connection(client_socket):
                         barrier[1]=1
                         if barrier[0]==1:
                             send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
-                            record_content.append([ball,paddle1,paddle2])
+                            record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
                             game('on_p2')
                     finally:
                         #lock.release()

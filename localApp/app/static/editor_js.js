@@ -38,29 +38,23 @@ $(document).ready(function(){
             });
     socket_local.on('info', function(data) {
         //tuple([ball,paddle1,paddle2])
-                ball_update(data['msg'][0])
-                left_update(data['msg'][1])
-                right_update(data['msg'][2])
+        let left = $('.left-goalkeeper')
+        let right = $('.right-goalkeeper')
+        paddle_update(data['msg'][1], left);
+        ball_update(data['msg'][0]);
                 
             });
-    socket_local.on('code_ok', function(data) {
-            function popup_box() {
-                var to_upload;
-                if (confirm("upload the code to Web!")) {
-                    to_upload = 1;
-                } else {
-                    to_upload = 0;
-                }
-                return to_upload
-              }
-            if (popup_box()){
-                socket.emit('commit_code',data);
-                console.log("emit upload_code_to_web")
-                // send_to_back(data['msg'],"text/plain","upload_toweb")
-            }
-            });
+    socket_local.on('gameover', function(data){ 
+        console.log("gameover")
+        myPopupjs(data.msg,data.log_id);
+    });
+    socket_local.on('upload_ok', function(data){ 
+        console.log("upload_ok")
+        alert("upload to webserver successfully",function(){ window.location.reload(); })
+        // window.location.refresh();
 
-    $('form#upload_to_server').submit(function(event) {
+    });
+    $('form#commit_to_server').submit(function(event) {
         
         let choosed= $("#chooseFile")[0].files;
         convertFile(choosed[0]).then(data => {
@@ -71,9 +65,17 @@ $(document).ready(function(){
           .catch(err => console.log(err))
         
     });
-
 });
 
+
+function upload_code(){
+    socket_local.emit('upload_toWeb', {msg: ""});
+    document.getElementById("myPopup_dom").style.display = "none";
+    
+}
+function cancel(){
+    document.getElementById("myPopup_dom").style.display = "none";
+}
 function commit_code(){
     const editor_content=editor.getValue();
     var encodedData = window.btoa(editor_content);
@@ -159,7 +161,6 @@ function leave_room() {
     socket.emit('left', {}, function() {
         socket.disconnect();
         // go back to the login page
-        window.location.href = "{{ url_for('games.index') }}";
     });
 }
 function changeGame(){
@@ -217,7 +218,7 @@ function myPopupjs(data_msg,log_id){
     console.log('msg type parse:'+typeof(JSON.parse(data_msg.l_report)))
     var mytable = "<table class=\"popuptext\" ><tbody><tr>" ;
     var l_data = JSON.parse(data_msg.l_report)
-    var r_data = JSON.parse(data_msg.r_report)
+    var r_data = {'user_id':1,'score':0,'cpu':'50','mem':'30','time':'554400'}
     
     mytable += "</tr><tr><td></td><td>SCORE</td></tr><tr>";
     mytable += "</tr><tr><td></td><td>P1</td><td>P2</td></tr><tr>";
@@ -226,8 +227,9 @@ function myPopupjs(data_msg,log_id){
         mytable += "</tr><tr><td>" +key+ "</td>"+ "<td>" + l_data[key]+ "</td>"+"<td>" + r_data[key]+ "</td>";
     }
     
-    mytable += "</tr><tr><td></td><td><button onclick=\"javascript:location.href='/games/rank_list/"+log_id+"'\" >rank</button></td></tr></tbody></table>";
+    mytable += "</tr><tr><td></td><td><button onclick=\"upload_code()\" >upload to web</button></td><td><button onclick=\"location.reload()\" >cancel</button></td></tr></tbody></table>";
     
+    document.getElementById("myPopup_dom").style.display = "block";
     document.getElementById("myPopup_dom").innerHTML = mytable;
 
 }
@@ -248,24 +250,16 @@ function ball_update(position){
     // console.log($(".ball").left())
     $(".ball").css({"left":position[0]-width/2,"top":position[1]-height/2});
 }
-function left_update(position){
+function paddle_update(position, direction){
     var windowHeight = $(window).height();
-    var height = $(".left-goalkeeper").outerHeight();
-    var p_top = position-height/2;
+    var height = direction.outerHeight();
+    var p_top = position[1]-height/2;
     var topMax = windowHeight - p_top - 5;
     if (p_top < 5) p_top = 5;
     if (p_top > topMax) p_top = topMax;
-    $(".left-goalkeeper").css("top",p_top);	
+    direction.css("top",p_top);	
 }
-function right_update(position){
-    var windowHeight = $(window).height();
-    var height = $(".right-goalkeeper").outerHeight();
-    var p_top = position-height/2;
-    var topMax = windowHeight - height - 5;
-    if (p_top < 5) p_top = 5;
-    if (p_top > topMax) p_top = topMax;
-    $(".right-goalkeeper").css("top",p_top);	
-}
+
 function score_update(newscores){
     Scores.setLeft(newscores[0]);
     Scores.setRight(newscores[1]);

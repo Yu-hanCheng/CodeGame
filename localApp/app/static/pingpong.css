@@ -6,6 +6,7 @@
 	left: 50%;
 	margin-left: -400px;
 	text-align: center;
+	background: black;
 }
 .ball {
 	width: 40px;
@@ -21,18 +22,17 @@
 	width: 20px;
 	height: 30%;
 	position: relative;
-	top: 35%;
+	/* top: 35%; */
 	background: red;
 	border: 1px solid rgba(0, 0, 0, 0.5);
 	border-radius: 5px;
 }
 .left-goalkeeper {
 	float: left;
-	margin-left: 10px;
 }
 .right-goalkeeper {
 	float: right;
-	margin-right: 10px;
+	height: 100%;
 }
 .cat {
 	height: 50px;
