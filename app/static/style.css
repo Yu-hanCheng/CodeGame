@@ -39,9 +39,11 @@ body {
 }
 .left-goalkeeper {
 	float: left;
+	/* margin-left: 10px; */
 }
 .right-goalkeeper {
 	float: right;
+	/* margin-right: 10px; */
 }
 .cat {
 	height: 50px;

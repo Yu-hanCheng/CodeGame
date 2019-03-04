@@ -22,7 +22,7 @@ def game_over(message):
     l_report=json.loads(message['msg']['l_report'])
     r_report=json.loads(message['msg']['r_report'])
     emit('gameover', {'msg': message['msg'],'log_id':message['log_id']},namespace = '/test',room= message['log_id'])
-    print('l_report[\'score\']:',(l_report))
+    
 
     if l_report['score']>r_report['score']:
         winner=l_report['user_id']

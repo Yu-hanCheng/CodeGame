@@ -197,7 +197,7 @@ def rank_list(log_id):
 def display_record(log_id):
     log = Log.query.filter_by(id=log_id).first()
     record_content = json.loads(log.record_content)
-    print(record_content['record_content'])
+    print(record_content['record_content'][-3])
     return render_template('games/game/display.html', title='display',content=record_content['record_content'])
 
 
