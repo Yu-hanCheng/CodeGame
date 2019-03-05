@@ -143,8 +143,8 @@ def play():
         if int(ball[0]) >= (WIDTH + 1 - BALL_RADIUS - PAD_WIDTH):
             if cnt>1000:
                 l_score += 1
-                start=0
                 send_to_Players('endgame')
+                start=0
                 
             else:
                 ball_vel[0] = -ball_vel[0]
@@ -167,7 +167,7 @@ def game(where):
 
 def handle_client_connection(client_socket):
     
-    global paddle1_move,barrier,p1_rt,paddle2_move,p2_rt, playerlist, start,r_report,l_report
+    global paddle1_move,barrier,p1_rt,paddle2_move,p2_rt, playerlist, start,r_report,l_report,cnt
     client_socket.send(json.dumps({'type':"conn",'msg':"connected to server"}).encode())
 
     request = client_socket.recv(1024)
@@ -183,7 +183,6 @@ def handle_client_connection(client_socket):
             except (RuntimeError, TypeError, NameError) as e:
                 print("send_to_player error",e)
     while True:
-        time.sleep(0.01)
         if start == 1:
             try:
                 request = client_socket.recv(1024)
@@ -200,7 +199,7 @@ def handle_client_connection(client_socket):
                             p1_rt=time.time()
                             #lock.acquire()
                             try:
-                                send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2]),log_id)
+                                send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,cnt]),log_id)
                                 record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
                                 game('on_p1')
                             finally:
@@ -218,9 +217,8 @@ def handle_client_connection(client_socket):
                     if msg['type']=='score':
                         client_socket.send(json.dumps({'type':"score_recved"}).encode())
                         if msg['who']=='P1':
-                            print("record_content:",record_content)
                             l_report = msg['content']
-                            r_report = {"user_id": "2", "score": 1, "cpu": 1.425, "mem": 0.054, "time": "554400"}
+                            r_report = {"user_id": "2", "score": 0, "cpu": 1.425, "mem": 0.054, "time": "554400"}
                             send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':str(record_content)},log_id)
                             break
 

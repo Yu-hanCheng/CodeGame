@@ -43,7 +43,6 @@ inter=setInterval(0.1,get_usage)
 def gameover():
     sys.exit()
 
-print(s_sucess)
 connecttoserver = s.recv(2048)
 msg={'type':'connect','who':who,'user_id':user_id}
 str_ = json.dumps(msg)
@@ -55,12 +54,10 @@ def on_gameinfo(message):
     global paddle_vel,paddle_pos
     tuple_msg=message['content']
     cnt = tuple_msg[-1]
-    print("paddle_pos:",tuple_msg[1])
     if who=="P1":
         paddle_pos=tuple_msg[1]
     else:
         paddle_pos=tuple_msg[2]
-    print("ball pos:",tuple_msg[0],cnt)
     if cnt>2:
         del ball_pos[0]
         ball_pos.append(tuple_msg[0])
@@ -75,7 +72,6 @@ def on_gameinfo(message):
 def communicate(type_class,content):
     global paddle_vel,s,who
     msg={'type':type_class,'who':who,'content':content, 'cnt':cnt}
-    print('type_class:',type_class)
     str_ = json.dumps(msg)
     binary =str_.encode()
     s.send(binary)
@@ -84,7 +80,6 @@ def communicate(type_class,content):
 def score(msg_from_gamemain):# CPU, MEM Utility
     inter.cancel
     global p,cpu_list, mem_list
-    print('l_score',msg_from_gamemain['score'])
     if who == 'P1':
         score = msg_from_gamemain['score'][0]
 
@@ -112,7 +107,6 @@ cnt =6000
 while cnt>0:
     data = recvall(s)
     if data==b"":
-        print("no")
         gameover()
     else:
         try:

@@ -8,7 +8,10 @@ from functools import wraps
 from flask_socketio import emit
 socketIO = SocketIO('localhost', 5000, LoggingNamespace)
 app.secret_key = "secretkey"
-
+code_data=""
+isCodeOk=0
+p_gamemain=""
+p=""
 def login_required(func):
     @wraps(func)
     def wrapper(*args, **kargs):
@@ -99,12 +102,13 @@ def commit():
    
     save_code(save_path,filename,file_end,code)
     compiler = json_obj['lan_compiler']
+    global code_data,isCodeOk
+    code_data={'code':code,'user_id':int(json_obj['user_id']),'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
     code_res = test_code(compiler,save_path,filename,file_end) # run code and display on browser
     
     if code_res[0]:
         print("code_ok")
-        global code_data
-        code_data={'code':code,'user_id':int(json_obj['user_id']),'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
+        isCodeOk=1
 
     else:
         flash("Can't upload")
@@ -127,6 +131,9 @@ def gameobject(message):
 @socketio.on('over')#from test_game
 def gameobject(message):
     print("over")
+    global p_gamemain,p
+    p.kill()
+    p_gamemain.kill()
     socketio.emit('gameover', {'msg': message['msg'],'log_id':message['log_id']})
 
 @socketio.on('upload_toWeb')#from localbrowser
@@ -158,7 +165,7 @@ def append_lib(save_path,filename,file_end):
 def test_code(compiler,save_path,filename,file_end):
     filetoexec=save_path+filename+file_end
     from subprocess import Popen, PIPE
-    
+    global p_gamemain,p
     append_lib(save_path,filename,file_end)
     
     try: 
