@@ -30,23 +30,14 @@
         // console.log($(".ball").left())
         $(".ball").css({"left":position[0]-width/2,"top":position[1]-height/2});
     }
-    function left_update(position){
+    function paddle_update(position,direction){
         var windowHeight = $(window).height();
-        var height = $(".left-goalkeeper").outerHeight();
-        var p_top = position-height/2;
+        var height =direction.outerHeight();
+        var p_top = position[1]-height/2;
         var topMax = windowHeight - p_top - 5;
         if (p_top < 5) p_top = 5;
         if (p_top > topMax) p_top = topMax;
-        $(".left-goalkeeper").css("top",p_top);	
-    }
-    function right_update(position){
-        var windowHeight = $(window).height();
-        var height = $(".right-goalkeeper").outerHeight();
-        var p_top = position-height/2;
-        var topMax = windowHeight - height - 5;
-        if (p_top < 5) p_top = 5;
-        if (p_top > topMax) p_top = topMax;
-        $(".right-goalkeeper").css("top",p_top);	
+        direction.css("top",p_top);	
     }
     function score_update(newscores){
         Scores.setLeft(newscores[0]);
@@ -58,7 +49,7 @@
     }
     let display_content ={{content}}
     var startTime=new Date();
-    var speed=30;
+    var speed=10;
     var start_flag=0;
     var position=[[97, 99], [1, 200], [799, 200]];
     var refreshIntervalId=setInterval(function(){
@@ -69,9 +60,11 @@
             clearInterval(refreshIntervalId);
             display_end();
         }else{ 
+        let left = $('.left-goalkeeper')
+        let right = $('.right-goalkeeper')
         ball_update(position[0]);
-        left_update(position[1]);
-        right_update(position[2]);
+        paddle_update(position[1],left);
+        paddle_update(position[2],right);
         }
     },speed);
     </script>
