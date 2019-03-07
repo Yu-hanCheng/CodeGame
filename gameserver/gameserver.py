@@ -186,8 +186,11 @@ def message_received(client, server, message):
 	# 續上：同時傳遞遊戲結果的訊息給 webserver (games/event.py 接收)
 
 	global game_exec_id
-	data = json.loads(message)
-	
+	try:
+		data = json.loads(message)
+	except Exception as e:
+		print("data json loads failed:",e)
+		return
 	if data['from']=='webserver':
 		global webserver_id
 		webserver_id = client
@@ -204,10 +207,13 @@ def message_received(client, server, message):
 	elif data['from']=='game':
 		print("gameover")
 					
-	
-server.set_fn_new_client(new_client)# set callback function
-server.set_fn_message_received(message_received)
-server.run_forever()
+while True:
+	try:
+		server.set_fn_new_client(new_client)# set callback function
+		server.set_fn_message_received(message_received)
+		server.run_forever()
+	except Exception as e:
+		print("server exception:",e)
 
 
 
