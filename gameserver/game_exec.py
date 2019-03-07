@@ -105,31 +105,32 @@ def tcp_serve_for_sub():
         )
         client_handler.start()
 subserver_cnt=0
-def tcp_client_handle(client_socket):
-    global subserver_cnt
-    subserver_cnt+=1
-    if subserver_cnt==subservers: # default setting: there are two subservers
-        ws_recv_from_gameserv()
-        
 def recvall(sock):
-    global cnt
+    
     BUFF_SIZE = 1024 # 4 KiB
     data = b''
     while True:
         part = sock.recv(BUFF_SIZE)
-        cnt+=1
+        
         data += part
         if len(part) < BUFF_SIZE:
             # either 0 or end of data
             break
-    return data  
-
+    return data 
+def tcp_client_handle(client_socket):
+    global subserver_cnt,subservers
+    subserver_cnt+=1
+    if subserver_cnt==subservers: # default setting: there are two subservers
+        ws_recv_from_gameserv()
+        
 
     while True:
         request = recvall(client_socket)
         
         msg = json.loads(request.decode())
+
         if msg['type']=='over':
+            print("exec recv over")
             global p
             p.kill()
             subserver_cnt-=1

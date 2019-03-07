@@ -25,9 +25,10 @@ def on_gameinfo(log_id,compiler,user_id,usercode,fileEnd):
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)
-            p.kill()
+            # p.kill()
         else:
-            p.kill()
+            # p.kill()
+            pass
     except Exception as e:
         print('Popen error: ',e)
     return
