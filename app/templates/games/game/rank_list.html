@@ -27,7 +27,8 @@
                             <td>{{ log.username }}</td>
                             <td>{{ log.score }}</td>
                             <td>{{ log.id }}</td>
-                            <td><button onclick="javascript:location.href='{{ url_for('games.display_record',log_id=log.id ) }}'" >Record</button></td> 
+                            <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.display_record',log_id=log.id,func_type=1 ) }}'" >Record</button></td> 
+                            <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.display_record',log_id=log.id,func_type=0 ) }}'" >Download</button></td> 
                         </tr>
                     {% endfor %}
                     </tbody>
