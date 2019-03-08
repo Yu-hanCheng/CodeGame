@@ -19,6 +19,8 @@ server.bind((bind_ip, bind_port))
 server.listen(subservers+1)  # max backlog of connections
 global ws
 p=""
+Can_recving=False
+Is_thread_created=False
 def connectto_web(intervaltime):
     global ws
     while True:
@@ -32,23 +34,25 @@ def connectto_web(intervaltime):
     
 connectto_web(1)
 def ws_recv_from_gameserv():
-    global ws
+    global ws,Can_recving
     while True:
-        try:
-            ws.send(json.dumps({'from':"game_exec",'msg':"get_codes"}))
-        except:
-            print("cannot connect now")
-            connectto_web(0.3)
-            ws.send(json.dumps({'from':"game_exec",'msg':"get_codes"}))
-        try:
-            recv_msg = ws.recv()
-        except:
-            connectto_web(0.3)
-            recv_msg = ws.recv()
+        if Can_recving:
+            try:
+                ws.send(json.dumps({'from':"game_exec",'msg':"get_codes"}))
+            except:
+                print("cannot connect now")
+                connectto_web(0.3)
+                ws.send(json.dumps({'from':"game_exec",'msg':"get_codes"}))
+            try:
+                recv_msg = ws.recv()
+            except Exception as e:
+                print("ws recv error:",e)
+                connectto_web(0.3)
+                recv_msg = ws.recv()
 
-        if len(recv_msg) > 5:
-            ws_msg_handler(recv_msg)
-            return 0
+            if len(recv_msg) > 5:
+                ws_msg_handler(recv_msg)
+                return 0
         time.sleep(1)
 
 def ws_msg_handler(msg):
@@ -78,27 +82,26 @@ def start_game(log_id,path,compiler,fileEnd):
     global p
     try:
         p = Popen(''+compiler + ' ' + path+'game' + fileEnd + ' ' + bind_ip+' '+ str(bind_port)+' '+str(log_id) + ' ',shell=True)
-        # stdout, stderr = p.communicate()
-        # if stderr:
-        #     print('stderr:', stderr)
-        #     p.kill()
-        # else:
-        #     print('stdout:', stdout)
-        #     p.kill()
     except Exception as e:
         print('Popen error: ',e)
 
 
 def tcp_send_to_subserver(subserver_cnt,log_id,user_id,compiler, fileEnd, code):
     # subserverlist[subserver_cnt].send(json.dumps({'log_id':log_id,'user_id':user_id,'code':code}).encode())
+    global subserverlist
     codeString = base64.b64encode(code.encode('utf-8')).decode('utf-8')
     jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'code':codeString,'user_id':user_id}).encode()
     subserverlist[subserver_cnt].send(jsonStr)
 
-def tcp_serve_for_sub():    
+def tcp_serve_for_sub():
+    global subserver_cnt,subserverlist
     while True:
         client_sock, address = server.accept()
-        subserverlist.append(client_sock)
+        # if address[0]!="127.0.0.1": # !=127.0.0.1 -> subserver, ==127.0.0.1 -> game
+        if len(subserverlist)<2:
+            subserverlist.append(client_sock)
+            subserver_cnt+=1
+        
         client_handler = threading.Thread(
             target=tcp_client_handle,
             args=(client_sock,)  # without comma you'd get a... TypeError: handle_client_connection() argument after * must be a sequence, not _socketobject
@@ -118,26 +121,40 @@ def recvall(sock):
             break
     return data 
 def tcp_client_handle(client_socket):
-    global subserver_cnt,subservers
-    subserver_cnt+=1
+    global subserver_cnt,subservers,Is_thread_created,Can_recving
     if subserver_cnt==subservers: # default setting: there are two subservers
-        ws_recv_from_gameserv()
+        Can_recving=True
+        if not Is_thread_created:
+            Is_thread_created=True
+            recv_from_gameserv_handler = threading.Thread(
+                target=ws_recv_from_gameserv,
+                # without comma you'd get a... TypeError: handle_client_connection() argument after * must be a sequence, not _socketobject
+            )
+            recv_from_gameserv_handler.start()
         
-
     while True:
-        request = recvall(client_socket)
-        
-        msg = json.loads(request.decode())
+        try:
+            request = recvall(client_socket)
+            msg = json.loads(request.decode())
 
-        if msg['type']=='over':
-            print("exec recv over")
-            global p
-            p.kill()
+            if msg['type']=='over':
+                global p
+                p.kill()
+                subserver_cnt-=1
+                client_socket.close()
+                ws_recv_from_gameserv()
+            else:
+                pass
+        except Exception as e:
             subserver_cnt-=1
+            Can_recving=False            
+            for i,e in enumerate(subserverlist):
+                if e.getpeername() ==client_socket.getpeername():
+                    subserverlist.remove(client_socket)
+                    print("remove index",i)
             client_socket.close()
-            ws_recv_from_gameserv()
-        else:
-            pass        
+            return
+            
 
 if __name__ == '__main__':
     wst = threading.Thread(target=tcp_serve_for_sub)
