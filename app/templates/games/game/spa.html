@@ -2,7 +2,6 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-<script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
 <script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='socketio_1.3.6.js') }}"></script>
 
 <h1 id="page_title">room wait</h1>
@@ -61,8 +60,6 @@
         </div>
     </div>
 </section>
-<script src="{{ url_for('static', filename='src-noconflict/ace.js') }}" type="text/javascript" charset="utf-8">
-</script>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='gameover.css') }}">
 <script src="{{ url_for('static', filename='game_socketio.js') }}"></script>
