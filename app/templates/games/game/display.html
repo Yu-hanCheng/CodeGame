@@ -3,7 +3,9 @@
 {% block app_content %}
 <script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
 <div class="popup" style="visibility:hidden" >
-        <span class="popuptext" id="myPopup">Display end</span>
+        <span class="popuptext" id="myPopup">Display end
+            <button class="btn ml-4" onclick="download_log()">download</button>
+        </span>
     </div>
 <div class="container" id="game_playground">
     <h2> game_playground </h2>
@@ -24,6 +26,11 @@
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='gameover.css') }}">
 
 <script>
+    let display_content ={{content}}
+    var startTime=new Date();
+    var speed=10;
+    var start_flag=0;
+
     function ball_update(position){
         var width = $(".ball").outerWidth();
         var height = $(".ball").outerHeight();
@@ -47,25 +54,33 @@
         var popup = document.getElementById("myPopup");
         popup.classList.toggle("show");
     }
-    let display_content ={{content}}
-    var startTime=new Date();
-    var speed=10;
-    var start_flag=0;
-    var position=[[97, 99], [1, 200], [799, 200]];
-    var refreshIntervalId=setInterval(function(){
-        
-        position=display_content.shift();
-        if(position == undefined){
-            console.log("clearInterval");
-            clearInterval(refreshIntervalId);
-            display_end();
-        }else{ 
-        let left = $('.left-goalkeeper')
-        let right = $('.right-goalkeeper')
-        ball_update(position[0]);
-        paddle_update(position[1],left);
-        paddle_update(position[2],right);
-        }
-    },speed);
+    function download_log(){
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(display_content));
+        element.setAttribute('download', 'log_'+{{log_id}});
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
+    
+    if( {{func_type}} ){ //func_type==1 -> display
+        var refreshIntervalId=setInterval(function(){
+            position=display_content.shift();
+            if(position == undefined){
+                console.log("clearInterval");
+                clearInterval(refreshIntervalId);
+                display_end();
+            }else{ 
+            let left = $('.left-goalkeeper')
+            let right = $('.right-goalkeeper')
+            ball_update(position[0]);
+            paddle_update(position[1],left);
+            paddle_update(position[2],right);
+            }
+        },speed);
+    }else{
+        download_log();
+    }
     </script>
     {% endblock %}
