@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
-
+{% block styles %}
+{{  super ()  }}
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='gameover.css') }}">
+{% endblock %}
 {% block app_content %}
-<script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='socketio_1.3.6.js') }}"></script>
 
 <h1 id="page_title">room wait</h1>
 <section id="section_code" style="display:none">
@@ -14,7 +17,9 @@
         <option value={{code_id}}>{{ lan_name }}</option>
         {% endfor %}
     </select>
-    <br>
+    <div id="game_code">
+        <pre id="editor" style="height:255px"></pre>
+    </div>
     <div class="row">
         <div class="col-md-4">
             <input type="hidden" name="join_room" id="join_room" value={{room_id}}>
@@ -59,13 +64,12 @@
             </div>
         </div>
     </div>
+    
 </section>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='gameover.css') }}">
-{% block script %}
-<script language="JavaScript" type="text/javascript"
-    src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
-<script src="{{ url_for('static', filename='game_socketio.js') }}"></script>
 {% endblock %}
-
+{% block scripts %}
+{{  super ()  }}
+<script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='socketio_1.3.6.js') }}"></script>
+<script src="{{ url_for('static', filename='src-noconflict/ace.js') }}" type="text/javascript" charset="utf-8"></script>
+<script src="{{ url_for('static', filename='game_socketio.js') }}"></script>
 {% endblock %}
