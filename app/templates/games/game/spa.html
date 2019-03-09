@@ -62,6 +62,10 @@
 </section>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='gameover.css') }}">
+{% block script %}
+<script language="JavaScript" type="text/javascript"
+    src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
 <script src="{{ url_for('static', filename='game_socketio.js') }}"></script>
+{% endblock %}
 
 {% endblock %}

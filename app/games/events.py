@@ -60,6 +60,11 @@ def join_room_from_browser(message):
         print("wait")
         emit('wait_room',namespace = '/test',room= message['room'])    
 
+@socketio.on('change_code',namespace = '/test')
+def change_code(message):
+    l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
+    select_code =Code.query.with_entities(Code.id,Code.body, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
+    emit('the_change_code',{'code':select_code.body,'code_id':message['code_id']},namespace = '/test',room= message['room']) 
 
 @socketio.on('select_code' ,namespace = '/test')
 def select_code(message):
@@ -68,7 +73,7 @@ def select_code(message):
     
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
     select_code =Code.query.with_entities(Code.id,Code.body, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
-    
+
     emit_code(l, select_code)
 
 @socketio.on('upload_code')# ,namespace = '/local'
@@ -107,7 +112,6 @@ def left(message):
 
 def emit_code(l,code):
 # join_log(log_id,message['code'],message['commit_msg'],l.game_id,current_user.id,players)
-    print('l:',type(l),l)
     ws = create_connection("ws://127.0.0.1:6005")# to gameserver
     ws.send(json.dumps({'from':'webserver','code':code.body,'log_id':l.id,'user_id': current_user.id,'category_id':l.category_id,'game_id':l.game_id,'language':code.language_name,'player_num':int(l.player_num)}))
     result =  ws.recv() #

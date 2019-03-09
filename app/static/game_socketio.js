@@ -1,12 +1,17 @@
 
-var script = document.createElement('script');
-script.src = '../../static/jquery-3.3.1.js';
-script.type = 'text/javascript';
-document.getElementsByTagName('head')[0].appendChild(script);
+// var script = document.createElement('script');
+// script.src = '../../static/jquery-3.3.1.js';
+// script.type = 'text/javascript';
+// document.getElementsByTagName('head')[0].appendChild(script);
 
 var socket;
 var left_buff=[],right_buff=[],ball_buff=[];
 var buff_min=20,buff_normal=50;
+
+var editor = ace.edit("editor");    
+editor.setTheme("ace/theme/twilight");
+
+lan_mode = document.getElementById('mode');
 
 namespace = '/test';
 socket = io.connect('http://' + document.domain + ':' + location.port+namespace );
@@ -55,6 +60,22 @@ $(document).ready(function(){
         $('#chat').val($('#chat').val() + data.msg + '\n');
         $('#chat').scrollTop($('#chat')[0].scrollHeight);
     });
+    socket.on('the_change_code', function(data) {
+        if (data['code_id']==lan_mode.value){
+            let code_decode = atob(data['code']);
+            console.log(code_decode);
+            editor.setValue(code_decode);
+        }
+    });
+    $('#mode').on('change', function() {
+        let lan_name = lan_mode.options[lan_mode.selectedIndex].text;
+        editor.session.setMode("ace/mode/"+ lan_name);
+        var code_selected = lan_mode.options[lan_mode.selectedIndex].value;
+        if(code_selected=="code_id"){
+            code_selected=lan_mode.options[1].value;
+        }
+        socket.emit('change_code', {room: $('#join_room').val(),code_id:code_selected});
+      });
     $('#text').keypress(function(e) {
         var code = e.keyCode || e.which;
         if (code == 13) {
@@ -63,18 +84,18 @@ $(document).ready(function(){
             socket.emit('text', {msg: text});
         }
     });
-
 });
+
 function select_code(){
-    var code_selected = document.getElementById('mode').value;
-    if(code_selected=="code_id"){
-        code_selected=document.getElementById("mode").options[1].value;
+    var code_selected=lan_mode.value;
+    if(lan_mode.value=="code_id"){
+        code_selected=lan_mode.options[1].value;
     }
-    document.getElementById('section_code').style.display = "none";
+    // document.getElementById('section_code').style.display = "none";
     document.getElementById('section_game').style.display = "block";
     socket.emit('select_code', {room: $('#join_room').val(),code_id:code_selected});
 }
-var countdownnumber=5;
+var countdownnumber=10;
 var countdownid,x;
 function timeout_initial(){
     x=document.getElementById("countdown");
@@ -84,7 +105,7 @@ function timeout_initial(){
 }
 function countdownfunc(){ 
 x.innerHTML=countdownnumber;
-if (countdownnumber==0){
+if (countdownnumber<1){
     clearInterval(countdownid);
     $('#page_title').html("send code");
     select_code()
