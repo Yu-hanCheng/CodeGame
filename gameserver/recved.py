@@ -21,7 +21,7 @@ def on_gameinfo(log_id,compiler,user_id,usercode,fileEnd):
     save_code(usercode,fileEnd)
     try:
         time.sleep(0.5)
-        p = Popen(''+compiler + ' ' +"usercode" + fileEnd + ' 127.0.0.1 ' + str(user_id) + ' ',shell=True, stdout=PIPE, stderr=PIPE)
+        p = Popen(''+compiler + ' ' +"usercode" + fileEnd + ' 0.0.0.0 ' + str(user_id) + ' ',shell=True, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)

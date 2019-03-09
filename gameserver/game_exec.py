@@ -9,7 +9,8 @@ import subprocess,base64
 from subprocess import PIPE,Popen
 subserverlist=[]
 
-bind_ip = '127.0.0.1'
+bind_ip = '0.0.0.0'
+# bind_ip = '192.168.0.49'
 bind_port = 5501
 subservers=2
 identify={}
