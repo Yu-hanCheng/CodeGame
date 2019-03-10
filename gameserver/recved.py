@@ -1,8 +1,11 @@
 import socket, time, json, sys, base64
 import subprocess
 from subprocess import Popen, PIPE
-# tcp://0.tcp.ngrok.io:16499  
-address = (sys.argv[1], 5501)  # 127.0.0.1
+# tcp://0.tcp.ngrok.io:16499
+game_exec_ip=sys.argv[1]
+game_exec_port=int(sys.argv[2])
+game_port=game_exec_port+1
+address = (game_exec_ip, game_exec_port) 
 global s
 s_sucess=""
 
@@ -21,7 +24,7 @@ def on_gameinfo(log_id,compiler,user_id,usercode,fileEnd):
     save_code(usercode,fileEnd)
     try:
         time.sleep(0.5)
-        p = Popen(''+compiler + ' ' +"usercode" + fileEnd + ' 0.0.0.0 ' + str(user_id) + ' ',shell=True, stdout=PIPE, stderr=PIPE)
+        p = Popen(''+compiler + ' ' +"usercode" + fileEnd+ ' '  + str(game_exec_ip)+ ' '  + str(game_port)+ ' '  + str(user_id) + ' ',shell=True, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)

@@ -9,7 +9,7 @@ game_exec_ip = sys.argv[1]
 game_exec_port = sys.argv[2]
 log_id = sys.argv[3]
 
-socketIO=SocketIO('0.0.0.0', 80, LoggingNamespace)
+socketIO=SocketIO('140.116.82.226', 80, LoggingNamespace)
 socketIO.emit('info',{'msg':'gameconnected','log_id':log_id})
 
 

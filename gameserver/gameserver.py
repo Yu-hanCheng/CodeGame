@@ -7,7 +7,7 @@ game_exec_id=0
 servs_full=0
 servs_full_right=1
 
-server = WebsocketServer(6005, host='127.0.0.1')
+server = WebsocketServer(6005, host='0.0.0.0')
 
 class MaxSizeList(object):
 
@@ -112,25 +112,6 @@ def push_to_serv_list(elephant):
 	else:
 		return 1
 
-
-def sandbox(compiler,path_, filename):
-	# 用 subprocess將預測試的檔名當參數執行 script.sh, 使產生 docker container 來驗證程式碼,指令如下 
-	# sh test.sh cce238a618539(imageID) python3.7 output.py 
-	
-	from subprocess import Popen, PIPE
-	image='test/centos:v2.1'
-	try:
-		p = Popen('sh sandbox/script.sh ' + image + ' ' + compiler + ' ' + path_ + ' '+ filename + '',shell=True, stdout=PIPE, stderr=PIPE)
-		stdout, stderr = p.communicate()
-		if stderr:
-			print('stderr:', stderr)
-			return [0,stderr]
-		else:
-			print('stdout:', stdout)
-			return [1,stdout]
-	except Exception as e:
-		print('e: ',e)
-		return e
 def set_language(language):
 	compiler = {
 		"gcc": [1,".c"],
@@ -185,7 +166,7 @@ def message_received(client, server, message):
 	# 2. gamemain: 某 room遊戲結束, 通知 game_exec kill 該 room的 dc container, 並執行< movetoserv_q >;
 	# 續上：同時傳遞遊戲結果的訊息給 webserver (games/event.py 接收)
 
-	global game_exec_id
+	global game_exec_id,serv_list
 	try:
 		data = json.loads(message)
 	except Exception as e:
@@ -200,9 +181,14 @@ def message_received(client, server, message):
 		game_exec_id = client
 		go_exec_item = serv_list.pop_index(0)
 		if go_exec_item[0]:
+
 			server.send_message(game_exec_id, 'empty')
 		else:
-			server.send_message(game_exec_id, json.dumps(go_exec_item[1]))
+			print("send code")
+			try:
+				server.send_message(game_exec_id, json.dumps(go_exec_item[1]))
+			except Exception as e:
+				print("send_message:",e)
 
 	elif data['from']=='game':
 		print("gameover")

@@ -10,8 +10,7 @@ from subprocess import PIPE,Popen
 subserverlist=[]
 
 bind_ip = '0.0.0.0'
-# bind_ip = '192.168.0.49'
-bind_port = 5501
+bind_port = int(sys.argv[1])
 subservers=2
 identify={}
 
@@ -52,6 +51,7 @@ def ws_recv_from_gameserv():
                 recv_msg = ws.recv()
 
             if len(recv_msg) > 5:
+                print("recved")
                 ws_msg_handler(recv_msg)
                 return 0
         time.sleep(1)

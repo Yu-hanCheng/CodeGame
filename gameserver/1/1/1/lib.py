@@ -1,8 +1,10 @@
 #!/usr/bin/python
 import socket , time, json,sys,os,threading,psutil
 from functools import reduce
-address = (sys.argv[1], 5502)
-user_id = sys.argv[2]
+game_ip = sys.argv[1]
+game_port = int(sys.argv[2])
+address = (game_ip, game_port)
+user_id = sys.argv[3]
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
 s_sucess=""
 s_sucess=s.connect(address)
