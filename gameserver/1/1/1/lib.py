@@ -7,7 +7,13 @@ address = (game_ip, game_port)
 user_id = sys.argv[3]
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
 s_sucess=""
-s_sucess=s.connect(address)
+while True:
+    try:
+        s_sucess=s.connect(address)
+        print("connected")
+        break
+    except:
+        time.sleep(0.1)
 
 
 

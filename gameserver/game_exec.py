@@ -4,7 +4,7 @@
 # game send over to game_exec
 
 from websocket import create_connection
-import json, sys,os,time, socket, threading
+import json, sys,os,time, socket, threading,copy
 import subprocess,base64
 from subprocess import PIPE,Popen
 subserverlist=[]
@@ -123,6 +123,7 @@ def recvall(sock):
     return data 
 def tcp_client_handle(client_socket):
     global subserver_cnt,subservers,Is_thread_created,Can_recving
+    copy_client_socket=copy.deepcopy(client_socket.getpeername())
     if subserver_cnt==subservers: # default setting: there are two subservers
         Can_recving=True
         if not Is_thread_created:
@@ -137,8 +138,9 @@ def tcp_client_handle(client_socket):
         try:
             request = recvall(client_socket)
             msg = json.loads(request.decode())
-
+            
             if msg['type']=='over':
+                print("over")
                 global p
                 p.kill()
                 subserver_cnt-=1
@@ -150,7 +152,7 @@ def tcp_client_handle(client_socket):
             subserver_cnt-=1
             Can_recving=False            
             for i,e in enumerate(subserverlist):
-                if e.getpeername() ==client_socket.getpeername():
+                if e.getpeername() ==copy_client_socket:
                     subserverlist.remove(client_socket)
                     print("remove index",i)
             client_socket.close()

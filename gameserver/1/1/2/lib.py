@@ -5,8 +5,13 @@ address = (sys.argv[1], 8800)
 user_id = sys.argv[2]
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
 s_sucess=""
-s_sucess=s.connect(address)
-
+while True:
+    try:
+        s_sucess=s.connect(address)
+        print("connected")
+        break
+    except:
+        time.sleep(0.1)
 
 
 cpu_list=[]

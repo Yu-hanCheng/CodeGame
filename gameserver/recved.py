@@ -8,16 +8,16 @@ game_port=game_exec_port+1
 address = (game_exec_ip, game_exec_port) 
 global s
 s_sucess=""
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-
-while True:
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s_sucess=s.connect(address)
-        print("connected")
-        break
-    except:
-        time.sleep(0.1)
+def connect_to_game():
+    while True:
+        try:
+            s_sucess=s.connect(address)
+            print("connected")
+            break
+        except:
+            time.sleep(0.1)
 
 def on_gameinfo(log_id,compiler,user_id,usercode,fileEnd):
     
@@ -25,13 +25,14 @@ def on_gameinfo(log_id,compiler,user_id,usercode,fileEnd):
     try:
         time.sleep(0.5)
         p = Popen(''+compiler + ' ' +"usercode" + fileEnd+ ' '  + str(game_exec_ip)+ ' '  + str(game_port)+ ' '  + str(user_id) + ' ',shell=True, stdout=PIPE, stderr=PIPE)
-        stdout, stderr = p.communicate()
-        if stderr:
-            print('stderr:', stderr)
-            # p.kill()
-        else:
-            # p.kill()
-            pass
+        # stdout, stderr = p.communicate()
+        # if stderr:
+        #     print('stderr:', stderr)
+        #     p.kill()
+        # else:
+        #     print('stderr:',stdout)
+        #     # p.kill()
+        #     pass
     except Exception as e:
         print('Popen error: ',e)
     return
@@ -54,29 +55,32 @@ def recvall(sock):
             break
     return data
 
-
+connect_to_game()
 while True:
-    data = recvall(s)
-    # data = s.recv(2048)
-    print('cnt:',cnt)
-    if data==b"":
-        print("no msg")
-        time.sleep(2)
-        continue
-    else:
-        
-        str_data = data.decode("utf-8")
-        msg_recv = json.loads(str_data)
-        code = base64.b64decode(msg_recv['code']).decode('utf-8')
-        # 判斷 msg 類型, gameinfo or gameover
-        if msg_recv['type']=='new_code': 
-            binary =json.dumps({'type':'recved'}).encode()
-            s.send(binary)
-            on_gameinfo(msg_recv['log_id'],msg_recv['compiler'],msg_recv['user_id'],code,msg_recv['fileEnd'])
-        elif msg_recv['type']=='kill_process':
-            score(msg_recv['content'])
+    try:
+        data = recvall(s)
+        # data = s.recv(2048)
+        print('cnt:',cnt)
+        if data==b"":
+            print("no msg")
+            time.sleep(2)
+            continue
         else:
-            pass
+            
+            str_data = data.decode("utf-8")
+            msg_recv = json.loads(str_data)
+            code = base64.b64decode(msg_recv['code']).decode('utf-8')
+            # 判斷 msg 類型, gameinfo or gameover
+            if msg_recv['type']=='new_code': 
+                binary =json.dumps({'type':'recved'}).encode()
+                s.send(binary)
+                on_gameinfo(msg_recv['log_id'],msg_recv['compiler'],msg_recv['user_id'],code,msg_recv['fileEnd'])
+            else:
+                pass
+    except Exception as e:
+        print("e:",e)
+        connect_to_game()
+        
 
 
 	
