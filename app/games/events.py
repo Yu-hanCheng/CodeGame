@@ -51,10 +51,9 @@ def test_connect(message):
 
 @socketio.on('join_room' ,namespace = '/test')
 def join_room_from_browser(message):
-
+    print("join_room client:",request.remote_addr)
     join_room(message['room'])
     if int(message['status']) ==0:
-        print("enter")
         emit('enter_room',namespace = '/test',room= message['room'])
     else:
         print("wait")
