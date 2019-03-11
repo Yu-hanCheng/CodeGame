@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import socket,json,time,sys
+import socket,json,time,sys,os
 import threading,math, random,copy
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
@@ -9,7 +9,7 @@ game_exec_ip = sys.argv[1]
 game_exec_port = sys.argv[2]
 log_id = sys.argv[3]
 
-socketIO=SocketIO('140.116.82.226', 80, LoggingNamespace)
+socketIO=SocketIO('0.0.0.0', 5000, LoggingNamespace)
 socketIO.emit('info',{'msg':'gameconnected','log_id':log_id})
 
 
@@ -275,13 +275,13 @@ def handle_client_connection(client_socket):
             if request==b'':
                 print("sys.exit()")
                 # client_socket.close()
-                sys.exit()
+                os._exit(0)
                 
             else:
                 msg = json.loads(request.decode())
         except(RuntimeError, TypeError, NameError)as e: 
             print('error',e)
-            sys.exit()
+            os._exit(0)
 
         lock.acquire()
         if start == 1:

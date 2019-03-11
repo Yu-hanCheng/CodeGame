@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import socket,json,time,sys
+import socket,json,time,sys,os
 import threading,math, random,copy
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
@@ -9,7 +9,7 @@ game_exec_ip = sys.argv[1]
 game_exec_port = sys.argv[2]
 log_id = sys.argv[3]
 
-socketIO=SocketIO('140.116.82.226', 80, LoggingNamespace)
+socketIO=SocketIO('0.0.0.0', 5000, LoggingNamespace)
 socketIO.emit('info',{'msg':'gameconnected','log_id':log_id})
 
 
@@ -170,8 +170,8 @@ def play():
         if int(ball[0]) <= BALL_RADIUS + PAD_WIDTH and int(ball[1]) in range(paddle1[1] - HALF_PAD_HEIGHT,
                                                                                      paddle1[1] + HALF_PAD_HEIGHT, 1):
             ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.1
-            ball_vel[1] *= 1.1
+            ball_vel[0] *= 1.5
+            ball_vel[1] *= 1.5
         elif int(ball[0]) <= BALL_RADIUS + PAD_WIDTH:
             r_score += 1
             print('r_score ',r_score)
@@ -189,8 +189,8 @@ def play():
         if int(ball[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH and int(ball[1]) in range(
                 paddle2[1] - HALF_PAD_HEIGHT, paddle2[1] + HALF_PAD_HEIGHT, 1):
             ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.1
-            ball_vel[1] *= 1.1
+            ball_vel[0] *= 1.5
+            ball_vel[1] *= 1.5
         elif int(ball[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH:
             l_score += 1
             print('l_score ',l_score)
@@ -274,13 +274,14 @@ def handle_client_connection(client_socket):
             request = client_socket.recv(1024)
             if request==b'':
                 print("sys.exit()")
-                client_socket.close()
-                sys.exit()
+                # client_socket.close()
+                os._exit(0)
+                
             else:
                 msg = json.loads(request.decode())
         except(RuntimeError, TypeError, NameError)as e: 
             print('error',e)
-            sys.exit()
+            os._exit(0)
 
         lock.acquire()
         if start == 1:
@@ -293,7 +294,9 @@ def handle_client_connection(client_socket):
                     #lock.acquire()
                     try:
                         barrier[0]=1 ## return to 0 in send_to_player
+                        lock.release()
                         if barrier[1]==1:
+                            
                             send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
                             record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
                             game('on_p1')
@@ -308,14 +311,19 @@ def handle_client_connection(client_socket):
                     #lock.acquire()
                     try:
                         barrier[1]=1
+                        lock.release()
                         if barrier[0]==1:
+                            
                             send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
                             record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
                             game('on_p2')
                     finally:
                         #lock.release()
                         pass
-
+                else:
+                    lock.release()
+            else:
+                lock.release()
         elif endgame==1:
             
             if msg['type']=='score':
@@ -324,35 +332,67 @@ def handle_client_connection(client_socket):
                     l_report = msg['content']
                     # print('l_report',l_report)
                     if r_report!="":
+                        lock.release()
                         
                         send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
 
                         game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
                         game_exec_address = (game_exec_ip, int(game_exec_port))
-                        game_exec=game_exec_client.connect(game_exec_address)
-                        game_exec_client.send(json.dumps({'type':'over'}).encode())
+                        print("game_exec_address:",game_exec_address)
+                        while True:
+                            try:
+                                game_exec=game_exec_client.connect(game_exec_address)
+                                print("connected")
+                                break
+                            except:
+                                time.sleep(0.1)
+                        binary =json.dumps({'type':'over'}).encode()
+                        print("binary:",binary)
+                        game_exec_client.send(binary)
+                        print("send game_exec:",game_exec_client)
                         send_to_Players('score_recved')
-                        sys.exit()
+                        # sys.exit()
                         break
+                    else:
+                        lock.release()
 
                 elif msg['who']=='P2':
                     r_report = msg['content']
                     # print('r_report',r_report)
                     if l_report!="":
+                        lock.release()
                         send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)                       
                         game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
                         game_exec_address = (game_exec_ip, int(game_exec_port))
-                        game_exec=game_exec_client.connect(game_exec_address)
-                        game_exec_client.send(json.dumps({'type':'over'}).encode())
+                        print("game_exec_address:",game_exec_address)
+                        
+                        while True:
+                            try:
+                                game_exec=game_exec_client.connect(game_exec_address)
+                                print("connected")
+                                break
+                            except:
+                                time.sleep(0.1)
+                        
+                        
+                        binary =json.dumps({'type':'over'}).encode()
+                        print("binary:",binary)
+                        game_exec_client.send(binary)
                         send_to_Players('score_recved')
-                        sys.exit()
+                        # sys.exit()
                         break
+                    else:
+                        lock.release()
+                else:
+                    lock.release()
+            else:
+                lock.release()
 
             
         else:
             time.sleep(0.5)
             # print("game not start, or had over")
-        lock.release()
+            lock.release()
 
 def serve_app():
     while True:
