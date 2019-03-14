@@ -52,8 +52,9 @@ def ws_recv_from_gameserv():
 
             if len(recv_msg) > 5:
                 print("recved")
+                Can_recving=False
                 ws_msg_handler(recv_msg)
-                return 0
+                
         time.sleep(1)
 
 def ws_msg_handler(msg):
@@ -87,12 +88,13 @@ def start_game(log_id,path,compiler,fileEnd):
         print('Popen error: ',e)
 
 
-def tcp_send_to_subserver(subserver_cnt,log_id,user_id,compiler, fileEnd, code):
+def tcp_send_to_subserver(subserver_index,log_id,user_id,compiler, fileEnd, code):
     # subserverlist[subserver_cnt].send(json.dumps({'log_id':log_id,'user_id':user_id,'code':code}).encode())
     global subserverlist
     codeString = base64.b64encode(code.encode('utf-8')).decode('utf-8')
     jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'code':codeString,'user_id':user_id}).encode()
-    subserverlist[subserver_cnt].send(jsonStr)
+    print(len(subserverlist),subserver_index)
+    subserverlist[subserver_index].sendall(jsonStr)
 
 def tcp_serve_for_sub():
     global subserver_cnt,subserverlist
@@ -139,18 +141,19 @@ def tcp_client_handle(client_socket):
             request = recvall(client_socket)
             msg = json.loads(request.decode())
             
-            if msg['type']=='over':
+            if msg['type']=='over': # from game
                 print("over")
                 global p
                 p.kill()
                 subserver_cnt-=1
                 client_socket.close()
-                ws_recv_from_gameserv()
+                Can_recving=True
             else:
                 pass
         except Exception as e:
             subserver_cnt-=1
-            Can_recving=False            
+            Can_recving=False
+            print("error:",e)           
             for i,e in enumerate(subserverlist):
                 if e.getpeername() ==copy_client_socket:
                     subserverlist.remove(client_socket)
