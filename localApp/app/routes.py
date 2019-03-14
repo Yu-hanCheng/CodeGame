@@ -91,28 +91,32 @@ def commit():
     save_path = obj[1]+"/"+obj[3]+"/"+obj[5]+"/"
     file_end = obj[7]
     # str(data.get('lan_compiler'))
-
-    # set filename
-    f = []
-    for (dirpath, dirnames, filenames) in walk(save_path):
-        f.extend(filenames)
-        break
-    filename=str(len(f)-2)#['.DS_Store', 'gamemain.py', 'lib.py']
-    code_path=save_path+filename+file_end
-   
-    save_code(save_path,filename,file_end,code)
-    compiler = json_obj['lan_compiler']
-    global code_data,isCodeOk
-    code_data={'code':code,'user_id':int(json_obj['user_id']),'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
-    code_res = test_code(compiler,save_path,filename,file_end) # run code and display on browser
-    
-    if code_res[0]:
-        print("code_ok")
-        isCodeOk=1
-
+    decode = bytes(base64.b64decode(code))
+    if not test_security(decode):
+        print("test_security fail")
+        return "false code"
     else:
-        flash("Can't upload")
-    return "received code"
+        # set filename
+        f = []
+        for (dirpath, dirnames, filenames) in walk(save_path):
+            f.extend(filenames)
+            break
+        filename=str(len(f)-2)#['.DS_Store', 'gamemain.py', 'lib.py']
+        code_path=save_path+filename+file_end
+    
+        save_code(save_path,filename,file_end,code)
+        compiler = json_obj['lan_compiler']
+        global code_data,isCodeOk
+        code_data={'code':code,'user_id':int(json_obj['user_id']),'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
+        code_res = test_code(compiler,save_path,filename,file_end) # run code and display on browser
+        
+        if code_res[0]:
+            print("code_ok")
+            isCodeOk=1
+
+        else:
+            flash("Can't upload")
+        return "received code"
 
 @socketio.on('conn') #from localbrowser
 def connect(message):
@@ -144,7 +148,17 @@ def upload_code(message):
         socketio.emit('upload_ok', {'msg':""})
     send_to_web("upload_code",code_data,"upload_ok",respose_toLocalapp)
     
-
+def test_security(only_user_code):
+    a=[' psutil',' os',' sys',' subprocess']
+    byte_code = only_user_code.decode(encoding='UTF-8',errors='strict')
+    time.sleep(0.1)
+    for x in a:
+        if x in byte_code: 
+            print("%s is illegal word:"%x)
+            return 0
+        else: 
+            print("%s ok"%x)
+    return 1
 
 def append_lib(save_path,filename,file_end):
     with open("%s%s%s"%(save_path,'test_usercode',file_end), "w") as f:
