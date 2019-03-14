@@ -1,3 +1,10 @@
+global paddle_vel,ball_pos,move_unit
+paddle_pos=0
+paddle_vel=0
+ball_pos=[[0,0],[0,0],[0,0]]
+move_unit=3
+run()
+
 #!/usr/bin/python
 import socket , time, json,sys,os,threading,psutil
 from functools import reduce
@@ -59,10 +66,12 @@ def on_gameinfo(message):
     global paddle_vel,paddle_pos
     tuple_msg=message['content']
     cnt = tuple_msg[-1]
+    print("paddle_pos:",tuple_msg[1])
     if who=="P1":
         paddle_pos=tuple_msg[1]
     else:
         paddle_pos=tuple_msg[2]
+    print("ball pos:",tuple_msg[0],cnt)
     if cnt>2:
         del ball_pos[0]
         ball_pos.append(tuple_msg[0])
@@ -77,6 +86,7 @@ def on_gameinfo(message):
 def communicate(type_class,content):
     global paddle_vel,s,who
     msg={'type':type_class,'who':who,'content':content, 'cnt':cnt}
+    print('type_class:',type_class)
     str_ = json.dumps(msg)
     binary =str_.encode()
     s.send(binary)
@@ -85,6 +95,7 @@ def communicate(type_class,content):
 def score(msg_from_gamemain):# CPU, MEM Utility
     inter.cancel
     global p,cpu_list, mem_list
+    print('l_score',msg_from_gamemain['score'])
     if who == 'P1':
         score = msg_from_gamemain['score'][0]
 
@@ -112,6 +123,7 @@ cnt =6000
 while cnt>0:
     data = recvall(s)
     if data==b"":
+        print("no")
         gameover()
     else:
         try:
@@ -119,13 +131,15 @@ while cnt>0:
             if msg_recv['type']=='info':
                 on_gameinfo(msg_recv)
             elif msg_recv['type']=='over':
+                print("over")
                 score(msg_recv['content'])
             elif msg_recv['type']=='score_recved':
                 gameover()
             else:
                 pass
         except(RuntimeError, TypeError, NameError) as e:
-            print('e,data:',e,data)
+            print('e:',e)
+            print("except data:",data)
     cnt-=1
 
 msg_leave={'type':'disconnect','who':who,'content':'0'} 

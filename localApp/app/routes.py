@@ -89,6 +89,7 @@ def commit():
     obj=json_obj["obj"].split(",")
     code = json_obj['encodedData']
     save_path = obj[1]+"/"+obj[3]+"/"+obj[5]+"/"
+    save_path_name = obj[2]+"/"+obj[4]+"/"+obj[6]+"/"
     file_end = obj[7]
     # str(data.get('lan_compiler'))
     decode = bytes(base64.b64decode(code))
@@ -147,9 +148,9 @@ def upload_code(message):
         print("upload_ok")
         socketio.emit('upload_ok', {'msg':""})
     send_to_web("upload_code",code_data,"upload_ok",respose_toLocalapp)
-    
+
 def test_security(only_user_code):
-    a=[' psutil',' os',' sys',' subprocess']
+    a=[' os',' sys',' subprocess']
     byte_code = only_user_code.decode(encoding='UTF-8',errors='strict')
     time.sleep(0.1)
     for x in a:
@@ -168,8 +169,12 @@ def append_lib(save_path,filename,file_end):
             for i, line in enumerate(lines):
                 if i >= 0 and i < 6800:
                     f.write(line)
-        f.write("\nglobal paddle_vel,ball_pos,move_unit\npaddle_pos=0\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")
-        f.write("\nwho='P1'\n")
+        lan = save_path.split('/')[-1]
+        if lan =="1":
+            f.write("\nchar who[]=\"poo\";\n")
+        elif lan=="2":
+            f.write("\nwho='P1'\n")
+
         with open(save_path+"lib"+file_end) as fin: 
             lines = fin.readlines() 
             for i, line in enumerate(lines):
