@@ -3,9 +3,11 @@
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <string.h> 
+#include <errno.h>   // for errno
 #include <sys/socket.h> 
+#include <json-c/json.h>
 #define MAX 80 
-#define PORT 5502
+// #define PORT 5502
 #define SA struct sockaddr 
 void func(int sockfd) 
 { 
@@ -28,12 +30,18 @@ void func(int sockfd)
 	} 
 } 
 
-int main() 
+int main(int argc, char *argv[]) 
 { 
-	int sockfd, connfd; 
+	int sockfd, connfd,port_num; 
 	struct sockaddr_in servaddr, cli; 
-
-	// socket create and varification 
+	char *port;
+	errno=0;
+	long conv = strtol(argv[1], &port, 10);
+	if (errno != 0 || *port != '\0') {
+		printf("eeroor");
+	} else { // No error
+		port_num = conv;    
+	}
 	sockfd = socket(AF_INET, SOCK_STREAM, 0); 
 	if (sockfd == -1) { 
 		printf("socket creation failed...\n"); 
@@ -46,7 +54,7 @@ int main()
 	// assign IP, PORT 
 	servaddr.sin_family = AF_INET; 
 	servaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); 
-	servaddr.sin_port = htons(PORT); 
+	servaddr.sin_port = htons(port_num); 
 
 	// connect the client socket to server socket 
 	if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) { 
