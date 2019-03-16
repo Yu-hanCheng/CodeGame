@@ -6,28 +6,102 @@
 #include <errno.h>   // for errno
 #include <sys/socket.h> 
 #include <json-c/json.h>
-#define MAX 80 
+#define MAX 100
 // #define PORT 5502
 #define SA struct sockaddr 
+
+void msg_type(json_type msg_type_val ){
+	switch(msg_type_val) {
+        case json_type_null:
+                printf("json_type_null\n");
+                break;
+        case json_type_boolean:
+                printf("json_type_boolean\n");
+                break;
+        case json_type_double:
+                printf("json_type_double\n");
+                break;
+        case json_type_int:
+                printf("json_type_int\n");
+                break;
+        case json_type_object:
+                printf("json_type_object\n");
+                break;
+        case json_type_array:
+                printf("json_type_array\n");
+                break;
+        case json_type_string:
+                printf("json_type_string\n");
+                break;
+        }
+}
+void msg_address(char* msg_type_val, json_object* json_obj_pointer ){
+
+	struct json_object *msg_content;
+	struct json_object *msg_ball;
+	
+	if (strcmp(msg_type_val,"conn")==0){
+		printf("okok");
+	}
+	else if (strcmp(msg_type_val,"info")==0){
+		
+		json_object_object_get_ex(json_obj_pointer, "content", &msg_content);
+		printf("after content");
+		json_object *jobj = json_tokener_parse(json_object_get_string(msg_content));
+		
+		json_object_object_get_ex(jobj, "ball", &msg_ball);
+		
+		printf("%s\n",json_object_get_string(msg_ball));
+
+	}
+	else if (strcmp(msg_type_val,"conn")==0){
+		printf("okok");
+	}
+
+}
 void func(int sockfd) 
 { 
 	char buff[MAX]; 
 	int n; 
-	for (;;) { 
-		bzero(buff, sizeof(buff)); 
-		printf("Enter the string : "); 
-		n = 0; 
-		while ((buff[n++] = getchar()) != '\n') 
-			; 
-		write(sockfd, buff, sizeof(buff)); 
-		bzero(buff, sizeof(buff)); 
-		read(sockfd, buff, sizeof(buff)); 
-		printf("From Server : %s", buff); 
-		if ((strncmp(buff, "exit", 4)) == 0) { 
-			printf("Client Exit...\n"); 
-			break; 
-		} 
-	} 
+	struct json_object *msg_type;
+	struct json_object *parsed_json;
+	
+	bzero(buff, sizeof(buff)); 
+	read(sockfd, buff, sizeof(buff));
+	// printf("From Server : %s", buff);
+	parsed_json = json_tokener_parse(buff);
+	enum json_type type = json_object_get_type(parsed_json);
+	if (type!=json_type_object){
+		printf("not an object\n");
+		return ;
+	}
+	json_object_object_get_ex(parsed_json, "type", &msg_type);
+	printf("%s\n",json_object_get_string(msg_type));
+	// printf("&&%s\n",&parsed_json);
+	// printf("**%d\n",*parsed_json);
+	// char* str=;
+	msg_address(json_object_get_string(msg_type),parsed_json);
+	// printf("type: %s\n", json_object_get_string(msg_type));
+
+
+	// for (;;) { 
+	// 	bzero(buff, sizeof(buff)); 
+		
+	// 	// n = 0; 
+	// 	// while ((buff[n++] = getchar()) != '\n') 
+	// 		// ; 
+	// 	// char *buff = "{\"connect\": \"joys of programming\"}";
+	// 	// char *buff = "connect";
+	// 	write(sockfd, buff, sizeof(buff)); 
+	// 	bzero(buff, sizeof(buff)); 
+	// 	read(sockfd, buff, sizeof(buff)); 
+	// 	printf("From Server : %s", buff); 
+
+	// 	if ((strncmp(buff, "exit", 4)) == 0) { 
+	// 		printf("Client Exit...\n"); 
+	// 		break; 
+	// 	} 
+	// } 
 } 
 
 int main(int argc, char *argv[]) 
@@ -37,8 +111,10 @@ int main(int argc, char *argv[])
 	char *port;
 	errno=0;
 	long conv = strtol(argv[1], &port, 10);
+	// socket create and varification 
+
 	if (errno != 0 || *port != '\0') {
-		printf("eeroor");
+		printf("eerroor");
 	} else { // No error
 		port_num = conv;    
 	}
@@ -63,7 +139,6 @@ int main(int argc, char *argv[])
 	} 
 	else
 		printf("connected to the server..\n"); 
-
 	// function for chat 
 	func(sockfd); 
 
