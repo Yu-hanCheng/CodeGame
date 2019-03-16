@@ -6,35 +6,47 @@
 #include <errno.h>   // for errno
 #include <sys/socket.h> 
 #include <json-c/json.h>
-#define MAX 100
+#define MAX 256
 #define WHO "P1"
 #define SA struct sockaddr 
+#define SIZE 2
+// A wrapper for array to make sure that array 
+// is passed by value. 
+struct ArrayWrapper 
+{ 
+    int arr[SIZE]; 
+};
 
+void run(struct ArrayWrapper ball_array, int paddle){ 
+	int j;
+	int *ball=ball_array.arr;
+	for (j=0; j < sizeof(ball) / sizeof(ball[0]); j++ ) {
+		printf("Element[%d] = %d\n", j, ball[j] );
+	}
 
-void msg_type(json_type msg_type_val ){
-	switch(msg_type_val) {
-        case json_type_null:
-                printf("json_type_null\n");
-                break;
-        case json_type_boolean:
-                printf("json_type_boolean\n");
-                break;
-        case json_type_double:
-                printf("json_type_double\n");
-                break;
-        case json_type_int:
-                printf("json_type_int\n");
-                break;
-        case json_type_object:
-                printf("json_type_object\n");
-                break;
-        case json_type_array:
-                printf("json_type_array\n");
-                break;
-        case json_type_string:
-                printf("json_type_string\n");
-                break;
-        }
+}
+void send_togame(){
+	char str[150];
+	char * type_class="info";
+	char * content="3";
+	char * who="P1";
+	char * cnt="3";
+	strcpy(str, "{'type':");
+	strcat(str, type_class);
+	strcat(str, ",'who'");
+	strcat(str, who);
+	strcat(str, ",'content'");
+	strcat(str, content);
+	strcat(str, ",'cnt'");
+	strcat(str, cnt);
+	strcat(str, "}");
+
+	// printf("%s\n",str);
+	// printf("paddle_pos[%d] = %d\n", 1, paddle_pos[1] );
+	// msg={'type':type_class,'who':who,'content':content, 'cnt':cnt}
+	// for (j = 0; j < 2; j++ ) {
+	// 	printf("Element[%d] = %d\n", j, n[j] );
+	// }
 }
 void msg_address(char* msg_type_val, json_object* json_obj_pointer ){
 
@@ -59,8 +71,23 @@ void msg_address(char* msg_type_val, json_object* json_obj_pointer ){
 		}
 		
 		json_object_object_get_ex(jobj, "cnt", &cnt);
-		
 		printf("%s %s %s\n",json_object_get_string(msg_ball),json_object_get_string(msg_paddle),json_object_get_string(cnt));
+		char *str= json_object_get_string(msg_ball);
+		char delim[] = {","};
+		char *ptr = strtok(str, delim);
+		struct ArrayWrapper ball_int;
+		int i=0,j=0;
+		while(ptr != NULL)
+		{	
+			printf("'%s'\n", ptr);
+			ball_int.arr[i]=strtol(ptr+1,NULL,10);
+			i++;
+			ptr = strtok(NULL, delim);
+		}
+		// for (j=0; j < sizeof(ball_int.arr) / sizeof(ball_int.arr[0]); j++ ) {
+		// 	printf("Element[%d] = %d\n", j, ball_int.arr[j] );
+		// }
+		run(ball_int,strtol(json_object_get_string(msg_paddle),NULL,10));
 
 	}
 	else if (strcmp(msg_type_val,"conn")==0){
@@ -77,7 +104,7 @@ void func(int sockfd)
 	
 	bzero(buff, sizeof(buff)); 
 	read(sockfd, buff, sizeof(buff));
-	// printf("From Server : %s", buff);
+	printf("From Server : %s", buff);
 	parsed_json = json_tokener_parse(buff);
 	enum json_type type = json_object_get_type(parsed_json);
 	if (type!=json_type_object){
@@ -91,7 +118,6 @@ void func(int sockfd)
 	// char* str=;
 	msg_address(json_object_get_string(msg_type),parsed_json);
 	// printf("type: %s\n", json_object_get_string(msg_type));
-
 
 	// for (;;) { 
 	// 	bzero(buff, sizeof(buff)); 
@@ -122,6 +148,7 @@ int main(int argc, char *argv[])
 	long conv = strtol(argv[1], &port, 10);
 	// socket create and varification 
 
+	send_togame();
 	if (errno != 0 || *port != '\0') {
 		printf("eerroor");
 	} else { // No error
