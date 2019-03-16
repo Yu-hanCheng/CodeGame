@@ -7,8 +7,9 @@
 #include <sys/socket.h> 
 #include <json-c/json.h>
 #define MAX 100
-// #define PORT 5502
+#define WHO "P1"
 #define SA struct sockaddr 
+
 
 void msg_type(json_type msg_type_val ){
 	switch(msg_type_val) {
@@ -38,7 +39,7 @@ void msg_type(json_type msg_type_val ){
 void msg_address(char* msg_type_val, json_object* json_obj_pointer ){
 
 	struct json_object *msg_content;
-	struct json_object *msg_ball;
+	struct json_object *msg_ball, *msg_paddle, *cnt;
 	
 	if (strcmp(msg_type_val,"conn")==0){
 		printf("okok");
@@ -46,12 +47,20 @@ void msg_address(char* msg_type_val, json_object* json_obj_pointer ){
 	else if (strcmp(msg_type_val,"info")==0){
 		
 		json_object_object_get_ex(json_obj_pointer, "content", &msg_content);
-		printf("after content");
+		
 		json_object *jobj = json_tokener_parse(json_object_get_string(msg_content));
 		
 		json_object_object_get_ex(jobj, "ball", &msg_ball);
+		if (strcmp(WHO,"P1")==0){
+			json_object_object_get_ex(jobj, "paddle1", &msg_paddle);
+		}
+		else{
+			json_object_object_get_ex(jobj, "paddle2", &msg_paddle);
+		}
 		
-		printf("%s\n",json_object_get_string(msg_ball));
+		json_object_object_get_ex(jobj, "cnt", &cnt);
+		
+		printf("%s %s %s\n",json_object_get_string(msg_ball),json_object_get_string(msg_paddle),json_object_get_string(cnt));
 
 	}
 	else if (strcmp(msg_type_val,"conn")==0){
