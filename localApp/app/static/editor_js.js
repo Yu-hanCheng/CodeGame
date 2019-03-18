@@ -54,6 +54,12 @@ $(document).ready(function(){
         // window.location.refresh();
 
     });
+    socket_local.on('security', function(data){ 
+        console.log("security",data);
+        alert("This library is not available: ",data)
+        // window.location.refresh();
+
+    });
     $('form#commit_to_server').submit(function(event) {
         
         let choosed= $("#chooseFile")[0].files;

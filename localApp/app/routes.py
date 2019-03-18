@@ -93,8 +93,10 @@ def commit():
     file_end = obj[7]
     # str(data.get('lan_compiler'))
     decode = bytes(base64.b64decode(code))
-    if not test_security(decode):
+    security_res=test_security(decode)
+    if not [0]:
         print("test_security fail")
+        socketio.emit('security', {'msg': security_res})
         return "false code"
     else:
         # set filename
@@ -153,13 +155,16 @@ def test_security(only_user_code):
     a=[' os',' sys',' subprocess']
     byte_code = only_user_code.decode(encoding='UTF-8',errors='strict')
     time.sleep(0.1)
+    res=[1]
     for x in a:
         if x in byte_code: 
             print("%s is illegal word:"%x)
-            return 0
+            res[0]=0
+            res.append(x)
         else: 
             print("%s ok"%x)
-    return 1
+    print("res:",res)
+    return res
 
 def append_lib(save_path,filename,file_end):
     with open("%s%s%s"%(save_path,'test_usercode',file_end), "w") as f:
