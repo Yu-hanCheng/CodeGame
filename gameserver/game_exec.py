@@ -34,6 +34,7 @@ def connectto_web(intervaltime):
     
 connectto_web(1)
 def ws_recv_from_gameserv():
+    # independent thread to run a loop for polling sebsocket of webserver(6005) to get exec codes
     global ws,Can_recving
     while True:
         if Can_recving:
