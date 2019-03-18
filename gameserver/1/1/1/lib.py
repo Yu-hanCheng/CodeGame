@@ -1,3 +1,4 @@
+#!/usr/bin/python
 global paddle_vel,ball_pos,move_unit
 paddle_pos=0
 paddle_vel=0
@@ -5,7 +6,6 @@ ball_pos=[[0,0],[0,0],[0,0]]
 move_unit=3
 run()
 
-#!/usr/bin/python
 import socket , time, json,sys,os,threading,psutil
 from functools import reduce
 game_ip = sys.argv[1]
@@ -56,7 +56,7 @@ inter=setInterval(0.1,get_usage)
 
 
 def gameover():
-    sys.exit()
+    os._exit(0)
 
 connecttoserver = s.recv(2048)
 msg={'type':'connect','who':who,'user_id':user_id}

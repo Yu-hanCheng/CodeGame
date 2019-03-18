@@ -56,7 +56,7 @@ inter=setInterval(0.1,get_usage)
 
 
 def gameover():
-    sys.exit()
+    os._exit(0)
 
 connecttoserver = s.recv(2048)
 msg={'type':'connect','who':who,'user_id':user_id}

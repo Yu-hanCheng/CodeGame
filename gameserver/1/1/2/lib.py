@@ -1,3 +1,4 @@
+#!/usr/bin/python
 global paddle_vel,ball_pos,move_unit
 paddle_pos=0
 paddle_vel=0
@@ -5,11 +6,12 @@ ball_pos=[[0,0],[0,0],[0,0]]
 move_unit=3
 run()
 
-#!/usr/bin/python
 import socket , time, json,sys,os,threading,psutil
 from functools import reduce
-address = (sys.argv[1], 8800)
-user_id = sys.argv[2]
+game_ip = sys.argv[1]
+game_port = int(sys.argv[2])
+address = (game_ip, game_port)
+user_id = sys.argv[3]
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
 s_sucess=""
 while True:
@@ -19,6 +21,7 @@ while True:
         break
     except:
         time.sleep(0.1)
+
 
 
 cpu_list=[]
@@ -53,7 +56,7 @@ inter=setInterval(0.1,get_usage)
 
 
 def gameover():
-    sys.exit()
+    os._exit(0)
 
 connecttoserver = s.recv(2048)
 msg={'type':'connect','who':who,'user_id':user_id}
@@ -65,21 +68,21 @@ s.send(binary)
 def on_gameinfo(message):
     global paddle_vel,paddle_pos
     tuple_msg=message['content']
-    cnt = tuple_msg[-1]
-    print("paddle_pos:",tuple_msg[1])
+    
+    string = tuple_msg.replace("'", '"')
+    json_loads_res = json.loads(string)
+    cnt = json_loads_res['cnt']
     if who=="P1":
-        paddle_pos=tuple_msg[1]
+        paddle_pos=json_loads_res['paddle1']
     else:
-        paddle_pos=tuple_msg[2]
-    print("ball pos:",tuple_msg[0],cnt)
+        paddle_pos=json_loads_res['paddle2']
     if cnt>2:
         del ball_pos[0]
-        ball_pos.append(tuple_msg[0])
+        ball_pos.append(json_loads_res['ball'])
     elif cnt == 1:
-        ball_pos[0] = tuple_msg[0]
+        ball_pos[0] = json_loads_res['ball']
     elif cnt ==2:
-        ball_pos[1] = tuple_msg[0]
-
+        ball_pos[1] = json_loads_res['ball']
     run()
     communicate('info',paddle_vel)
 
