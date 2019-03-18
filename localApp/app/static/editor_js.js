@@ -83,8 +83,8 @@ function cancel(){
     document.getElementById("myPopup_dom").style.display = "none";
 }
 function commit_code(){
-    const editor_content=editor.getValue();
-    var encodedData = window.btoa(editor_content);
+    let editor_content=editor.getValue();
+    var encodedData = window.btoa(unescape(encodeURIComponent(editor_content)));
     before_sendback(encodedData,"application/json","commit")
     // need to send back to localapp to sandbox
     document.getElementById('section_code').style.display = "none";
@@ -140,7 +140,36 @@ function changeMode(){
     socket.emit('get_lib', {category_id: mode[1],game_id: mode[3],language_id:mode[5], filename_extension:mode[7]});
     editor.session.setMode("ace/mode/"+ mode[6]);
     var contents = {
-        c:'main(){}',
+        c:'int run(struct ArrayWrapper ball_array, int paddle){ //editor 上要隱藏\n\
+            int j;\n\
+            int *ball=ball_array.arr;\n\
+            int ball_last[2]={0,0};\n\
+            if((ball[1]-ball_last[1])>0){\n\
+            if((ball[1]-paddle)<8){\n\
+                paddle_vel=0;\n\
+            }\n\
+            else if((ball[1]-paddle)>8){\n\
+                paddle_vel=MOVE_UNIT*2;\n\
+            }\n\
+        }\n\
+        else if((ball[1]-ball_last[1])<0){\n\
+            if((ball[1]-paddle)<-8){\n\
+                paddle_vel=-MOVE_UNIT*2;\n\
+            }\n\
+            else if((ball[1]-paddle)>-8){\n\
+                paddle_vel=0;\n\
+            }\n\
+        }\n\
+        else{\n\
+            paddle_vel=0;\n\
+        }\n\
+        ball_last[0]=ball[0]; //editor 上要隱藏\n\
+        ball_last[1]=ball[1]; //editor 上要隱藏\n\
+        for (j=0; j < sizeof(ball_last) / sizeof(ball_last[0]); j++ ) {\n\
+            printf("ball_last[%d] = %d\\n", j, ball_last[j] );\n\
+       }\n\
+        return paddle_vel;\n\
+    }\n',
         python: '\
 def run():\n\
     global paddle_vel,paddle_pos,ball_pos,move_unit\n\
@@ -182,7 +211,6 @@ function send_to_back(content,Content_type,dest){
         // socket.emit('commit', {code: editor_content, commit_msg:commit_msg, game_id:game_id, glanguage:glanguage, user_id:1});
     }
     };
-    
     xhttp.open("POST", dest, true);
     xhttp.send(content);
 }
@@ -203,8 +231,9 @@ function before_sendback(Data,content_type,post_dest){
     const obj = document.getElementById("mode").value;
         // 0Game_lib.id,1Category.id,2Category.name,3Game.id,4Game.gamename,5Language.id, 6Language.language_name, 7Language.filename_extension
     var commit_msg = document.getElementById('commit_msg').value; 
+    let res = obj.split(",");
     var lan_compiler
-        switch(obj[-1]) {
+        switch(res[7]) {
             case ".py":
             lan_compiler = "python3"
               break;

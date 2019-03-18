@@ -7,48 +7,69 @@
 #include <sys/socket.h> 
 #include <json-c/json.h>
 #define MAX 256
-#define WHO "P1"
 #define SA struct sockaddr 
 #define SIZE 2
+#define MOVE_UNIT 3
+
 // A wrapper for array to make sure that array 
 // is passed by value. 
 struct ArrayWrapper 
 { 
     int arr[SIZE]; 
 };
-
-void run(struct ArrayWrapper ball_array, int paddle){ 
+int paddle_vel;
+int run(struct ArrayWrapper ball_array, int paddle){ //editor 上要隱藏
 	int j;
 	int *ball=ball_array.arr;
-	for (j=0; j < sizeof(ball) / sizeof(ball[0]); j++ ) {
-		printf("Element[%d] = %d\n", j, ball[j] );
-	}
+	int ball_last[2]={0,0};
 
+	if((ball[1]-ball_last[1])>0){
+		if((ball[1]-paddle)<8){
+			paddle_vel=0;
+		}
+		else if((ball[1]-paddle)>8){
+			paddle_vel=MOVE_UNIT*2;
+		}
+	}
+	else if((ball[1]-ball_last[1])<0){
+		if((ball[1]-paddle)<-8){
+			paddle_vel=-MOVE_UNIT*2;
+		}
+		else if((ball[1]-paddle)>-8){
+			paddle_vel=0;
+		}
+	}
+	else{
+		paddle_vel=0;
+	}
+	ball_last[0]=ball[0]; //editor 上要隱藏
+	ball_last[1]=ball[1]; //editor 上要隱藏
+	for (j=0; j < sizeof(ball_last) / sizeof(ball_last[0]); j++ ) {
+		printf("ball_last[%d] = %d\n", j, ball_last[j] );
+	}
+	return paddle_vel;
 }
-void send_togame(){
-	char str[150];
-	char * type_class="info";
-	char * content="3";
-	char * who="P1";
-	char * cnt="3";
+// int cnt=0;
+void send_togame(char* type_class, char* content, int sockfd){
+
+	char str[128];
+	printf("type_class:%s\n",type_class);
+	
+	// if (strcmp(type_class,"info")==0){
+	// 	cnt++;
+	// }
 	strcpy(str, "{'type':");
 	strcat(str, type_class);
 	strcat(str, ",'who'");
-	strcat(str, who);
+	strcat(str, WHO);
 	strcat(str, ",'content'");
 	strcat(str, content);
-	strcat(str, ",'cnt'");
-	strcat(str, cnt);
+	// strcat(str, ",'cnt'");
+	// strcat(str, cnt);
 	strcat(str, "}");
-
-	// printf("%s\n",str);
-	// printf("paddle_pos[%d] = %d\n", 1, paddle_pos[1] );
-	// msg={'type':type_class,'who':who,'content':content, 'cnt':cnt}
-	// for (j = 0; j < 2; j++ ) {
-	// 	printf("Element[%d] = %d\n", j, n[j] );
-	// }
+	write(sockfd, str, sizeof(str));
 }
-void msg_address(char* msg_type_val, json_object* json_obj_pointer ){
+int msg_address(char* msg_type_val, json_object* json_obj_pointer ){
 
 	struct json_object *msg_content;
 	struct json_object *msg_ball, *msg_paddle, *cnt;
@@ -87,13 +108,16 @@ void msg_address(char* msg_type_val, json_object* json_obj_pointer ){
 		// for (j=0; j < sizeof(ball_int.arr) / sizeof(ball_int.arr[0]); j++ ) {
 		// 	printf("Element[%d] = %d\n", j, ball_int.arr[j] );
 		// }
-		run(ball_int,strtol(json_object_get_string(msg_paddle),NULL,10));
-
+		char * cnt="3";
+		int return_paddle;
+		return_paddle = run(ball_int,strtol(json_object_get_string(msg_paddle),NULL,10));
+		return return_paddle;
+		
 	}
 	else if (strcmp(msg_type_val,"conn")==0){
 		printf("okok");
 	}
-
+	return 0;
 }
 void func(int sockfd) 
 { 
@@ -103,6 +127,7 @@ void func(int sockfd)
 	struct json_object *parsed_json;
 	
 	bzero(buff, sizeof(buff)); 
+	printf("in func sockfd:%d\n",sockfd);
 	read(sockfd, buff, sizeof(buff));
 	printf("From Server : %s", buff);
 	parsed_json = json_tokener_parse(buff);
@@ -116,9 +141,13 @@ void func(int sockfd)
 	// printf("&&%s\n",&parsed_json);
 	// printf("**%d\n",*parsed_json);
 	// char* str=;
-	msg_address(json_object_get_string(msg_type),parsed_json);
-	// printf("type: %s\n", json_object_get_string(msg_type));
-
+	int content_paddle;
+	content_paddle=msg_address(json_object_get_string(msg_type),parsed_json);
+	printf("content_paddle: %d\n",content_paddle);
+	char content_buffer[8],sockfd_buffer[8];
+	sprintf(content_buffer, "%d", content_paddle);
+	sprintf(sockfd_buffer, "%d", sockfd);
+	send_togame("info",content_buffer,sockfd );
 	// for (;;) { 
 	// 	bzero(buff, sizeof(buff)); 
 		
@@ -127,7 +156,7 @@ void func(int sockfd)
 	// 		// ; 
 	// 	// char *buff = "{\"connect\": \"joys of programming\"}";
 	// 	// char *buff = "connect";
-	// 	write(sockfd, buff, sizeof(buff)); 
+	// write(sockfd, buff, sizeof(buff)); 
 	// 	bzero(buff, sizeof(buff)); 
 	// 	read(sockfd, buff, sizeof(buff)); 
 	// 	printf("From Server : %s", buff); 
@@ -148,7 +177,6 @@ int main(int argc, char *argv[])
 	long conv = strtol(argv[1], &port, 10);
 	// socket create and varification 
 
-	send_togame();
 	if (errno != 0 || *port != '\0') {
 		printf("eerroor");
 	} else { // No error

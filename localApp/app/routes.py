@@ -72,7 +72,7 @@ def library():
     
     savepath = request.form.get('path',False)
     file_end = request.form.get('end',False) 
-    save_code(savepath,"test_game",file_end,request.form.get('test_game',False))
+    save_code(savepath,"test_game",'.py',request.form.get('test_game',False))
     save_code(savepath,"lib",file_end,request.form.get('lib',False))
     return "set library ok"
 
@@ -168,15 +168,15 @@ def test_security(only_user_code):
 
 def append_lib(save_path,filename,file_end):
     with open("%s%s%s"%(save_path,'test_usercode',file_end), "w") as f:
-        
+        f.write('\n')
         with open(save_path+filename+file_end) as f_usercode: 
             lines = f_usercode.readlines() 
             for i, line in enumerate(lines):
                 if i >= 0 and i < 6800:
                     f.write(line)
-        lan = save_path.split('/')[-1]
+        lan = save_path.split('/')[-2]
         if lan =="1":
-            f.write("\nchar who[]=\"poo\";\n")
+            f.write("\n#define WHO 'P"+str(i+1)+"'\n")
         elif lan=="2":
             f.write("\nwho='P1'\n")
 
@@ -193,9 +193,16 @@ def test_code(compiler,save_path,filename,file_end):
     append_lib(save_path,filename,file_end)
     
     try: 
-        p_gamemain = Popen(compiler+' '+save_path+'test_game'+file_end,shell=True, stdout=PIPE, stderr=PIPE)
+        p_gamemain = Popen('python '+save_path+'test_game.py'+' 5501',shell=True, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p_gamemain.communicate()
+
         time.sleep(2)
-        p = Popen(compiler + ' '+save_path + 'test_usercode'+file_end+' 0.0.0.0 1',shell=True, stdout=PIPE, stderr=PIPE)
+        if file_end=='.c':
+            print("in c")
+            p = Popen(compiler + ' '+save_path + 'test_usercode'+file_end,shell=True, stdout=PIPE, stderr=PIPE)
+            # p = Popen('./a.out 5501',shell=True, stdout=PIPE, stderr=PIPE)
+        elif file_end=='.py':
+            p = Popen(compiler + ' '+save_path + 'test_usercode'+file_end+' 0.0.0.0 1',shell=True, stdout=PIPE, stderr=PIPE)
         stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)

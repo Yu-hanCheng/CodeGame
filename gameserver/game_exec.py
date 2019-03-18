@@ -66,7 +66,10 @@ def ws_msg_handler(msg):
     log_id=0
     for i,element in enumerate(msg_converted): # msg is elephant
         with open(""+element[4]+element[5]+element[6],'a') as user_file:
-            user_file.write("\nwho='P"+str(i+1)+"'\n")
+            if element[3]=='c':
+                user_file.write("\n#define WHO 'P"+str(i+1)+"'\n")
+            elif element[3]=='python':
+                user_file.write("\nwho='P"+str(i+1)+"'\n")
             with open(element[4]+'lib'+element[6]) as fin: 
                 lines = fin.readlines() 
                 for j, line in enumerate(lines):
