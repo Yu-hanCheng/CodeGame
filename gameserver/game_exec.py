@@ -66,7 +66,6 @@ def ws_msg_handler(msg):
     log_id=0
     for i,element in enumerate(msg_converted): # msg is elephant
         with open(""+element[4]+element[5]+element[6],'a') as user_file:
-            user_file.write("\nglobal paddle_vel,ball_pos,move_unit\npaddle_pos=0\npaddle_vel=0\nball_pos=[[0,0],[0,0],[0,0]]\nmove_unit=3\nrun()\n")
             user_file.write("\nwho='P"+str(i+1)+"'\n")
             with open(element[4]+'lib'+element[6]) as fin: 
                 lines = fin.readlines() 
@@ -94,7 +93,8 @@ def tcp_send_to_subserver(subserver_index,log_id,user_id,compiler, fileEnd, code
     global subserverlist
     codeString = base64.b64encode(code.encode('utf-8')).decode('utf-8')
     jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'code':codeString,'user_id':user_id}).encode()
-    print(len(subserverlist),subserver_index)
+    print("len:",len(jsonStr).to_bytes(3,byteorder='big'))
+    subserverlist[subserver_index].sendall( len(jsonStr).to_bytes(3,byteorder='big'))
     subserverlist[subserver_index].sendall(jsonStr)
 
 def tcp_serve_for_sub():

@@ -27,6 +27,7 @@
 
 <script>
     let display_content ={{content}}
+    let display ={{content}}
     var startTime=new Date();
     var speed=10;
     var start_flag=0;
@@ -55,8 +56,16 @@
         popup.classList.toggle("show");
     }
     function download_log(){
+        let ball="BALL";
+        let p1="P1";
+        let p1_move="PMOVE";
+        for (var i = 0; i < display_content.length; i++) { 
+            ball +=  display_content[i][0]+"''";
+            p1 +=  display_content[i][1]+"''";
+            p1_move +=  display_content[i][2]+"''";
+        }
         var element = document.createElement('a');
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(display_content));
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(ball+"\n\n"+p1+"\n\n"+p1_move));
         element.setAttribute('download', 'log_'+{{log_id}});
         element.style.display = 'none';
         document.body.appendChild(element);
@@ -66,7 +75,7 @@
     
     if( {{func_type}} ){ //func_type==1 -> display
         var refreshIntervalId=setInterval(function(){
-            position=display_content.shift();
+            position=display.shift();
             if(position == undefined){
                 console.log("clearInterval");
                 clearInterval(refreshIntervalId);
@@ -76,7 +85,7 @@
             let right = $('.right-goalkeeper')
             ball_update(position[0]);
             paddle_update(position[1],left);
-            paddle_update(position[2],right);
+            paddle_update(position[3],right);
             }
         },speed);
     }else{

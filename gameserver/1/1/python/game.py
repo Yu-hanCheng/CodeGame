@@ -34,6 +34,8 @@ PAD_WIDTH = 8
 PAD_HEIGHT = math.ceil(HEIGHT/3)
 HALF_PAD_WIDTH = PAD_WIDTH // 3
 HALF_PAD_HEIGHT = PAD_HEIGHT // 3
+paddle1 = [HALF_PAD_WIDTH - 1, HEIGHT // 2]
+paddle2 = [WIDTH + 1 - HALF_PAD_WIDTH, HEIGHT //2]
 ball = [0, 0]
 ball_vel = [0, 0]
 record_content=[]
@@ -70,8 +72,6 @@ def ball_init(right):
 def __init__():
     global paddle1, paddle2, paddle1_move, paddle2_move, l_score, r_score  # these are floats
     global score1, score2  # these are ints
-    paddle1 = [HALF_PAD_WIDTH - 1, HEIGHT // 2]
-    paddle2 = [WIDTH + 1 - HALF_PAD_WIDTH, HEIGHT //2]
     l_score = 0
     r_score = 0
     if random.randrange(0, 2) == 0:
@@ -105,8 +105,8 @@ def send_to_Players(instr):
 
     if (instr == 'gameinfo') and barrier==[1,1]:
         cnt+=1
-        msg={'type':'info','content':tuple([ball,paddle1[1],paddle2[1],[l_score,r_score],cnt])}
-        
+        msg={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
+
     elif instr == 'endgame':
         msg={'type':'over','content':{'ball':ball,'score':[l_score,r_score]}}
         print('endgame %f'%time.time())
@@ -226,48 +226,49 @@ def handle_client_connection(client_socket):
     # connect就進入 socket就進入 handler了, 為什麼connect後還要recv？ 為了判斷是p1連進來 還是p2
     global ball,paddle1,paddle2,record_content
     global paddle1_move,barrier,p1_rt,paddle2_move,p2_rt, playerlist, start,endgame, l_score, r_score, r_report,l_report
-    client_socket.send(json.dumps({'type':"conn",'msg':"connected to server"}).encode())
+    client_socket.sendall(json.dumps({'type':"conn",'msg':"connected to server"}).encode())
 
     request = client_socket.recv(1024)
-    msg = json.loads(request.decode())
-    print("which subserver:",client_socket.getpeername(), msg)
-    if msg['type']=='connect':
-        if msg['who']=='P1':
-            p1_rt=time.time()
-            identify['P1']=msg['user_id']
-            #lock.acquire()
-            try:
-                barrier[0]=1
-                # print('P1 in',barrier)
-                if barrier[1]!=1:
+    print("which subserver:",client_socket.getpeername(), request)
+    if request!=b'':
+        msg = json.loads(request.decode())
+        if msg['type']=='connect':
+            if msg['who']=='P1':
+                p1_rt=time.time()
+                identify['P1']=msg['user_id']
+                #lock.acquire()
+                try:
+                    barrier[0]=1
+                    # print('P1 in',barrier)
+                    if barrier[1]!=1:
+                        pass
+                    else:
+                        print("p1_start")
+                        start=1
+                        send_to_webserver('gamemain_connect',identify,log_id)
+                        send_to_Players("gameinfo")
+                finally:
                     pass
-                else:
-                    print("p1_start")
-                    start=1
-                    send_to_webserver('gamemain_connect',identify,log_id)
-                    send_to_Players("gameinfo")
-            finally:
-                pass
 
-        elif msg['who']=='P2':
-            # print('P2 in',barrier)
-            p2_rt=time.time()
-            identify['P2']=msg['user_id']
-            #lock.acquire()
-            try:
-                barrier[1]=1
-                if barrier[0]!=1:
+            elif msg['who']=='P2':
+                # print('P2 in',barrier)
+                p2_rt=time.time()
+                identify['P2']=msg['user_id']
+                #lock.acquire()
+                try:
+                    barrier[1]=1
+                    if barrier[0]!=1:
+                        pass
+                    else:
+                        print("p2_start")
+                        start=1
+                        send_to_webserver('gamemain_connect',identify,log_id)
+                        send_to_Players("gameinfo")
+                        # break
+                finally:
+                    #lock.release()
                     pass
-                else:
-                    print("p2_start")
-                    start=1
-                    send_to_webserver('gamemain_connect',identify,log_id)
-                    send_to_Players("gameinfo")
-                    # break
-            finally:
-                #lock.release()
-                pass
-                    
+                        
     while True:
         # print(client_socket.getpeername(),"communicate loop")
         try:
@@ -298,7 +299,7 @@ def handle_client_connection(client_socket):
                         if barrier[1]==1:
                             
                             send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
-                            record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
+                            record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))
                             game('on_p1')
                     finally:
                         #lock.release()
@@ -315,7 +316,7 @@ def handle_client_connection(client_socket):
                         if barrier[0]==1:
                             
                             send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
-                            record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
+                            record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))
                             game('on_p2')
                     finally:
                         #lock.release()

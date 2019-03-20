@@ -299,7 +299,7 @@ def handle_client_connection(client_socket):
                         if barrier[1]==1:
                             
                             send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
-                            record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
+                            record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))
                             game('on_p1')
                     finally:
                         #lock.release()
@@ -316,7 +316,7 @@ def handle_client_connection(client_socket):
                         if barrier[0]==1:
                             
                             send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
-                            record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
+                            record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))
                             game('on_p2')
                     finally:
                         #lock.release()
