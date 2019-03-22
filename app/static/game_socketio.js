@@ -63,7 +63,6 @@ $(document).ready(function(){
     socket.on('the_change_code', function(data) {
         if (data['code_id']==lan_mode.value){
             let code_decode = atob(data['code']);
-            console.log(code_decode);
             editor.setValue(code_decode);
         }
     });
@@ -131,7 +130,6 @@ function myPopupjs(data_msg,log_id){
     document.getElementById("myPopup_dom").innerHTML = mytable;
 
 }
-
 function leave_room() {
     socket.emit('left', {}, function() {
         socket.disconnect();
@@ -140,8 +138,6 @@ function leave_room() {
         window.location.href = "{{ url_for('games.index') }}";
     });
 }
-
-
 function ball_update(position){
     var width = $(".ball").outerWidth();
     var height = $(".ball").outerHeight();
@@ -174,7 +170,6 @@ var Scores = {
         else{
             $(".left-score span").text(n);
         }
-
 	},
 	// set right score with animation
 	setRight: function(n) {

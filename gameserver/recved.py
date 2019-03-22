@@ -43,16 +43,22 @@ def save_code(code, fileEnd):
         f.write(code)
 cnt=0
 def recvall(sock):
-    global cnt
+    
     BUFF_SIZE = 4096 # 4 KiB
     data = b''
+    data_len=0
+    recv_cnt=0
     while True:
         part = sock.recv(BUFF_SIZE)
-        cnt+=1
-        data += part
-        if len(part) < BUFF_SIZE:
-            # either 0 or end of data
-            break
+        recv_cnt+=1
+        
+        if recv_cnt==1:
+            data_len=int.from_bytes(part,"big")
+            print("data_len",data_len)
+        else:
+            data += part
+            if len(part) < BUFF_SIZE and len(data) >=data_len:
+                break
     return data
 
 connect_to_game()

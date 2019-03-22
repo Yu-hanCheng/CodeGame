@@ -3,7 +3,6 @@ import socket,json,time,sys,os
 import threading,math, random,copy
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
-# socketIO=SocketIO('18.220.184.154', 5000, LoggingNamespace)
 
 game_exec_ip = sys.argv[1]
 game_exec_port = sys.argv[2]
@@ -236,7 +235,7 @@ def handle_client_connection(client_socket):
             if msg['who']=='P1':
                 p1_rt=time.time()
                 identify['P1']=msg['user_id']
-                #lock.acquire()
+                print("p1 conn lock",lock.acquire())
                 try:
                     barrier[0]=1
                     # print('P1 in',barrier)
@@ -248,13 +247,14 @@ def handle_client_connection(client_socket):
                         send_to_webserver('gamemain_connect',identify,log_id)
                         send_to_Players("gameinfo")
                 finally:
+                    lock.release()
                     pass
 
             elif msg['who']=='P2':
                 # print('P2 in',barrier)
                 p2_rt=time.time()
                 identify['P2']=msg['user_id']
-                #lock.acquire()
+                print("p2 conn lock",lock.acquire())
                 try:
                     barrier[1]=1
                     if barrier[0]!=1:
@@ -266,7 +266,7 @@ def handle_client_connection(client_socket):
                         send_to_Players("gameinfo")
                         # break
                 finally:
-                    #lock.release()
+                    lock.release()
                     pass
                         
     while True:
@@ -275,7 +275,6 @@ def handle_client_connection(client_socket):
             request = client_socket.recv(1024)
             if request==b'':
                 print("sys.exit()")
-                # client_socket.close()
                 os._exit(0)
                 
             else:
@@ -284,57 +283,52 @@ def handle_client_connection(client_socket):
             print('error',e)
             os._exit(0)
 
-        lock.acquire()
         if start == 1:
-            # print("re msg:",msg)
             if msg['type']=='info':
-                # print('info',msg['who'],msg['content'])#paddle_vel
                 if msg['who']=='P1':
-                    paddle1_move=msg['content']
+                    paddle1_move=msg['content']         
+                    print("p1 info lock",lock.acquire())
                     p1_rt=time.time()
-                    #lock.acquire()
                     try:
                         barrier[0]=1 ## return to 0 in send_to_player
-                        lock.release()
                         if barrier[1]==1:
-                            
+                            lock.release()
                             send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
                             record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))
                             game('on_p1')
+                        else:
+                            lock.release()
                     finally:
-                        #lock.release()
                         pass
 
                 elif msg['who']=='P2':
-                    # print('P2 content',msg['content'])
-                    paddle2_move=msg['content']
+                    paddle2_move=msg['content'] 
+                    print("p2 info lock",lock.acquire())
                     p2_rt=time.time()
-                    #lock.acquire()
                     try:
                         barrier[1]=1
-                        lock.release()
                         if barrier[0]==1:
-                            
+                            lock.release()
                             send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
                             record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))
                             game('on_p2')
+                        else:
+                            lock.release()
                     finally:
-                        #lock.release()
                         pass
                 else:
-                    lock.release()
+                    pass
             else:
-                lock.release()
+                pass
         elif endgame==1:
             
             if msg['type']=='score':
                 
                 if msg['who']=='P1':
-                    l_report = msg['content']
-                    # print('l_report',l_report)
+                    print("p1 score lock",lock.acquire())
+                    l_report = msg['content']                
                     if r_report!="":
                         lock.release()
-                        
                         send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
 
                         game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
@@ -358,8 +352,8 @@ def handle_client_connection(client_socket):
                         lock.release()
 
                 elif msg['who']=='P2':
+                    print("p2 score lock",lock.acquire())
                     r_report = msg['content']
-                    # print('r_report',r_report)
                     if l_report!="":
                         lock.release()
                         send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)                       
@@ -385,9 +379,9 @@ def handle_client_connection(client_socket):
                     else:
                         lock.release()
                 else:
-                    lock.release()
+                    print("can't recongnize msg who")
             else:
-                lock.release()
+                print("the type is not score")
 
             
         else:
