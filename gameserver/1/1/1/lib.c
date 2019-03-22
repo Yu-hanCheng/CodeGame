@@ -10,6 +10,7 @@
 #define SA struct sockaddr 
 #define SIZE 2
 #define MOVE_UNIT 3
+#define WHO "P1" // game_exec
 
 // A wrapper for array to make sure that array 
 // is passed by value. 
@@ -18,43 +19,11 @@ struct ArrayWrapper
     int arr[SIZE]; 
 };
 int paddle_vel;
-int run(struct ArrayWrapper ball_array, int paddle){ //editor 上要隱藏
-	int j;
-	int *ball=ball_array.arr;
-	int ball_last[2]={0,0};
 
-	if((ball[1]-ball_last[1])>0){
-		if((ball[1]-paddle)<8){
-			paddle_vel=0;
-		}
-		else if((ball[1]-paddle)>8){
-			paddle_vel=MOVE_UNIT*2;
-		}
-	}
-	else if((ball[1]-ball_last[1])<0){
-		if((ball[1]-paddle)<-8){
-			paddle_vel=-MOVE_UNIT*2;
-		}
-		else if((ball[1]-paddle)>-8){
-			paddle_vel=0;
-		}
-	}
-	else{
-		paddle_vel=0;
-	}
-	ball_last[0]=ball[0]; //editor 上要隱藏
-	ball_last[1]=ball[1]; //editor 上要隱藏
-	for (j=0; j < sizeof(ball_last) / sizeof(ball_last[0]); j++ ) {
-		printf("ball_last[%d] = %d\n", j, ball_last[j] );
-	}
-	return paddle_vel;
-}
 // int cnt=0;
 void send_togame(char* type_class, char* content, int sockfd){
 
-	char str[128];
-	printf("type_class:%s\n",type_class);
-	
+	char str[128];	
 	// if (strcmp(type_class,"info")==0){
 	// 	cnt++;
 	// }
@@ -137,13 +106,9 @@ void func(int sockfd)
 		return ;
 	}
 	json_object_object_get_ex(parsed_json, "type", &msg_type);
-	printf("%s\n",json_object_get_string(msg_type));
-	// printf("&&%s\n",&parsed_json);
-	// printf("**%d\n",*parsed_json);
-	// char* str=;
 	int content_paddle;
 	content_paddle=msg_address(json_object_get_string(msg_type),parsed_json);
-	printf("content_paddle: %d\n",content_paddle);
+	printf("paddle:%d",content_paddle)
 	char content_buffer[8],sockfd_buffer[8];
 	sprintf(content_buffer, "%d", content_paddle);
 	sprintf(sockfd_buffer, "%d", sockfd);
@@ -168,13 +133,14 @@ void func(int sockfd)
 	// } 
 } 
 
-int main(int argc, char *argv[]) 
-{ 
+int main(int argc, char *argv[]) { 
 	int sockfd, connfd,port_num; 
 	struct sockaddr_in servaddr, cli; 
 	char *port;
+	char *addr_ip;
 	errno=0;
-	long conv = strtol(argv[1], &port, 10);
+	addr_ip=argv[1];
+	long conv = strtol(argv[2], &port, 10);
 	// socket create and varification 
 
 	if (errno != 0 || *port != '\0') {
@@ -193,7 +159,7 @@ int main(int argc, char *argv[])
 
 	// assign IP, PORT 
 	servaddr.sin_family = AF_INET; 
-	servaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); 
+	servaddr.sin_addr.s_addr = inet_addr(addr_ip); 
 	servaddr.sin_port = htons(port_num); 
 
 	// connect the client socket to server socket 
@@ -209,3 +175,34 @@ int main(int argc, char *argv[])
 	// close the socket 
 	close(sockfd); 
 } 
+int run(struct ArrayWrapper ball_array, int paddle){ //editor 上要隱藏
+	int j;
+	int *ball=ball_array.arr;
+	int ball_last[2]={0,0};
+
+	if((ball[1]-ball_last[1])>0){
+		if((ball[1]-paddle)<8){
+			paddle_vel=0;
+		}
+		else if((ball[1]-paddle)>8){
+			paddle_vel=MOVE_UNIT*2;
+		}
+	}
+	else if((ball[1]-ball_last[1])<0){
+		if((ball[1]-paddle)<-8){
+			paddle_vel=-MOVE_UNIT*2;
+		}
+		else if((ball[1]-paddle)>-8){
+			paddle_vel=0;
+		}
+	}
+	else{
+		paddle_vel=0;
+	}
+	ball_last[0]=ball[0]; //editor 上要隱藏
+	ball_last[1]=ball[1]; //editor 上要隱藏
+	for (j=0; j < sizeof(ball_last) / sizeof(ball_last[0]); j++ ) {
+		printf("ball_last[%d] = %d\n", j, ball_last[j] );
+	}
+	return paddle_vel;
+}
