@@ -23,15 +23,15 @@ int paddle_vel;
 // int cnt=0;
 void send_togame(char* type_class, char* content, int sockfd){
 
-	char str[128];	
+	char str[64];	
 	// if (strcmp(type_class,"info")==0){
 	// 	cnt++;
 	// }
-	strcpy(str, "{'type':");
+	strcpy(str, "{'type':'");
 	strcat(str, type_class);
-	strcat(str, ",'who'");
+	strcat(str, "','who':'");
 	strcat(str, WHO);
-	strcat(str, ",'content'");
+	strcat(str, "','content':");
 	strcat(str, content);
 	// strcat(str, ",'cnt'");
 	// strcat(str, cnt);
@@ -108,7 +108,7 @@ void func(int sockfd)
 	json_object_object_get_ex(parsed_json, "type", &msg_type);
 	int content_paddle;
 	content_paddle=msg_address(json_object_get_string(msg_type),parsed_json);
-	printf("paddle:%d",content_paddle)
+	printf("paddle:%d",content_paddle);
 	char content_buffer[8],sockfd_buffer[8];
 	sprintf(content_buffer, "%d", content_paddle);
 	sprintf(sockfd_buffer, "%d", sockfd);
