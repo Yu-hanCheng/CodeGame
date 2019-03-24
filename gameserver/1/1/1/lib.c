@@ -6,7 +6,7 @@
 #include <errno.h>   // for errno
 #include <sys/socket.h> 
 #include <json-c/json.h>
-#define MAX 256
+#define MAX 1024
 #define SA struct sockaddr 
 #define SIZE 2
 #define MOVE_UNIT 3
@@ -44,47 +44,32 @@ int msg_address(char* msg_type_val, json_object* json_obj_pointer ){
 	struct json_object *msg_ball, *msg_paddle, *cnt;
 	
 	if (strcmp(msg_type_val,"conn")==0){
-		printf("okok");
-	}
-	else if (strcmp(msg_type_val,"info")==0){
-		
-		json_object_object_get_ex(json_obj_pointer, "content", &msg_content);
-		
-		json_object *jobj = json_tokener_parse(json_object_get_string(msg_content));
-		
-		json_object_object_get_ex(jobj, "ball", &msg_ball);
-		if (strcmp(WHO,"P1")==0){
-			json_object_object_get_ex(jobj, "paddle1", &msg_paddle);
-		}
-		else{
-			json_object_object_get_ex(jobj, "paddle2", &msg_paddle);
-		}
-		
-		json_object_object_get_ex(jobj, "cnt", &cnt);
-		printf("%s %s %s\n",json_object_get_string(msg_ball),json_object_get_string(msg_paddle),json_object_get_string(cnt));
-		char *str= json_object_get_string(msg_ball);
-		char delim[] = {","};
-		char *ptr = strtok(str, delim);
-		struct ArrayWrapper ball_int;
-		int i=0,j=0;
-		while(ptr != NULL)
-		{	
-			printf("'%s'\n", ptr);
-			ball_int.arr[i]=strtol(ptr+1,NULL,10);
-			i++;
-			ptr = strtok(NULL, delim);
-		}
-		// for (j=0; j < sizeof(ball_int.arr) / sizeof(ball_int.arr[0]); j++ ) {
-		// 	printf("Element[%d] = %d\n", j, ball_int.arr[j] );
-		// }
-		char * cnt="3";
-		int return_paddle;
-		return_paddle = run(ball_int,strtol(json_object_get_string(msg_paddle),NULL,10));
-		return return_paddle;
-		
-	}
-	else if (strcmp(msg_type_val,"conn")==0){
-		printf("okok");
+		send_togame("connect","user_id",user_id,sockfd );
+	}else if (strcmp(msg_type_val,"info")==0){
+		int content_paddle; 
+		content_paddle=on_gameinfo(json_obj_pointer);
+		printf("content_paddle:%d",content_paddle);
+		char content_buffer[8];
+		sprintf(content_buffer, "%d", content_paddle);
+		send_togame("info","content",content_buffer,sockfd );
+	}else if (strcmp(msg_type_val,"over")==0){
+		struct Tuple_score t = score(json_obj_pointer);
+		printf("recv gameover");
+		char report[64];
+		strcpy(report, "\"");
+		strcpy(report, user_id);
+		strcpy(report, ",");
+		// strcpy(report, t.p_score);
+		// strcpy(report, ",");
+		// strcpy(report, t.cpu);
+		// strcpy(report, ",");
+		// strcpy(report, t.mem);
+		// strcpy(report, ",");
+		// strcpy(report, t.avg_time);
+		strcpy(report,"\"");
+		send_togame('score',"content",report,sockfd);
+    
+	}else if (strcmp(msg_type_val,"score_recved")==0){
 	}
 	return 0;
 }
@@ -96,8 +81,8 @@ void func(int sockfd)
 	struct json_object *parsed_json;
 	
 	bzero(buff, sizeof(buff)); 
-	printf("in func sockfd:%d\n",sockfd);
-	read(sockfd, buff, sizeof(buff));
+	printf("in recv_fromgame:\n");
+	read(sockfd, buff, sizeof(buff),0);
 	printf("From Server : %s", buff);
 	parsed_json = json_tokener_parse(buff);
 	enum json_type type = json_object_get_type(parsed_json);
@@ -107,34 +92,13 @@ void func(int sockfd)
 	}
 	json_object_object_get_ex(parsed_json, "type", &msg_type);
 	int content_paddle;
-	content_paddle=msg_address(json_object_get_string(msg_type),parsed_json);
-	printf("paddle:%d",content_paddle);
-	char content_buffer[8],sockfd_buffer[8];
-	sprintf(content_buffer, "%d", content_paddle);
-	sprintf(sockfd_buffer, "%d", sockfd);
-	send_togame("info",content_buffer,sockfd );
-	// for (;;) { 
-	// 	bzero(buff, sizeof(buff)); 
-		
-	// 	// n = 0; 
-	// 	// while ((buff[n++] = getchar()) != '\n') 
-	// 		// ; 
-	// 	// char *buff = "{\"connect\": \"joys of programming\"}";
-	// 	// char *buff = "connect";
-	// write(sockfd, buff, sizeof(buff)); 
-	// 	bzero(buff, sizeof(buff)); 
-	// 	read(sockfd, buff, sizeof(buff)); 
-	// 	printf("From Server : %s", buff); 
 
-	// 	if ((strncmp(buff, "exit", 4)) == 0) { 
-	// 		printf("Client Exit...\n"); 
-	// 		break; 
-	// 	} 
-	// } 
+	content_paddle=msg_address(json_object_get_string(msg_type),parsed_json,sockfd);
+	
 } 
 
 int main(int argc, char *argv[]) { 
-	int sockfd, connfd,port_num; 
+	int connfd,port_num; 
 	struct sockaddr_in servaddr, cli; 
 	char *port;
 	char *addr_ip;
@@ -170,8 +134,9 @@ int main(int argc, char *argv[]) {
 	else
 		printf("connected to the server..\n"); 
 	// function for chat 
-	func(sockfd); 
-
+	while(1){
+		recv_fromgame(); 
+	}
 	// close the socket 
 	close(sockfd); 
 } 
