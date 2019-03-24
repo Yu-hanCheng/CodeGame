@@ -14,8 +14,6 @@ socketIO.emit('info',{'msg':'gameconnected','log_id':log_id})
 
 bind_ip = '0.0.0.0'
 bind_port = int(game_exec_port)+1
-identify={}
-
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((bind_ip, bind_port))
 server.listen(3)  # max backlog of connections
@@ -176,7 +174,6 @@ def play():
             print('r_score ',r_score)
             
             if r_score < 1:
-                send_to_Players('get_score')
                 ball_init(True)
             else:
                 # barrier=1

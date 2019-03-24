@@ -24,8 +24,8 @@ while True:
 
 
 
-cpu_list=[]
-mem_list=[]
+cpu_list=[0]
+mem_list=[0]
      
 pid=os.getpid()
 p = psutil.Process(pid)
@@ -107,7 +107,9 @@ def score(msg_from_gamemain):# CPU, MEM Utility
 
     cpu = round(reduce(lambda x, y: x + y, cpu_list) / len(cpu_list),3)
     mem = round(reduce(lambda x, y: x + y, mem_list) / len(mem_list),3)
-    communicate('score',json.dumps({'user_id':user_id,'score':score,'cpu':cpu,'mem':mem,'time':'554400'}))
+    avg_time=1
+    report="\""+str(user_id)+","+str(cpu)+","+str(mem)+","+str(avg_time)+"\""
+    send_togame('score',report)
     
 def recvall(sock):
     global cnt
