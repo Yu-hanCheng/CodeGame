@@ -94,11 +94,9 @@ def commit():
     # str(data.get('lan_compiler'))
     decode = bytes(base64.b64decode(code))
     security_res=test_security(decode)
-    if not security_res[0]:
-        print("test_security fail")
-        socketio.emit('security', {'msg': security_res[1]})
-        return "false code"
-    else:
+    socketio.emit('security', {'msg': security_res})
+
+    if  security_res[0]:
         # set filename
         f = []
         for (dirpath, dirnames, filenames) in walk(save_path):
@@ -123,6 +121,8 @@ def commit():
             flash("Can't upload")
 
         return "test fail"
+    else:
+        return "unavailible lib"
 
 @socketio.on('conn') #from localbrowser
 def connect(message):

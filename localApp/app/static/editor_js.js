@@ -52,8 +52,6 @@ $(document).ready(function(){
         console.log("upload_ok")
         alert("upload to webserver successfully",function(){ window.location.reload(); })
         // window.location.refresh();
-        document.getElementById('section_code').style.display = "none";
-        document.getElementById('section_game').style.display = "block";
 
     });
     socket_local.on('code_inavailable', function(data){ 
@@ -64,8 +62,13 @@ $(document).ready(function(){
     
     socket_local.on('security', function(data){ 
         console.log("security",data);
-        alert("This code is not available: "+data['msg'])
         // window.location.refresh();
+        if (data['msg'][0]==1){
+            document.getElementById('section_code').style.display = "none";
+            document.getElementById('section_game').style.display = "block";
+        }else{
+            alert("This code is not available: "+data['msg'][1])
+        }
 
     });
     $('form#commit_to_server').submit(function(event) {
@@ -94,6 +97,7 @@ function commit_code(){
     let editor_content=editor.getValue();
     var encodedData = window.btoa(unescape(encodeURIComponent(editor_content)));
     before_sendback(encodedData,"application/json","commit")
+
     // need to send back to localapp to sandbox
 }
 function previewFiles(files) {
