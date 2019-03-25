@@ -52,11 +52,19 @@ $(document).ready(function(){
         console.log("upload_ok")
         alert("upload to webserver successfully",function(){ window.location.reload(); })
         // window.location.refresh();
+        document.getElementById('section_code').style.display = "none";
+        document.getElementById('section_game').style.display = "block";
 
     });
+    socket_local.on('code_inavailable', function(data){ 
+        console.log("code_inavailable:"+data['msg']);
+        alert("code_inavailable");
+        // window.location.refresh();
+    });
+    
     socket_local.on('security', function(data){ 
         console.log("security",data);
-        alert("This library is not available: ",data)
+        alert("This code is not available: "+data['msg'])
         // window.location.refresh();
 
     });
@@ -87,8 +95,6 @@ function commit_code(){
     var encodedData = window.btoa(unescape(encodeURIComponent(editor_content)));
     before_sendback(encodedData,"application/json","commit")
     // need to send back to localapp to sandbox
-    document.getElementById('section_code').style.display = "none";
-    document.getElementById('section_game').style.display = "block";
 }
 function previewFiles(files) {
     if (files && files.length >= 1) {
@@ -189,7 +195,6 @@ def run():\n\
         sh: '<value attr="something">Write something here...</value>'
     };
     editor.setValue(contents[mode[6]]);
-    
 }
 
 function leave_room() {

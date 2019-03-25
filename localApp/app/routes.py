@@ -94,9 +94,9 @@ def commit():
     # str(data.get('lan_compiler'))
     decode = bytes(base64.b64decode(code))
     security_res=test_security(decode)
-    if not [0]:
+    if not security_res[0]:
         print("test_security fail")
-        socketio.emit('security', {'msg': security_res})
+        socketio.emit('security', {'msg': security_res[1]})
         return "false code"
     else:
         # set filename
@@ -116,10 +116,13 @@ def commit():
         if code_res[0]:
             print("code_ok")
             isCodeOk=1
+            return "test ok"
 
         else:
+            socketio.emit('code_inavailable', {'msg': code_res[1]})
             flash("Can't upload")
-        return "received code"
+
+        return "test fail"
 
 @socketio.on('conn') #from localbrowser
 def connect(message):
@@ -190,6 +193,7 @@ def test_code(compiler,save_path,filename,file_end):
     filetoexec=save_path+filename+file_end
     from subprocess import Popen, PIPE
     global p_gamemain,p
+    print("in test code")
     append_lib(save_path,filename,file_end)
     
     try: 
