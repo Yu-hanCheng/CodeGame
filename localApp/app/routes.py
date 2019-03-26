@@ -144,6 +144,7 @@ def gameobject(message):
     global p_gamemain,p
     p.kill()
     p_gamemain.kill()
+    message['msg']['l_report'] = message['msg']['l_report'].replace("'", '"')
     socketio.emit('gameover', {'msg': message['msg'],'log_id':message['log_id']})
 
 @socketio.on('upload_toWeb')#from localbrowser
