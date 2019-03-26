@@ -86,7 +86,7 @@ def send_to_Players(instr):
 
     if (instr == 'gameinfo'):
         cnt+=1
-        msg={'type':'info','content':tuple([ball,paddle1[1],paddle2[1],[l_score,r_score],cnt])}
+        msg={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
         playerlist[0].send(json.dumps(msg).encode())
         
         
@@ -219,7 +219,7 @@ def handle_client_connection(client_socket):
                         if msg['who']=='P1':
                             l_report = msg['content']
                             r_report = {"user_id": "2", "score": 0, "cpu": 1.425, "mem": 0.054, "time": "554400"}
-                            send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':str(record_content)},log_id)
+                            send_to_webserver('over',{'l_report':l_report,'r_report':r_report},log_id)
                             break
 
                     elif msg['type']=='disconnect':

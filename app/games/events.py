@@ -18,12 +18,14 @@ def game_over(message):
     # msg：tuple([l_score,r_score,gametime])??
     # alert myPopupjs(玩家成績報告) on browser
     # save all report not only record content -- 0122/2019
+    message['msg']['l_report'] = message['msg']['l_report'].replace("'", '"')
+    message['msg']['r_report'] = message['msg']['r_report'].replace("'", '"')
     
     l_report=json.loads(message['msg']['l_report'])
     r_report=json.loads(message['msg']['r_report'])
     emit('gameover', {'msg': message['msg'],'log_id':message['log_id']},namespace = '/test',room= message['log_id'])
     
-
+    
     if l_report['score']>r_report['score']:
         winner=l_report['user_id']
     else:

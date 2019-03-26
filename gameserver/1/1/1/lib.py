@@ -84,9 +84,9 @@ def on_gameinfo(message):
     elif cnt ==2:
         ball_pos[1] = json_loads_res['ball']
     run()
-    communicate('info',paddle_vel)
+    send_togame('info',paddle_vel)
 
-def communicate(type_class,content):
+def send_togame(type_class,content):
     global paddle_vel,s,who
     msg={'type':type_class,'who':who,'content':content, 'cnt':cnt}
     print('type_class:',type_class)
@@ -108,7 +108,9 @@ def score(msg_from_gamemain):# CPU, MEM Utility
     cpu = round(reduce(lambda x, y: x + y, cpu_list) / len(cpu_list),3)
     mem = round(reduce(lambda x, y: x + y, mem_list) / len(mem_list),3)
     avg_time=1
-    report="\""+str(user_id)+","+str(cpu)+","+str(mem)+","+str(avg_time)+"\""
+    # report="\""+str(user_id)+","+str(cpu)+","+str(mem)+","+str(avg_time)+"\""
+    report= '{\'score\':'+str(score)+',\'user_id\':'+str(user_id)+',\'cpu\':'+str(cpu)+',\'mem\':'+str(mem)+',\'avg_time\':'+str(avg_time)+'}'
+    # msg={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
     send_togame('score',report)
     
 def recvall(sock):
