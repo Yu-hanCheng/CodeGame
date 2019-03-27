@@ -71,10 +71,9 @@ void send_togame(char* type_class, char* content_name,char* content, int sockfd)
 	strcat(str, "}");
 	write(sockfd, str, sizeof(str));
 }
-
-	struct json_object *msg_content;
-	struct json_object *msg_ball, *msg_paddle, *cnt;
 	
+int msg_address(char* msg_type_val, json_object* json_obj_pointer ,int sockfd){
+		
 	if (strcmp(msg_type_val,"conn")==0){
 		send_togame("connect","user_id",user_id,sockfd );
 	}else if (strcmp(msg_type_val,"info")==0){
