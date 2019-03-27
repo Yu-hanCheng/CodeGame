@@ -45,44 +45,44 @@ cnt=0
 def recvall(sock):
     
     BUFF_SIZE = 4096 # 4 KiB
-    data = b''
+    data = ""
     data_len=0
     recv_cnt=0
+
+    part = sock.recv(BUFF_SIZE)
+    first_part_split=part.decode("utf-8").split("|")
+    data_len= int(first_part_split[0])
+    print('data_len',data_len)
+    data += first_part_split[-1]
+
     while True:
         part = sock.recv(BUFF_SIZE)
-        recv_cnt+=1
+        print('part',part)
+        if part==b"":
+            print("no msg")
+            break 
+        part_split=part.decode("utf-8").split("*")
+        data += part_split[0]
         
-        if recv_cnt==1:
-            data_len=int.from_bytes(part,"big")
-            print("data_len",data_len)
-        else:
-            data += part
-            if len(part) < BUFF_SIZE and len(data) >=data_len:
-                break
+        if len(part_split) > 1 : # There is a "*" in the part
+            if len(part_split[1]) > 0:
+                next_msg = part_split[1]
+            break
     return data
 
 connect_to_game()
 while True:
     try:
-        data = recvall(s)
-        # data = s.recv(2048)
-        print('cnt:',cnt)
-        if data==b"":
-            print("no msg")
-            time.sleep(2)
-            continue
-        else:
-            
-            str_data = data.decode("utf-8")
-            msg_recv = json.loads(str_data)
+        str_data = recvall(s)
+        msg_recv = json.loads(str_data)
+        # 判斷 msg 類型, gameinfo or gameover
+        if msg_recv['type']=='new_code': 
+            binary =json.dumps({'type':'recved'}).encode()
+            s.send(binary)
             code = base64.b64decode(msg_recv['code']).decode('utf-8')
-            # 判斷 msg 類型, gameinfo or gameover
-            if msg_recv['type']=='new_code': 
-                binary =json.dumps({'type':'recved'}).encode()
-                s.send(binary)
-                on_gameinfo(msg_recv['log_id'],msg_recv['compiler'],msg_recv['user_id'],code,msg_recv['fileEnd'])
-            else:
-                pass
+            on_gameinfo(msg_recv['log_id'],msg_recv['compiler'],msg_recv['user_id'],code,msg_recv['fileEnd'])
+        else:
+            pass
     except Exception as e:
         print("e:",e)
         connect_to_game()

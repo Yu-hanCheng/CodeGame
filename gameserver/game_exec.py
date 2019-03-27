@@ -95,10 +95,13 @@ def tcp_send_to_subserver(subserver_index,log_id,user_id,compiler, fileEnd, code
     # subserverlist[subserver_cnt].send(json.dumps({'log_id':log_id,'user_id':user_id,'code':code}).encode())
     global subserverlist
     codeString = base64.b64encode(code.encode('utf-8')).decode('utf-8')
-    jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'code':codeString,'user_id':user_id}).encode()
-    print("len:",len(jsonStr).to_bytes(3,byteorder='big'))
-    subserverlist[subserver_index].sendall( len(jsonStr).to_bytes(3,byteorder='big'))
-    subserverlist[subserver_index].sendall(jsonStr)
+    # jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'code':codeString,'user_id':user_id}).encode()
+    jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'code':codeString,'user_id':user_id})
+    msg_tosend=str(len(jsonStr))
+    for i in range(8-len(msg_tosend)):
+        msg_tosend+="|"
+    # msg_len=len(jsonStr).to_bytes(2,byteorder='big')
+    subserverlist[subserver_index].sendall((msg_tosend+jsonStr+"*").encode())
 
 def tcp_serve_for_sub():
     global subserver_cnt,subserverlist
