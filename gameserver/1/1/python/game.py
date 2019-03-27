@@ -3,7 +3,7 @@ import socket,json,time,sys,os
 import threading,math, random,copy
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
-
+import re
 game_exec_ip = sys.argv[1]
 game_exec_port = sys.argv[2]
 log_id = sys.argv[3]
@@ -104,9 +104,9 @@ def send_to_Players(instr):
         cnt+=1
         msg={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
 
-    elif instr == 'endgame':
+    elif instr == 'over':
         msg={'type':'over','content':{'ball':ball,'score':[l_score,r_score]}}
-        print('endgame %f'%time.time())
+        print('game over %f'%time.time())
 
     elif instr =="score_recved":
         msg={'type':'score_recved','content':""}
@@ -177,7 +177,7 @@ def play():
                 ball_init(True)
             else:
                 # barrier=1
-                send_to_Players('endgame')
+                send_to_Players('over')
                 ball_init(False)
                 start=0
                 endgame=1
@@ -196,7 +196,7 @@ def play():
                 
             else:
                 # barrier=1
-                send_to_Players('endgame')
+                send_to_Players('over')
                 start=0
                 endgame=1
                 print('ball ',ball)
@@ -224,10 +224,16 @@ def handle_client_connection(client_socket):
     global paddle1_move,barrier,p1_rt,paddle2_move,p2_rt, playerlist, start,endgame, l_score, r_score, r_report,l_report
     client_socket.sendall(json.dumps({'type':"conn",'msg':"connected to server"}).encode())
 
-    request = client_socket.recv(1024)
-    print("which subserver:",client_socket.getpeername(), request)
+    recv_request = client_socket.recv(1024)
+    print("which subserver:",client_socket.getpeername())
+    # request=str(recv_request).split("\\x | \"")[1]
+    request=re.split(r'(\"|\\x)\s*', str(recv_request))[2]
+    req =request.replace("\'","\"")
+    req2=req.replace(" ","")
+    print("request:",req2)
+    
     if request!=b'':
-        msg = json.loads(request.decode())
+        msg = json.loads(req2)
         if msg['type']=='connect':
             if msg['who']=='P1':
                 p1_rt=time.time()
@@ -326,8 +332,7 @@ def handle_client_connection(client_socket):
                     l_report = msg['content']                
                     if r_report!="":
                         lock.release()
-                        send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
-
+                        send_to_webserver('over',{'score':score,'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
                         game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
                         game_exec_address = (game_exec_ip, int(game_exec_port))
                         print("game_exec_address:",game_exec_address)
@@ -353,7 +358,7 @@ def handle_client_connection(client_socket):
                     r_report = msg['content']
                     if l_report!="":
                         lock.release()
-                        send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)                       
+                        send_to_webserver('over',{'score':score,'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)                       
                         game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
                         game_exec_address = (game_exec_ip, int(game_exec_port))
                         print("game_exec_address:",game_exec_address)

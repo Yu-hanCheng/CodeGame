@@ -1,306 +1,195 @@
 #!/usr/bin/python
-import socket,json,time,sys
+import socket,json,time,sys,os
 import threading,math, random,copy
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
-socketIO=SocketIO('127.0.0.1', 5500, LoggingNamespace)
-socketIO.emit('game_connect',{'msg':'test game init'})
-log_id =0
-bind_ip = '127.0.0.1'
-bind_port = int(sys.argv[1])
+import re
+game_exec_ip = sys.argv[1]
+game_exec_port = sys.argv[2]
+log_id = sys.argv[3]
+
+bind_ip = '0.0.0.0'
+bind_port = int(game_exec_port)+1
 identify={}
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind((bind_ip, bind_port))
 server.listen(3)  # max backlog of connections
-
 print('Listening on {}:{}'.format(bind_ip, bind_port))
 
+# send_to_Players: 1conn,3gameinfo,5over,7score_recved
+# recv from Players: 2connect, 4info, 6score
 playerlist = []
-
-WIDTH = 800
-HEIGHT = 400
-BALL_RADIUS = 20
-PAD_WIDTH = 8
-PAD_HEIGHT = math.ceil(HEIGHT/3)
-HALF_PAD_WIDTH = PAD_WIDTH // 3
-HALF_PAD_HEIGHT = PAD_HEIGHT // 3
-ball = [0, 0]
-ball_vel = [0, 0]
-record_content=[]
-paddle1_move = 0
-paddle2_move = 0
-l_score = 0
-l_report = ""
-r_score = 0
-r_report = ""
-identify={}
-score={'type':'score','roomId':1,'l_score':0,'r_score':0}
-barrier=[0,0] # ensure a round fair
-cnt=0
-p1_rt=0.0001
-p2_rt=0.0001
-start=0 # control timeout loop
 lock = threading.Lock()
-class WebNamespace(BaseNamespace):
-    def on_connect(self):
-        print('[Connected]')
+libs=[0,0]
+# 2 connect
+identify={}
+barrier=[0,1]
+start=0
 
-def ball_init(right):
-    global ball, ball_vel
-    ball = [WIDTH // 2, HEIGHT // 2]
-    horz = random.randrange(5,8)
-    vert = random.randrange(1, 3)
+# 3 gameinfo
+ball = [0, 0]
+paddle1=400
+paddle2=400
+l_score = 0
+r_score = 0
+cnt=0
 
-    if right == False:
-        print("init move left")
-        horz = - horz
-    ball_vel = [horz, -vert]
+# 4 info
+paddle1_move = 0
+paddle2_move = 3
 
-def __init__():
-    global paddle1, paddle2, paddle1_move, paddle2_move, l_score, r_score  # these are floats
-    global score1, score2  # these are ints
-    paddle1 = [HALF_PAD_WIDTH - 1, HEIGHT // 2]
-    paddle2 = [WIDTH + 1 - HALF_PAD_WIDTH, HEIGHT //2]
-    l_score = 0
-    r_score = 0
-    if random.randrange(0, 2) == 0:
-        ball_init(True)
-    else:
-        ball_init(False)
+# 5 over
+endgame=0
+
+# 6score
+l_report = ""
+r_report = "okok"
 
 
-def send_to_webserver(msg_type,msg_content,logId):
-
-    global socketIO
-    try:
-        socketIO.emit(msg_type,{'msg':msg_content,'log_id':logId})
-    except (RuntimeError, TypeError, NameError) as e:
-        print(' send_to_webserver error:',e)
-    
 
 def send_to_Players(instr):
 
-    global cnt,barrier,ball,paddle1,paddle2
+    global cnt,barrier,ball,paddle1,paddle2,l_score,r_score
     
 
-    if (instr == 'gameinfo'):
+    if (instr == 'gameinfo') and barrier==[1,1]:
         cnt+=1
         msg={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
-        playerlist[0].send(json.dumps(msg).encode())
-        
-        
-    elif instr == 'endgame':
+        print("recv info")
+    elif instr == 'over':
         msg={'type':'over','content':{'ball':ball,'score':[l_score,r_score]}}
-        playerlist[0].send(json.dumps(msg).encode())
-        
-        print('endgame %f'%time.time())
+        print('recv game over')
+
+    elif instr =="score_recved":
+        msg={'type':'score_recved','content':""}
+        print("recv score_recved")
     else:
         return
-    barrier=[0,0]
-
-
-def play():
-    try:
-        global paddle1, paddle2,paddle1_move,paddle2_move, ball, ball_vel, l_score, r_score, cnt
-        global barrier,start
-
-        if paddle1[1] > HALF_PAD_HEIGHT and paddle1[1] < HEIGHT - HALF_PAD_HEIGHT:
-            paddle1[1] += paddle1_move
-        elif paddle1[1] <= HALF_PAD_HEIGHT and paddle1_move > 0:
-            paddle1[1] = HALF_PAD_HEIGHT
-            paddle1[1] += paddle1_move
-
-        elif paddle1[1] >= HEIGHT - HALF_PAD_HEIGHT and paddle1_move < 0:
-            paddle1[1] = HEIGHT - HALF_PAD_HEIGHT
-            paddle1[1] += paddle1_move
-
-        else:
-            print('p1 else')
-
-
-        ball[0] += int(ball_vel[0])
-        ball[1] += int(ball_vel[1])
-
-
-        if int(ball[1]) <= BALL_RADIUS:
-            ball_vel[1] = - ball_vel[1]
-        if int(ball[1]) >= HEIGHT + 1 - BALL_RADIUS:
-            ball_vel[1] = - ball_vel[1]
-
-
-        if int(ball[0]) <= BALL_RADIUS + PAD_WIDTH and int(ball[1]) in range(paddle1[1] - HALF_PAD_HEIGHT,
-                                                                                     paddle1[1] + HALF_PAD_HEIGHT, 1):
-            ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.1
-            ball_vel[1] *= 1.1
-        elif int(ball[0]) <= BALL_RADIUS + PAD_WIDTH:
-            r_score += 1
-            print('r_score ',r_score)
-            send_to_Players('endgame')
-            start=0
-                
-        if int(ball[0]) >= (WIDTH + 1 - BALL_RADIUS - PAD_WIDTH):
-            if cnt>1000:
-                l_score += 1
-                send_to_Players('endgame')
-                start=0
-                
-            else:
-                ball_vel[0] = -ball_vel[0]
-                ball_vel[0] *= 1.1
-                ball_vel[1] *= 1.1
-    except(RuntimeError, TypeError, NameError):
-        # raise SystemExit
-        print('play except')
-        return
-    
-def game(where):
-    global start
-    try:
-        print(where)
-        play()
-    except:
-        return
-    if start==1:
-        send_to_Players('gameinfo')
+    for cli in range(0,len(playerlist)):
+        playerlist[cli].send(json.dumps(msg).encode())
+    barrier=[0,1]
 
 def handle_client_connection(client_socket):
+    # connect就進入 socket就進入 handler了, 為什麼connect後還要recv？ 為了判斷是p1連進來 還是p2
+    global ball,paddle1,paddle2
+    global paddle1_move,barrier,paddle2_move, playerlist, start,endgame, l_score, r_score, r_report,l_report
+    client_socket.sendall(json.dumps({'type':"conn",'msg':"connected to server"}).encode())
+    if playerlist[0]==client_socket:
+        print("==ok")
+    recv_request = client_socket.recv(1024)
+    print("which subserver:",client_socket.getpeername())
+    # request=str(recv_request).split("\\x | \"")[1]
+    request=re.split(r'(\"|\\x)\s*', str(recv_request))[2]
+    if len(request)>5:
+        print("this is c lib")
+        for i,e in enumerate(playerlist):
+            if client_socket==e:
+                libs[i]=1
+    print("libs:",libs)
+    req =request.replace("\'","\"")
+    req2=req.replace(" ","")
+    print("request:",req2)
     
-    global paddle1_move,barrier,p1_rt,paddle2_move,p2_rt, playerlist, start,r_report,l_report,cnt
-    client_socket.send(json.dumps({'type':"conn",'msg':"connected to server"}).encode())
-
-    request = client_socket.recv(1024)
-    msg = json.loads(request.decode())
-    if msg['type']=='connect':
-        if msg['who']=='P1':
-            p1_rt=time.time()
-            identify['P1']=msg['user_id']
-            #lock.acquire()
-            try:
-                start=1
-                send_to_Players("gameinfo")
-            except (RuntimeError, TypeError, NameError) as e:
-                print("send_to_player error",e)
+    if request!=b'':
+        msg = json.loads(req2)
+        if msg['type']=='connect':
+            if msg['who']=='P1':
+                identify['P1']=msg['user_id']
+                print("p1 conn lock",lock.acquire())
+                try:
+                    barrier[0]=1
+                    # print('P1 in',barrier)
+                    if barrier[1]!=1:
+                        pass
+                    else:
+                        print("recv connect p1_start")
+                        start=1
+                        send_to_Players("gameinfo")
+                finally:
+                    lock.release()
+                    pass
+                        
     while True:
+        # print(client_socket.getpeername(),"communicate loop")
+        try:
+            request = client_socket.recv(1024)
+            if request==b'':
+                print("sys.exit()")
+                os._exit(0)
+                
+            else:
+                msg = json.loads(request.decode())
+        except(RuntimeError, TypeError, NameError)as e: 
+            print('error',e)
+            os._exit(0)
+
         if start == 1:
-            try:
-                request = client_socket.recv(1024)
-                if request==b'':
-                    print("break")
-                    break
+            if msg['type']=='info':
+                if msg['who']=='P1':
+                    paddle1_move=msg['content']         
+                    print("p1 info lock",lock.acquire())
+                    try:
+                        barrier[0]=1 ## return to 0 in send_to_player
+                        if barrier[1]==1:
+                            lock.release()
+                            r_score += 1
+                            send_to_Players('over')
+                            start=0
+                            endgame=1
+                        else:
+                            lock.release()
+                    finally:
+                        pass
                 else:
-                    msg = json.loads(request.decode())
+                    pass
+            else:
+                pass
+        elif endgame==1:
+            
+            if msg['type']=='score':
+                
+                if msg['who']=='P1':
+                    print("p1 score lock",lock.acquire())
+                    l_report = msg['content']                
+                    if r_report!="":
+                        lock.release()
+                        send_to_Players('score_recved')
+                        # sys.exit()
+                        break
+                    else:
+                        lock.release()
+                else:
+                    print("can't recongnize msg who")
+            else:
+                print("the type is not score")
 
-                    if msg['type']=='info':
-                        print('info paddle_vel',msg['who'],msg['content'])#paddle_vel
-                        if msg['who']=='P1':
-                            paddle1_move=msg['content']
-                            p1_rt=time.time()
-                            #lock.acquire()
-                            try:
-                                send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,cnt]),log_id)
-                                record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
-                                game('on_p1')
-                            finally:
-                                #lock.release()
-                                pass
-
-            except(RuntimeError, TypeError, NameError)as e: 
-                print('error',e)
-                sys.exit()
+            
         else:
-            try:
-                request = client_socket.recv(1024)
-                if request :
-                    msg = json.loads(request.decode())
-                    if msg['type']=='score':
-                        client_socket.send(json.dumps({'type':"score_recved"}).encode())
-                        if msg['who']=='P1':
-                            l_report = msg['content']
-                            r_report = {"user_id": "2", "score": 0, "cpu": 1.425, "mem": 0.054, "time": "554400"}
-                            send_to_webserver('over',{'l_report':l_report,'r_report':r_report},log_id)
-                            break
-
-                    elif msg['type']=='disconnect':
-                        if msg['who']=='P1':
-                            print('P1 leave',cnt)
-                            # client_socket.close()
-                        elif msg['who']=='P2':
-                            print('P2 leave',cnt)
-                            # client_socket.close()
-            except(RuntimeError, TypeError, NameError)as e: 
-                print('error',e)
-                sys.exit()
-            print("game not start, or had over")
-
+            time.sleep(0.5)
+            # print("game not start, or had over")
+            lock.release()
 
 def serve_app():
     while True:
         client_sock, address = server.accept()
         playerlist.append(client_sock)
+        # print ('[%i users online]\n' % len(playerlist))
+        # print(playerlist)
+        # print('Accepted connection from {}:{}'.format(address[0], address[1]))
         client_handler = threading.Thread(
             target=handle_client_connection,
             args=(client_sock,)  # without comma you'd get a... TypeError: handle_client_connection() argument after * must be a sequence, not _socketobject
         )
         client_handler.start()
 
-def timeout_check():
-    global p1_rt, p2_rt,barrier, paddle1_move, paddle2_move, start,playerlist
-    timeout=0.5
-    if start==1:
-        try:
-            barrier[1]=1
-            if barrier[0]==0:
-                p1_rt_sub=time.time()-p1_rt
-
-                if p1_rt_sub>timeout:
-                    if barrier[1]==0:
-                        timeout+=0.005    
-                    paddle1_move=0
-                    barrier=[1,1]
-                    p1_rt=time.time()
-                    p2_rt=time.time()
-                    send_to_webserver('p1timeout',p1_rt_sub,log_id)
-                    game('p1_timeout')
-                    
-        finally:
-            #lock.release()
-            pass
-            
-
 
 if __name__ == '__main__':
-    __init__()
 
     wst = threading.Thread(target=serve_app)
-    wst.daemon = True
+    wst.daemon = False
     wst.start()
     wst.join()
+    # timeout= threading.Thread(target=timeout_check)
+    # timeout.start()
     StartTime=time.time()
-    
-
-class setInterval :
-    def __init__(self,interval,action) :
-        self.interval=interval
-        self.action=action
-        self.stopEvent=threading.Event()
-        thread=threading.Thread(target=self.__setInterval)
-        thread.start()
-
-    def __setInterval(self) :
-        nextTime=time.time()+self.interval
-        while not self.stopEvent.wait(nextTime-time.time()) :
-            nextTime+=self.interval
-            self.action()
-
-    def cancel(self) :
-        self.stopEvent.set()
-
-# # start action every 0.6s
-inter=setInterval(0.03,timeout_check)
-print('just after setInterval -> time : {:.1f}s'.format(time.time()-StartTime))
-
-# # will stop interval in 5s
-t=threading.Timer(90,inter.cancel)
-t.start()

@@ -12,33 +12,65 @@
 #define MOVE_UNIT 3
 #define WHO "P1" // game_exec
 
+
+
+int paddle_vel;
+int sockfd;
+char *user_id;
+int the_score[2]={0,0};
 // A wrapper for array to make sure that array 
 // is passed by value. 
-struct ArrayWrapper 
-{ 
+struct ArrayWrapper { 
     int arr[SIZE]; 
 };
-int paddle_vel;
 
-// int cnt=0;
-void send_togame(char* type_class, char* content, int sockfd){
+struct Tuple_score {
+	char* p_score;
+    char* cpu;
+	char* mem;
+    char* avg_time;
+};
+
+struct Tuple_score score(json_object* json_obj_pointer) {
+	struct json_object *msg_content,*msg_score;
+
+	json_object_object_get_ex(json_obj_pointer, "content", &msg_content);
+	json_object *jobj = json_tokener_parse(json_object_get_string(msg_content));
+	json_object_object_get_ex(jobj, "score", &msg_score);
+	char *str= json_object_get_string(msg_score);
+	char delim[] = {","};
+	char *ptr = strtok(str, delim);
+	if (strcmp(WHO,"P1")==0){
+    	struct Tuple_score r = {ptr,11, 22, 554400};
+		return r;
+	}else if(strcmp(WHO,"P2")==0){
+		ptr = strtok(NULL, delim);
+		struct Tuple_score r = { ptr,11, 22, 554400};
+		return r;
+	}
+	struct Tuple_score r = { ptr,11, 22, 554400};
+	return r;
+    
+}
+
+void send_togame(char* type_class, char* content_name,char* content, int sockfd){
 
 	char str[64];	
-	// if (strcmp(type_class,"info")==0){
-	// 	cnt++;
-	// }
+
 	strcpy(str, "{'type':'");
 	strcat(str, type_class);
 	strcat(str, "','who':'");
 	strcat(str, WHO);
-	strcat(str, "','content':");
+	// if (strcmp(type_class,"score")==0)=
+	strcat(str, "','");
+	strcat(str, content_name);
+	strcat(str, "':'");
 	strcat(str, content);
-	// strcat(str, ",'cnt'");
-	// strcat(str, cnt);
+	strcat(str, "'");
+	// else {  } 
 	strcat(str, "}");
 	write(sockfd, str, sizeof(str));
 }
-int msg_address(char* msg_type_val, json_object* json_obj_pointer ){
 
 	struct json_object *msg_content;
 	struct json_object *msg_ball, *msg_paddle, *cnt;
@@ -73,8 +105,8 @@ int msg_address(char* msg_type_val, json_object* json_obj_pointer ){
 	}
 	return 0;
 }
-void func(int sockfd) 
-{ 
+
+void recv_fromgame() { 
 	char buff[MAX]; 
 	int n; 
 	struct json_object *msg_type;
@@ -105,6 +137,7 @@ int main(int argc, char *argv[]) {
 	errno=0;
 	addr_ip=argv[1];
 	long conv = strtol(argv[2], &port, 10);
+	user_id=argv[3];
 	// socket create and varification 
 
 	if (errno != 0 || *port != '\0') {
@@ -170,4 +203,45 @@ int run(struct ArrayWrapper ball_array, int paddle){ //editor 上要隱藏
 		printf("ball_last[%d] = %d\n", j, ball_last[j] );
 	}
 	return paddle_vel;
+}
+int on_gameinfo(json_object* json_obj_pointer){
+// assert who // call run
+	struct json_object *msg_content;
+	struct json_object *msg_ball, *msg_paddle, *cnt;
+
+	json_object_object_get_ex(json_obj_pointer, "content", &msg_content);
+	
+	json_object *jobj = json_tokener_parse(json_object_get_string(msg_content));
+	
+	json_object_object_get_ex(jobj, "ball", &msg_ball);
+	if (strcmp(WHO,"P1")==0){
+		json_object_object_get_ex(jobj, "paddle1", &msg_paddle);
+	}
+	else{
+		json_object_object_get_ex(jobj, "paddle2", &msg_paddle);
+	}
+	
+	json_object_object_get_ex(jobj, "cnt", &cnt);
+	printf("%s %s %s\n",json_object_get_string(msg_ball),json_object_get_string(msg_paddle),json_object_get_string(cnt));
+	char *str= json_object_get_string(msg_ball);
+	char delim[] = {","};
+	char *ptr = strtok(str, delim);
+	struct ArrayWrapper ball_int;
+	int i=0,j=0;
+	while(ptr != NULL)
+	{	
+		printf("'%s'\n", ptr);
+		ball_int.arr[i]=strtol(ptr+1,NULL,10);
+		i++;
+		ptr = strtok(NULL, delim);
+	}
+	// for (j=0; j < sizeof(ball_int.arr) / sizeof(ball_int.arr[0]); j++ ) {
+	// 	printf("Element[%d] = %d\n", j, ball_int.arr[j] );
+	// }
+	int return_paddle;
+	return_paddle = run(ball_int,strtol(json_object_get_string(msg_paddle),NULL,10));
+	return return_paddle;
+}
+void gameover(){
+	exit(EXIT_SUCCESS);
 }
