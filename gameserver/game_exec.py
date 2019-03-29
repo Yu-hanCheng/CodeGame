@@ -90,6 +90,14 @@ def start_game(log_id,path,compiler,fileEnd):
     except Exception as e:
         print('Popen error: ',e)
 
+def tcp_send_rule(str_tosend,startlen):
+    msg_tosend=str(len(str_tosend))
+    for i in range(startlen-len(msg_tosend)):
+        msg_tosend+="|"
+    return (msg_tosend+str_tosend+"*").encode()
+    
+    
+
 
 def tcp_send_to_subserver(subserver_index,log_id,user_id,compiler, fileEnd, code):
     # subserverlist[subserver_cnt].send(json.dumps({'log_id':log_id,'user_id':user_id,'code':code}).encode())
@@ -97,11 +105,12 @@ def tcp_send_to_subserver(subserver_index,log_id,user_id,compiler, fileEnd, code
     codeString = base64.b64encode(code.encode('utf-8')).decode('utf-8')
     # jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'code':codeString,'user_id':user_id}).encode()
     jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'code':codeString,'user_id':user_id})
-    msg_tosend=str(len(jsonStr))
-    for i in range(8-len(msg_tosend)):
-        msg_tosend+="|"
+    # msg_tosend=str(len(jsonStr))
+    # for i in range(8-len(msg_tosend)):
+    #     msg_tosend+="|"
     # msg_len=len(jsonStr).to_bytes(2,byteorder='big')
-    subserverlist[subserver_index].sendall((msg_tosend+jsonStr+"*").encode())
+    msg = tcp_send_rule(jsonStr,8)
+    subserverlist[subserver_index].sendall(msg)
 
 def tcp_serve_for_sub():
     global subserver_cnt,subserverlist

@@ -84,12 +84,12 @@ def on_gameinfo(message):
     elif cnt ==2:
         ball_pos[1] = json_loads_res['ball']
     run()
-    communicate('info',paddle_vel)
+    send_togame('info',paddle_vel)
 
-def communicate(type_class,content):
+def send_togame(type_class,content):
     global paddle_vel,s,who
     msg={'type':type_class,'who':who,'content':content, 'cnt':cnt}
-    print('type_class:',type_class)
+    print('content:',content)
     str_ = json.dumps(msg)
     binary =str_.encode()
     s.send(binary)
@@ -108,43 +108,60 @@ def score(msg_from_gamemain):# CPU, MEM Utility
     cpu = round(reduce(lambda x, y: x + y, cpu_list) / len(cpu_list),3)
     mem = round(reduce(lambda x, y: x + y, mem_list) / len(mem_list),3)
     avg_time=1
-    report="\""+str(user_id)+","+str(cpu)+","+str(mem)+","+str(avg_time)+"\""
+    # report="\""+str(user_id)+","+str(cpu)+","+str(mem)+","+str(avg_time)+"\""
+    report= '{\'score\':'+str(score)+',\'user_id\':'+str(user_id)+',\'cpu\':'+str(cpu)+',\'mem\':'+str(mem)+',\'avg_time\':'+str(avg_time)+'}'
+    # msg={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
     send_togame('score',report)
-    
 def recvall(sock):
-    global cnt
+    
     BUFF_SIZE = 2048 # 4 KiB
-    data = b''
-    while True:
-        part = sock.recv(BUFF_SIZE)
-        cnt+=1
-        data += part
-        if len(part) < BUFF_SIZE:
-            # either 0 or end of data
-            break
-    return data  
+    data = ""
+    data_len=0
+    recv_cnt=0
+
+    part = sock.recv(BUFF_SIZE)
+    first_part_split=part.decode("utf-8").split("|")
+    data_len= int(first_part_split[0])
+    print('data_len',data_len)
+    data_tail = first_part_split[-1]
+    print('len(data)',len(data_tail))
+    if data_len==len(data_tail)-1:
+        part_split=data_tail.split("*")
+        data += part_split[0]
+        return data
+    else:
+        while True:
+            part = sock.recv(BUFF_SIZE)
+            print('part',part)
+            if part==b"":
+                print("no msg")
+                break 
+            part_split=part.decode("utf-8").split("*")
+            data += part_split[0]
+            
+            if len(part_split) > 1 : # There is a "*" in the part
+                if len(part_split[1]) > 0:
+                    next_msg = part_split[1]
+                break
+        return data 
 
 cnt =6000
 while cnt>0:
-    data = recvall(s)
-    if data==b"":
-        print("no")
-        gameover()
-    else:
-        try:
-            msg_recv = json.loads(data.decode())
-            if msg_recv['type']=='info':
-                on_gameinfo(msg_recv)
-            elif msg_recv['type']=='over':
-                print("over")
-                score(msg_recv['content'])
-            elif msg_recv['type']=='score_recved':
-                gameover()
-            else:
-                pass
-        except(RuntimeError, TypeError, NameError) as e:
-            print('e:',e)
-            print("except data:",data)
+    str_data = recvall(s)
+    try:
+        msg_recv = json.loads(str_data)
+        if msg_recv['type']=='info':
+            on_gameinfo(msg_recv)
+        elif msg_recv['type']=='over':
+            print("over")
+            score(msg_recv['content'])
+        elif msg_recv['type']=='score_recved':
+            gameover()
+        else:
+            pass
+    except(RuntimeError, TypeError, NameError) as e:
+        print('e:',e)
+        print("except data:",data)
     cnt-=1
 
 msg_leave={'type':'disconnect','who':who,'content':'0'} 
