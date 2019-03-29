@@ -155,6 +155,10 @@ def tcp_client_handle(client_socket):
     while True:
         try:
             request = recvall(client_socket)
+            if request==b"":
+                Can_recving=True
+                print("no msg")
+                break 
             msg = json.loads(request.decode())
             
             if msg['type']=='over': # from game
@@ -162,7 +166,7 @@ def tcp_client_handle(client_socket):
                 global p
                 p.kill()
                 subserver_cnt-=1
-                client_socket.close()
+                # client_socket.close()
                 Can_recving=True
             else:
                 pass
