@@ -14,12 +14,15 @@ address = (game_ip, game_port)
 user_id = sys.argv[3]
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
 s_sucess=""
+time.sleep(0.5)
 while True:
     try:
+        print("lib try conn")
         s_sucess=s.connect(address)
-        print("connected")
+        print("lib connected")
         break
-    except:
+    except Exception as e :
+        print("error:",e)
         time.sleep(0.1)
 
 
@@ -56,6 +59,7 @@ inter=setInterval(0.1,get_usage)
 
 
 def gameover():
+    s.close()
     os._exit(0)
 
 connecttoserver = s.recv(2048)

@@ -23,8 +23,8 @@ def on_gameinfo(log_id,compiler,user_id,usercode,fileEnd):
     
     save_code(usercode,fileEnd)
     try:
-        time.sleep(0.5)
-        p = Popen(''+compiler + ' ' +"usercode" + fileEnd+ ' '  + str(game_exec_ip)+ ' '  + str(game_port)+ ' '  + str(user_id) + ' ',shell=True, stdout=PIPE, stderr=PIPE)
+        time.sleep(2)
+        p = Popen(''+compiler + ' ' +"usercode" + fileEnd+ ' '  + str(game_exec_ip)+ ' '  + str(game_port)+ ' '  + str(user_id) + ' ',shell=True)
         # stdout, stderr = p.communicate()
         # if stderr:
         #     print('stderr:', stderr)
