@@ -10,7 +10,7 @@ import json,base64
 
 @socketio.on('gamemain_connect')
 def gamemain_connect(message):
-    print(" gamemain_connect")
+    print(" gamemain_connect", message['log_id'])
     emit('connect_start',message,namespace = '/test',room= message['log_id'])
     
 @socketio.on('over') 
@@ -53,7 +53,7 @@ def test_connect(message):
 
 @socketio.on('join_room' ,namespace = '/test')
 def join_room_from_browser(message):
-    print("join_room client:",request.remote_addr)
+    print("join_room client:",message['room'])
     join_room(message['room'])
     if int(message['status']) ==0:
         emit('enter_room',namespace = '/test',room= message['room'])
