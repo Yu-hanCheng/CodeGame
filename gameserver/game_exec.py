@@ -168,6 +168,12 @@ def tcp_client_handle(client_socket):
                 subserver_cnt-=1
                 # client_socket.close()
                 Can_recving=True
+            elif msg['type']=='game_setted':
+                jsonStr = json.dumps({'type':'fork_subprocess'})
+                msg = tcp_send_rule(jsonStr,8)
+                for s_c in subserverlist:
+                    print("s_c",msg,s_c)
+                    s_c.sendall(msg)
             else:
                 pass
         except Exception as e:

@@ -569,6 +569,12 @@ def timeout_check():
 
 if __name__ == '__main__':
     __init__()
+    game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+    game_exec_address = (game_exec_ip, int(game_exec_port))
+    game_exec=game_exec_client.connect(game_exec_address)
+    binary =json.dumps({'type':'game_setted'}).encode()
+    game_exec_client.send(binary)
+    game_exec_client.close()
 
     while True:
         client_sock, address = server.accept()

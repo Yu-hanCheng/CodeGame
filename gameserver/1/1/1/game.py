@@ -524,19 +524,6 @@ def handle_client_connection(client_socket):
                 # print("game not start, or had over")
                 lock.release()
 
-def serve_app():
-    while True:
-        client_sock, address = server.accept()
-        playerlist.append(client_sock)
-        # print ('[%i users online]\n' % len(playerlist))
-        # print(playerlist)
-        # print('Accepted connection from {}:{}'.format(address[0], address[1]))
-        client_handler = threading.Thread(
-            target=handle_client_connection,
-            args=(client_sock,)  # without comma you'd get a... TypeError: handle_client_connection() argument after * must be a sequence, not _socketobject
-        )
-        client_handler.start()
-
 def timeout_check():
     global p1_rt, p2_rt,barrier, paddle1_move, paddle2_move, start,playerlist
     # print('active_count:',threading.active_count())
@@ -582,14 +569,32 @@ def timeout_check():
 
 if __name__ == '__main__':
     __init__()
+    game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+    game_exec_address = (game_exec_ip, int(game_exec_port))
+    game_exec=game_exec_client.connect(game_exec_address)
+    binary =json.dumps({'type':'game_setted'}).encode()
+    game_exec_client.send(binary)
+    game_exec_client.close()
 
-    wst = threading.Thread(target=serve_app)
-    wst.daemon = False
-    wst.start()
-    wst.join()
-    # timeout= threading.Thread(target=timeout_check)
-    # timeout.start()
-    StartTime=time.time()
+    while True:
+        client_sock, address = server.accept()
+        playerlist.append(client_sock)
+        # print ('[%i users online]\n' % len(playerlist))
+        print(playerlist)
+        print('Accepted connection from {}:{}'.format(address[0], address[1]))
+        client_handler = threading.Thread(
+            target=handle_client_connection,
+            args=(client_sock,)  # without comma you'd get a... TypeError: handle_client_connection() argument after * must be a sequence, not _socketobject
+        )
+        client_handler.start()
+
+    # wst = threading.Thread(target=serve_app)
+    # wst.daemon = False
+    # wst.start()
+    # wst.join()
+    # # timeout= threading.Thread(target=timeout_check)
+    # # timeout.start()
+    # StartTime=time.time()
 
 
 class setInterval :
