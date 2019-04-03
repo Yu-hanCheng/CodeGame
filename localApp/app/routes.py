@@ -87,11 +87,20 @@ def commit():
     data = request.data
     json_obj=json.loads(data)
     obj=json_obj["obj"].split(",")
-    code = json_obj['encodedData']
+    code_model = json_obj['encodedData']
+    code = code_model['code']
     save_path = obj[1]+"/"+obj[3]+"/"+obj[5]+"/"
     save_path_name = obj[2]+"/"+obj[4]+"/"+obj[6]+"/"
     file_end = obj[7]
+    have_M=""
     # str(data.get('lan_compiler'))
+
+    if code_model['choosed']!="":
+
+        the_model = code_model['choosed'].split(",")
+        save_code("model/","usermodel_"+time.strftime("%m_%d_%H_%M_%S", time.localtime()),".sav",the_model[-1],have_M)
+        have_M="usermodel_"+time.strftime("%m_%d_%H_%M_%S", time.localtime())
+        # save_code("","usermodel_"+time.strftime("%m_%d_%H_%M_%S", time.localtime()),".sav",the_model[-1])
     decode = bytes(base64.b64decode(code))
     security_res=test_security(decode)
     socketio.emit('security', {'msg': security_res})
@@ -105,7 +114,7 @@ def commit():
         filename=str(len(f)-2)#['.DS_Store', 'gamemain.py', 'lib.py']
         code_path=save_path+filename+file_end
     
-        save_code(save_path,filename,file_end,code)
+        save_code(save_path,filename,file_end,code,have_M)
         compiler = json_obj['lan_compiler']
         global code_data,isCodeOk
         code_data={'code':code,'user_id':int(json_obj['user_id']),'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
@@ -194,21 +203,18 @@ def test_code(compiler,save_path,filename,file_end):
     filetoexec=save_path+filename+file_end
     from subprocess import Popen, PIPE
     global p_gamemain,p
-    print("in test code")
     append_lib(save_path,filename,file_end)
     
     try: 
         p_gamemain = Popen('python '+save_path+'test_game.py'+' 5501',shell=True, stdout=PIPE, stderr=PIPE)
-        stdout, stderr = p_gamemain.communicate()
-
+        
         time.sleep(2)
         if file_end=='.c':
-            print("in c")
             p = Popen(compiler + ' '+save_path + 'test_usercode'+file_end,shell=True, stdout=PIPE, stderr=PIPE)
-            # p = Popen('./a.out 5501',shell=True, stdout=PIPE, stderr=PIPE)
+            stdout, stderr = p.communicate()
         elif file_end=='.py':
-            p = Popen(compiler + ' '+save_path + 'test_usercode'+file_end+' 0.0.0.0 1',shell=True, stdout=PIPE, stderr=PIPE)
-        stdout, stderr = p.communicate()
+            p = Popen(compiler + ' '+save_path + 'test_usercode'+file_end+' 0.0.0.0 8800 1',shell=True, stdout=PIPE, stderr=PIPE)
+            stdout, stderr = p.communicate()
         if stderr:
             print('stderr:', stderr)
             p_gamemain.kill()
@@ -229,7 +235,7 @@ def test_code(compiler,save_path,filename,file_end):
         print('e: ',e)
         return [-1,e]
 
-def save_code(save_path,filename,file_end,code):
+def save_code(save_path,filename,file_end,code,have_M):
     
     try:
         os.makedirs( save_path )
@@ -238,6 +244,12 @@ def save_code(save_path,filename,file_end,code):
     decode = base64.b64decode(code)
     try:
         with open("%s%s%s"%(save_path,filename,file_end), "wb") as f:
+            if have_M!="":
+                lib_part=bytes("import pickle\n\
+import numpy as np\n\
+filename=\"model/"+have_M+".sav\"\n\
+load_model = pickle.load(open(filename, 'rb'))\n","utf-8")
+                f.write(lib_part)
             f.write(decode)
     except Exception as e:
         print('write error:',e)

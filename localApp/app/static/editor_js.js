@@ -71,17 +71,7 @@ $(document).ready(function(){
         }
 
     });
-    $('form#commit_to_server').submit(function(event) {
-        
-        let choosed= $("#chooseFile")[0].files;
-        convertFile(choosed[0]).then(data => {
-            // 把編碼後的字串 send to webserver
-            before_sendback(data,"application/json","commit")
-            return false;//return回哪裡QAQ
-          })
-          .catch(err => console.log(err))
-        
-    });
+
 });
 
 
@@ -96,8 +86,14 @@ function cancel(){
 function commit_code(){
     let editor_content=editor.getValue();
     var encodedData = window.btoa(unescape(encodeURIComponent(editor_content)));
-    before_sendback(encodedData,"application/json","commit")
-
+    let choosed= $("#chooseFile")[0].files;
+        convertFile(choosed[0]).then(data => {
+            // 把編碼後的字串 send to webserver
+            before_sendback({'code':encodedData,'choosed':data},"application/json","commit")
+            return false;//return回哪裡QAQ
+          })
+          .catch(err => console.log(err))
+          
     // need to send back to localapp to sandbox
 }
 function previewFiles(files) {

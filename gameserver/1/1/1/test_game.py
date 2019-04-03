@@ -224,12 +224,10 @@ def handle_client_connection(client_socket):
                 if request :
                     msg = json.loads(request.decode())
                     if msg['type']=='score':
-                        msg=tcp_send_rule(json.dumps({'type':"score_recved"}),8)
-                        client_socket.send(msg)
-
+                        msg_tosend=tcp_send_rule(json.dumps({'type':"score_recved"}),8)
+                        client_socket.send(msg_tosend)
                         if msg['who']=='P1':
                             l_report = msg['content']
-                            print("l_report",l_report)
                             r_report = {"user_id": "2", "score": 0, "cpu": 1.425, "mem": 0.054, "time": "554400"}
                             send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':str(record_content)},log_id)
                             break
