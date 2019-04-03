@@ -78,7 +78,12 @@ def send_to_webserver(msg_type,msg_content,logId):
     except (RuntimeError, TypeError, NameError) as e:
         print(' send_to_webserver error:',e)
     
-
+def tcp_send_rule(str_tosend,startlen):
+    msg_tosend=str(len(str_tosend))
+    for i in range(startlen-len(msg_tosend)):
+        msg_tosend+="|"
+    return (msg_tosend+str_tosend+"*").encode()
+ 
 def send_to_Players(instr):
 
     global cnt,barrier,ball,paddle1,paddle2
@@ -86,13 +91,16 @@ def send_to_Players(instr):
 
     if (instr == 'gameinfo'):
         cnt+=1
-        msg={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
-        playerlist[0].send(json.dumps(msg).encode())
+        json_str={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
+        msg=tcp_send_rule(json.dumps(json_str),8)
+        playerlist[0].send(msg)
         
         
     elif instr == 'endgame':
-        msg={'type':'over','content':{'ball':ball,'score':[l_score,r_score]}}
-        playerlist[0].send(json.dumps(msg).encode())
+        json_str={'type':'over','content':{'ball':ball,'score':[l_score,r_score]}}
+        msg=tcp_send_rule(json.dumps(json_str),8)
+
+        playerlist[0].send(msg)
         
         print('endgame %f'%time.time())
     else:
@@ -216,7 +224,9 @@ def handle_client_connection(client_socket):
                 if request :
                     msg = json.loads(request.decode())
                     if msg['type']=='score':
-                        client_socket.send(json.dumps({'type':"score_recved"}).encode())
+                        msg=tcp_send_rule(json.dumps({'type':"score_recved"}),8)
+                        client_socket.send(msg)
+
                         if msg['who']=='P1':
                             l_report = msg['content']
                             print("l_report",l_report)

@@ -1,7 +1,3 @@
-import pickle
-import numpy as np
-filename="svm_model_YHPF_0325.sav"
-load_model = pickle.load(open(filename, 'rb'))
 
 def run():
     global paddle_vel,paddle_pos,ball_pos,move_unit
