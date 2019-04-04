@@ -10,8 +10,8 @@ import json,base64
 
 @socketio.on('gamemain_connect')
 def gamemain_connect(message):
-    print(" gamemain_connect", message['log_id'])
-    emit('connect_start',message,namespace = '/test',room= message['log_id'])
+    users = User.query.with_entities(User.username).filter(User.id.in_([message['msg']['P1'],message['msg']['P2']])).all()
+    emit('connect_start',users,namespace = '/test',room= message['log_id'])
     
 @socketio.on('over') 
 def game_over(message):

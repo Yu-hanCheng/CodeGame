@@ -33,9 +33,8 @@ $(document).ready(function(){
         $('#page_title').html("wait for others");
     }) 
     socket.on('connect_start', function(data){
-        console.log("data.msg:",data.msg)
-        $('#map_left_user').html(data.msg['P1']); 
-        $('#map_right_user').html(data.msg['P2']); 
+        $('#map_left_user').html(data[0][0]); 
+        $('#map_right_user').html(data[1][0]); 
 
     })
     socket.on('status', function(data) {
