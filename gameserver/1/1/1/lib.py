@@ -4,7 +4,6 @@ paddle_pos=0
 paddle_vel=0
 ball_pos=[[0,0],[0,0],[0,0]]
 move_unit=3
-run()
 
 import socket , time, json,sys,os,threading,psutil
 from functools import reduce
@@ -150,6 +149,7 @@ def recvall(sock):
         return data 
 
 cnt =6000
+run()
 while cnt>0:
     str_data = recvall(s)
     try:

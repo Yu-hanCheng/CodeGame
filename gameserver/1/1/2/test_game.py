@@ -167,7 +167,6 @@ def play():
 def game(where):
     global start
     try:
-        print(where)
         play()
     except:
         return
@@ -188,7 +187,7 @@ def handle_client_connection(client_socket):
             #lock.acquire()
             try:
                 start=1
-                send_to_Players("gameinfo")
+                game('on_p1')
             except (RuntimeError, TypeError, NameError) as e:
                 print("send_to_player error",e)
     while True:
@@ -208,9 +207,7 @@ def handle_client_connection(client_socket):
                             p1_rt=time.time()
                             #lock.acquire()
                             try:
-                                send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,cnt]),log_id)
-                                record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
-                                game('on_p1')
+                                after_play()
                             finally:
                                 #lock.release()
                                 pass
@@ -244,6 +241,11 @@ def handle_client_connection(client_socket):
                 sys.exit()
             print("game not start, or had over")
 
+def after_play():
+    global ball, paddle1, paddle2
+    send_to_webserver('info',tuple([ball,paddle1,paddle2,cnt]),log_id)
+    record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
+    game('on_p1')
 
 def serve_app():
     while True:
@@ -271,24 +273,15 @@ def timeout_check():
                     barrier=[1,1]
                     p1_rt=time.time()
                     p2_rt=time.time()
-                    send_to_webserver('p1timeout',p1_rt_sub,log_id)
-                    game('p1_timeout')
+                    send_to_webserver('timeout',p1_rt_sub,log_id)
+                    after_play()
+        except Exception as e:
+            print("timeout e:",e)
                     
         finally:
             #lock.release()
             pass
             
-
-
-if __name__ == '__main__':
-    __init__()
-
-    wst = threading.Thread(target=serve_app)
-    wst.daemon = True
-    wst.start()
-    wst.join()
-    StartTime=time.time()
-    
 
 class setInterval :
     def __init__(self,interval,action) :
@@ -307,10 +300,15 @@ class setInterval :
     def cancel(self) :
         self.stopEvent.set()
 
-# # start action every 0.6s
-inter=setInterval(0.03,timeout_check)
+if __name__ == '__main__':
+    __init__()
+    inter=setInterval(0.1,timeout_check)
+    wst = threading.Thread(target=serve_app)
+    wst.daemon = True
+    wst.start()
+    wst.join()
+    StartTime=time.time()
 print('just after setInterval -> time : {:.1f}s'.format(time.time()-StartTime))
-
 # # will stop interval in 5s
 t=threading.Timer(90,inter.cancel)
 t.start()
