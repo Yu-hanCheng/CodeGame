@@ -60,7 +60,7 @@ def ws_recv_from_gameserv():
 
 def ws_msg_handler(msg):
     # 每個 element的 內容：[0data['log_id'],1data['user_id'],\
-    #    2)data['game_lib_id'],3)language_res[0],4)path,5)filename, 6)fileEnd, 7)data['player_list']]
+    #    2)data['game_lib_id'],3)language_res[0],4)path,5)filename, 6)fileEnd, 7),data['code_id'], 8)data['attach_ml'], 9)ata['player_list']]
     # [5, 1, 1, 'python', '1/1/python/', '5_1', '.py', 0]
     msg_converted = json.loads(msg) 
     log_id=0
@@ -77,7 +77,11 @@ def ws_msg_handler(msg):
                         user_file.write(line)
         with open(""+element[4]+element[5]+element[6],'r') as user_file:
             the_code = user_file.read()
-            tcp_send_to_subserver(i,element[0],element[1],element[3],element[6],the_code)
+            if element[8]:
+                is_ml= element[7]
+            else:
+                is_ml=""
+            tcp_send_to_subserver(i,element[0],element[1],element[3],element[6],the_code,str(is_ml))
         log_id=element[0]
         time.sleep(0.1)
     start_game(log_id,element[4],element[3],element[6])
@@ -99,12 +103,15 @@ def tcp_send_rule(str_tosend,startlen):
     
 
 
-def tcp_send_to_subserver(subserver_index,log_id,user_id,compiler, fileEnd, code):
+def tcp_send_to_subserver(subserver_index,log_id,user_id,compiler, fileEnd, code,is_ml):
     # subserverlist[subserver_cnt].send(json.dumps({'log_id':log_id,'user_id':user_id,'code':code}).encode())
     global subserverlist
     codeString = base64.b64encode(code.encode('utf-8')).decode('utf-8')
-    # jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'code':codeString,'user_id':user_id}).encode()
-    jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'code':codeString,'user_id':user_id})
+    ml_file=""
+    if len(is_ml)>0:
+        with open("%s.sav"%(is_ml),"r") as f:
+            ml_file = f.read()
+    jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'code':codeString,'ml_file':ml_file,'code_id':is_ml,'user_id':user_id})
     # msg_tosend=str(len(jsonStr))
     # for i in range(8-len(msg_tosend)):
     #     msg_tosend+="|"

@@ -73,7 +73,7 @@ def select_code(message):
     # call emit_code to send code to gameserver.-- 0122/2019
     
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
-    select_code =Code.query.with_entities(Code.id,Code.body, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
+    select_code =Code.query.with_entities(Code.id,Code.body,Code.attach_ml, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
 
     emit_code(l, select_code)
 
@@ -82,16 +82,19 @@ def upload_code(message):
     # 接收並儲存 localApp上傳的程式碼 -- 0122/2019
     # {'code':code,'user_id':json_obj['user_id'],'commit_msg':commit_msg,'game_id':obj[3],'file_end':obj[7]}
     # Language.filename_extension
-    print("uploaded_code!!")
     sid = request.sid
-
     lan_id = set_language_id(message['file_end'])
     code = Code(body=message['code'], commit_msg=message['commit_msg'],game_id=message['game_id'],compile_language_id=lan_id,user_id=message['user_id'])
     
     try:
         db.session.add(code)
         db.session.commit()
-        emit('commit_res',"ok, code save in web", room=sid)
+        the_model = message['ml_model'].split(",")
+        if len(the_model[-1])>20:
+            code.attach_ml=True
+            db.session.commit()
+            save_file(code.id,the_model[-1])
+        emit('upload_ok',"ok, code save in web", room=sid)
     except:
         db.session.rollback()
     finally:
@@ -113,8 +116,12 @@ def left(message):
 
 def emit_code(l,code):
 # join_log(log_id,message['code'],message['commit_msg'],l.game_id,current_user.id,players)
+    ml_file=""
+    if code.attach_ml:
+        with open("%s.sav"%(code.id), "rb") as f_ml:
+            ml_file = f_ml.read().decode() # convert to str
     ws = create_connection("ws://127.0.0.1:6005")# to gameserver
-    ws.send(json.dumps({'from':'webserver','code':code.body,'log_id':l.id,'user_id': current_user.id,'category_id':l.category_id,'game_id':l.game_id,'language':code.language_name,'player_num':int(l.player_num)}))
+    ws.send(json.dumps({'from':'webserver','code_id':code.id,'code':code.body,'attach_ml':code.attach_ml,'ml_file':ml_file,'log_id':l.id,'user_id': current_user.id,'category_id':l.category_id,'game_id':l.game_id,'language':code.language_name,'player_num':int(l.player_num)}))
     result =  ws.recv() #
     print("Received '%s'" % result)
     ws.close()
@@ -174,4 +181,7 @@ def set_language_id(filename_extension):
     }
     language_id = compiler.get(filename_extension, "Invalid language ID")
     return language_id
-        
+
+def save_file(filename, file): # filename = code_id
+    with open("%s.sav"%(filename), "w") as f:
+        f.write(file)

@@ -122,7 +122,7 @@ def set_language(language):
 	
 	return language_obj 
 
-def save_code(code,log_id,user_id,category_id,game_id,language):
+def save_code(code_id,code,attach_ml,ml_file,log_id,user_id,category_id,game_id,language):
 	# data['code'],data['log_id'],data['user_id'],data['category_id'],data['game_id'],data['language']
 	# 在呼叫 sandbox前 將程式碼依遊戲人數？分類？為路徑 加上 lib後 存於 gameserver並回傳檔名
 	# "w"上傳新的程式碼會直接取代掉
@@ -137,6 +137,15 @@ def save_code(code,log_id,user_id,category_id,game_id,language):
 	decoded = base64.b64decode(code)
 		
 	with open("%s%s%s"%(path,filename,language_res[1]), "wb") as f:
+		if attach_ml:
+			print("ml_file:",type(ml_file))
+			with open("%s.sav"%(code_id),"w") as f_ml:
+				f_ml.write(ml_file)
+			lib_part=bytes("import pickle\n\
+import numpy as np\n\
+filename=\"model.sav\"\n\
+load_model = pickle.load(open(filename, 'rb'))\n","utf-8")
+			f.write(lib_part)
 		f.write(decoded)
 	return path,filename,language_res[1],language
 
@@ -146,11 +155,10 @@ def code_address(server,data):
 	# 先經過 sandbox, 將結果回傳給user, (確定要使用)再排進 room_list
 	global webserver_id,room_list
 
-	path, filename, fileEnd, compiler = save_code(data['code'],data['log_id'],data['user_id'],data['category_id'],data['game_id'],data['language'])
+	path, filename, fileEnd, compiler = save_code(data['code_id'],data['code'],data['attach_ml'],data['ml_file'],data['log_id'],data['user_id'],data['category_id'],data['game_id'],data['language'])
 
 	msg=""	
-	log_id_index = push_to_room_list([data['log_id'],data['user_id'],\
-	data['category_id'],compiler,path,filename,fileEnd,data['player_num']]) # player_list must put on last
+	log_id_index = push_to_room_list([data['log_id'],data['user_id'],data['category_id'],compiler,path,filename,fileEnd,data['code_id'],data['attach_ml'],data['player_num']])
 	if log_id_index >= 0: # arrived 
 		popped_codes_list = pop_code_in_room(log_id_index, data['log_id'])
 		print("popped_codes_list:",popped_codes_list)

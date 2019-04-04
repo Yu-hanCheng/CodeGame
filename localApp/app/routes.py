@@ -83,7 +83,7 @@ def commit():
     # {"encodedData":encodedData,"commit_msg":commit_msg,"lan_compiler":lan_compiler,'obj':obj,'user_id':1,}
     # // 0Game_lib.id,1Category.id,2Category.name,3Game.id,4Game.gamename,5Language.id, 6Language.language_name, 7Language.filename_extension
     # socket.emit('commit', {code: editor_content, commit_msg:commit_msg, game_id:game_id, glanguage:glanguage, user_id:1});
-    
+    global code_data,isCodeOk
     data = request.data
     json_obj=json.loads(data)
     obj=json_obj["obj"].split(",")
@@ -101,6 +101,10 @@ def commit():
         save_code("model/","usermodel_"+time.strftime("%m_%d_%H_%M_%S", time.localtime()),".sav",the_model[-1],have_M)
         have_M="usermodel_"+time.strftime("%m_%d_%H_%M_%S", time.localtime())
         # save_code("","usermodel_"+time.strftime("%m_%d_%H_%M_%S", time.localtime()),".sav",the_model[-1])
+        code_data={'code':code,'ml_model':code_model['choosed'],'user_id':int(json_obj['user_id']),'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
+    else:
+        code_data={'code':code,'ml_model':"",'user_id':int(json_obj['user_id']),'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
+
     decode = bytes(base64.b64decode(code))
     security_res=test_security(decode)
     socketio.emit('security', {'msg': security_res})
@@ -116,8 +120,8 @@ def commit():
     
         save_code(save_path,filename,file_end,code,have_M)
         compiler = json_obj['lan_compiler']
-        global code_data,isCodeOk
-        code_data={'code':code,'user_id':int(json_obj['user_id']),'commit_msg':json_obj['commit_msg'],'game_id':obj[3],'file_end':obj[7]}
+        
+        
         code_res = test_code(compiler,save_path,filename,file_end) # run code and display on browser
         
         if code_res[0]:
@@ -159,8 +163,9 @@ def gameobject(message):
 @socketio.on('upload_toWeb')#from localbrowser
 def upload_code(message):
     global code_data
+    print("upload_code")
     def respose_toLocalapp(*args):
-        print("upload_ok")
+        print("upload_ok,code_data:",code_data)
         socketio.emit('upload_ok', {'msg':""})
     send_to_web("upload_code",code_data,"upload_ok",respose_toLocalapp)
 
@@ -256,6 +261,7 @@ load_model = pickle.load(open(filename, 'rb'))\n","utf-8")
 
 def send_to_web(event_name,send_data,listen_name,callback):
     try:
+        print("send_to_web")
         socketIO.on(listen_name,callback)
         socketIO.emit(event_name,send_data)
         socketIO.wait(1)

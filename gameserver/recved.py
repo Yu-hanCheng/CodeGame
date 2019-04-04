@@ -21,15 +21,14 @@ def connect_to_game():
 
 def on_gameinfo(log_id,compiler,user_id,usercode,fileEnd):
     global subprocess_str
-    save_code(usercode,fileEnd)
+    save_code("usercode", usercode,fileEnd,"w")
     subprocess_str=''+compiler + ' ' +"usercode" + fileEnd+ ' '  + str(game_exec_ip)+ ' '  + str(game_port)+ ' '  + str(user_id) + ' '
-
     return
 
-def save_code(code, fileEnd):
+def save_code(filename, file, fileEnd,w_mode):
 	# 傳新的程式碼會直接取代掉
-    with open("usercode%s"%(fileEnd), "w") as f:
-        f.write(code)
+    with open("%s%s"%(filename,fileEnd), w_mode) as f:
+        f.write(file)
 cnt=0
 def recvall(sock):
     
@@ -63,7 +62,6 @@ def recvall(sock):
             if len(part_split[1]) > 0:
                 next_msg = part_split[1]
             break
-        print('data:',data)
     return data
 
 connect_to_game()
@@ -76,6 +74,11 @@ while True:
         if msg_recv['type']=='new_code': 
             binary =json.dumps({'type':'recved'}).encode()
             s.send(binary)
+            model=""
+            if msg_recv['ml_file']!="":
+                print(msg_recv['ml_file'])
+                model = base64.b64decode(msg_recv['ml_file'])
+                save_code('model',model,".sav","wb")
             code = base64.b64decode(msg_recv['code']).decode('utf-8')
             on_gameinfo(msg_recv['log_id'],msg_recv['compiler'],msg_recv['user_id'],code,msg_recv['fileEnd'])
         elif msg_recv['type']=='fork_subprocess':

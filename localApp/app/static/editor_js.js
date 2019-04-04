@@ -87,12 +87,17 @@ function commit_code(){
     let editor_content=editor.getValue();
     var encodedData = window.btoa(unescape(encodeURIComponent(editor_content)));
     let choosed= $("#chooseFile")[0].files;
+    console.log('choosed:',choosed.length);
+    if(choosed.length!=0){
         convertFile(choosed[0]).then(data => {
             // 把編碼後的字串 send to webserver
             before_sendback({'code':encodedData,'choosed':data},"application/json","commit")
             return false;//return回哪裡QAQ
           })
           .catch(err => console.log(err))
+    }else{
+        before_sendback({'code':encodedData,'choosed':""},"application/json","commit")
+    }
           
     // need to send back to localapp to sandbox
 }

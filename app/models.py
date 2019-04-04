@@ -220,6 +220,7 @@ class Code(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     compile_language_id = db.Column(db.Integer, db.ForeignKey('language.id'))
     is_auto_compete = db.Column(db.Boolean,default=True)
+    attach_ml=db.Column(db.Boolean,default=False)
    
 
     def __repr__(self):
