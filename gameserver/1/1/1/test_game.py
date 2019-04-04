@@ -167,7 +167,6 @@ def play():
 def game(where):
     global start
     try:
-        print(where)
         play()
     except:
         return
@@ -188,7 +187,7 @@ def handle_client_connection(client_socket):
             #lock.acquire()
             try:
                 start=1
-                send_to_Players("gameinfo")
+                game('on_p1')
             except (RuntimeError, TypeError, NameError) as e:
                 print("send_to_player error",e)
     while True:
@@ -208,9 +207,7 @@ def handle_client_connection(client_socket):
                             p1_rt=time.time()
                             #lock.acquire()
                             try:
-                                send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,cnt]),log_id)
-                                record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
-                                game('on_p1')
+                                after_play()
                             finally:
                                 #lock.release()
                                 pass
@@ -222,15 +219,17 @@ def handle_client_connection(client_socket):
             try:
                 request = client_socket.recv(1024)
                 if request :
-                    msg = json.loads(request.decode())
-                    if msg['type']=='score':
+                    msg = json.loads(request.decode())            
+                    if msg['type']=='score':                 
                         msg_tosend=tcp_send_rule(json.dumps({'type':"score_recved"}),8)
                         client_socket.send(msg_tosend)
                         if msg['who']=='P1':
                             l_report = msg['content']
                             r_report = {"user_id": "2", "score": 0, "cpu": 1.425, "mem": 0.054, "time": "554400"}
                             send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':str(record_content)},log_id)
-                            break
+                            client_socket.close()
+                            import os
+                            os._exit(0)
 
                     elif msg['type']=='disconnect':
                         if msg['who']=='P1':
@@ -244,18 +243,24 @@ def handle_client_connection(client_socket):
                 sys.exit()
             print("game not start, or had over")
 
+def after_play():
+    global ball, paddle1, paddle2
+    send_to_webserver('info',tuple([ball,paddle1,paddle2,cnt]),log_id)
+    record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
+    game('on_p1')
 
 def serve_app():
     while True:
         client_sock, address = server.accept()
         playerlist.append(client_sock)
+        inter=setInterval(0.1,timeout_check,client_sock)
         client_handler = threading.Thread(
             target=handle_client_connection,
             args=(client_sock,)  # without comma you'd get a... TypeError: handle_client_connection() argument after * must be a sequence, not _socketobject
         )
         client_handler.start()
 
-def timeout_check():
+def timeout_check(client_socket):
     global p1_rt, p2_rt,barrier, paddle1_move, paddle2_move, start,playerlist
     timeout=0.5
     if start==1:
@@ -271,46 +276,44 @@ def timeout_check():
                     barrier=[1,1]
                     p1_rt=time.time()
                     p2_rt=time.time()
-                    send_to_webserver('p1timeout',p1_rt_sub,log_id)
-                    game('p1_timeout')
+                    send_to_webserver('timeout',p1_rt_sub,log_id)
+                    client_socket.close()
+                    import os
+                    os._exit(0)
+        except Exception as e:
+            print("timeout e:",e)
                     
         finally:
             #lock.release()
             pass
             
 
+class setInterval :
+    def __init__(self,interval,action,client) :
+        self.interval=interval
+        self.action=action
+        self.stopEvent=threading.Event()
+        thread=threading.Thread(target=self.__setInterval,args=(client,))
+        thread.start()
+
+    def __setInterval(self,client) :
+        nextTime=time.time()+self.interval
+        while not self.stopEvent.wait(nextTime-time.time()) :
+            nextTime+=self.interval
+            self.action(client)
+
+    def cancel(self) :
+        self.stopEvent.set()
 
 if __name__ == '__main__':
     __init__()
-
+    
     wst = threading.Thread(target=serve_app)
     wst.daemon = True
     wst.start()
     wst.join()
     StartTime=time.time()
-    
-
-class setInterval :
-    def __init__(self,interval,action) :
-        self.interval=interval
-        self.action=action
-        self.stopEvent=threading.Event()
-        thread=threading.Thread(target=self.__setInterval)
-        thread.start()
-
-    def __setInterval(self) :
-        nextTime=time.time()+self.interval
-        while not self.stopEvent.wait(nextTime-time.time()) :
-            nextTime+=self.interval
-            self.action()
-
-    def cancel(self) :
-        self.stopEvent.set()
-
-# # start action every 0.6s
-inter=setInterval(0.03,timeout_check)
 print('just after setInterval -> time : {:.1f}s'.format(time.time()-StartTime))
-
 # # will stop interval in 5s
 t=threading.Timer(90,inter.cancel)
 t.start()

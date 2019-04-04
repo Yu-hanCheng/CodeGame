@@ -4,7 +4,6 @@ paddle_pos=0
 paddle_vel=0
 ball_pos=[[0,0],[0,0],[0,0]]
 move_unit=3
-run()
 
 import socket , time, json,sys,os,threading,psutil
 from functools import reduce
@@ -59,6 +58,7 @@ inter=setInterval(0.1,get_usage)
 
 
 def gameover():
+    print("gameover")
     s.close()
     os._exit(0)
 
@@ -125,21 +125,30 @@ def recvall(sock):
 
     part = sock.recv(BUFF_SIZE)
     first_part_split=part.decode("utf-8").split("|")
-    data_len= int(first_part_split[0])
-    print('data_len',data_len)
+    if len(first_part_split)>7:
+        print("two msg")
+        for p in first_part_split:
+            p_list = p.split("*")
+            if len(p_list)>1:
+                data_len=p_list[-1]
+                break        
+    else:
+        print("one msg")
+        data_len = first_part_split[0]
     data_tail = first_part_split[-1]
-    print('len(data)',len(data_tail))
-    if data_len==len(data_tail)-1:
+    print('len(data)',data_len,len(data_tail))
+    if int(data_len)==len(data_tail)-1:
+        print("==")
         part_split=data_tail.split("*")
         data += part_split[0]
-        return data
-    else:
+    elif int(data_len)>len(data_tail):
         while True:
             part = sock.recv(BUFF_SIZE)
             print('part',part)
             if part==b"":
                 print("no msg")
-                break 
+                data=""
+                break
             part_split=part.decode("utf-8").split("*")
             data += part_split[0]
             
@@ -147,25 +156,30 @@ def recvall(sock):
                 if len(part_split[1]) > 0:
                     next_msg = part_split[1]
                 break
-        return data 
-
+    return data
 cnt =6000
+run()
 while cnt>0:
     str_data = recvall(s)
-    try:
-        msg_recv = json.loads(str_data)
-        if msg_recv['type']=='info':
-            on_gameinfo(msg_recv)
-        elif msg_recv['type']=='over':
-            print("over")
-            score(msg_recv['content'])
-        elif msg_recv['type']=='score_recved':
-            gameover()
-        else:
-            pass
-    except(RuntimeError, TypeError, NameError) as e:
-        print('e:',e)
-        print("except data:",data)
+    print("str_data",str_data)
+    if str_data =="":
+        print("none")
+        gameover()
+    else:
+        try:
+            msg_recv = json.loads(str_data)
+            if msg_recv['type']=='info':
+                on_gameinfo(msg_recv)
+            elif msg_recv['type']=='over':
+                print("over")
+                score(msg_recv['content'])
+            elif msg_recv['type']=='score_recved':
+                gameover()
+            else:
+                pass
+        except(RuntimeError, TypeError, NameError) as e:
+            print('e:',e)
+            print("except data:",str_data)
     cnt-=1
 
 msg_leave={'type':'disconnect','who':who,'content':'0'} 

@@ -71,6 +71,9 @@ $(document).ready(function(){
         }
 
     });
+    socket_local.on('timeout', function(data){ 
+        alert("timeout")
+    });
 
 });
 

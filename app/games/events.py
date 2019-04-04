@@ -10,9 +10,17 @@ import json,base64
 
 @socketio.on('gamemain_connect')
 def gamemain_connect(message):
-    print(" gamemain_connect", message['log_id'])
-    emit('connect_start',message,namespace = '/test',room= message['log_id'])
-    
+    users = User.query.with_entities(User.username).filter(User.id.in_([message['msg']['P1'],message['msg']['P2']])).all()
+    emit('connect_start',users,namespace = '/test',room= message['log_id'])
+
+@socketio.on('timeout_over') 
+def timeout_over(message):
+    emit('timeout_over',message['msg']['user'],namespace = '/test',room= message['log_id'])
+
+@socketio.on('timeout') 
+def timeout(message):
+    emit('timeout',message['msg']['user'],namespace = '/test',room= message['log_id'])
+
 @socketio.on('over') 
 def game_over(message):
     # msg：tuple([l_score,r_score,gametime])??
@@ -65,7 +73,7 @@ def join_room_from_browser(message):
 def change_code(message):
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
     select_code =Code.query.with_entities(Code.id,Code.body, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
-    emit('the_change_code',{'code':select_code.body,'code_id':message['code_id']},namespace = '/test',room= message['room']) 
+    emit('the_change_code',{'code':select_code.body,'code_commit_msg':select_code.commit_msg,'code_id':message['code_id']},namespace = '/test',room= message['room']) 
 
 @socketio.on('select_code' ,namespace = '/test')
 def select_code(message):
@@ -108,11 +116,10 @@ def left(message):
     leave_room(room)
     emit('status', {'msg': session.get('name') + ' has left the room.'}, room=room)
 
-@socketio.on('text',namespace = '/test' )
-def left(message):
-    """Chat msg"""
-    room = session.get('room')
-    emit('message', {'msg': message['msg']}, room=room)
+@socketio.on('chat_message' ,namespace = '/test')
+def chat_message(message):
+    room = session.get('log_id')
+    emit('chat_message_broadcast',{'user':current_user.username,'msg':message},namespace = '/test', room=str(room)) #{'user': current_user.id,'msg': message}
 
 def emit_code(l,code):
 # join_log(log_id,message['code'],message['commit_msg'],l.game_id,current_user.id,players)

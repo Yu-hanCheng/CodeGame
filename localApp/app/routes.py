@@ -148,7 +148,7 @@ def game_connect(message):
 
 @socketio.on('info')#from test_game
 def gameobject(message):
-    print("recv socketio msg:",message['msg'])
+    print("info:",message['msg'])
     socketio.emit('info', {'msg': message['msg']})
 
 @socketio.on('over')#from test_game
@@ -168,6 +168,10 @@ def upload_code(message):
         print("upload_ok,code_data:",code_data)
         socketio.emit('upload_ok', {'msg':""})
     send_to_web("upload_code",code_data,"upload_ok",respose_toLocalapp)
+
+@socketio.on('timeout')#from localbrowser
+def timeout(message):
+    socketio.emit('timeout', {'msg':""})
 
 def test_security(only_user_code):
     a=[' os',' sys',' subprocess']
