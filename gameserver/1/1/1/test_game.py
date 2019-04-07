@@ -227,7 +227,9 @@ def handle_client_connection(client_socket):
                             l_report = msg['content']
                             r_report = {"user_id": "2", "score": 0, "cpu": 1.425, "mem": 0.054, "time": "554400"}
                             send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':str(record_content)},log_id)
-                            break
+                            client_socket.close()
+                            import os
+                            os._exit(0)
 
                     elif msg['type']=='disconnect':
                         if msg['who']=='P1':
@@ -251,13 +253,14 @@ def serve_app():
     while True:
         client_sock, address = server.accept()
         playerlist.append(client_sock)
+        inter=setInterval(0.1,timeout_check,client_sock)
         client_handler = threading.Thread(
             target=handle_client_connection,
             args=(client_sock,)  # without comma you'd get a... TypeError: handle_client_connection() argument after * must be a sequence, not _socketobject
         )
         client_handler.start()
 
-def timeout_check():
+def timeout_check(client_socket):
     global p1_rt, p2_rt,barrier, paddle1_move, paddle2_move, start,playerlist
     timeout=0.5
     if start==1:
@@ -274,7 +277,9 @@ def timeout_check():
                     p1_rt=time.time()
                     p2_rt=time.time()
                     send_to_webserver('timeout',p1_rt_sub,log_id)
-                    after_play()
+                    client_socket.close()
+                    import os
+                    os._exit(0)
         except Exception as e:
             print("timeout e:",e)
                     
@@ -284,25 +289,25 @@ def timeout_check():
             
 
 class setInterval :
-    def __init__(self,interval,action) :
+    def __init__(self,interval,action,client) :
         self.interval=interval
         self.action=action
         self.stopEvent=threading.Event()
-        thread=threading.Thread(target=self.__setInterval)
+        thread=threading.Thread(target=self.__setInterval,args=(client,))
         thread.start()
 
-    def __setInterval(self) :
+    def __setInterval(self,client) :
         nextTime=time.time()+self.interval
         while not self.stopEvent.wait(nextTime-time.time()) :
             nextTime+=self.interval
-            self.action()
+            self.action(client)
 
     def cancel(self) :
         self.stopEvent.set()
 
 if __name__ == '__main__':
     __init__()
-    inter=setInterval(0.1,timeout_check)
+    
     wst = threading.Thread(target=serve_app)
     wst.daemon = True
     wst.start()
