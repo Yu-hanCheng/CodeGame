@@ -270,7 +270,7 @@ def handle_client_connection(client_socket):
                         print("recv connect p1_start")
                         start=1
                         send_to_webserver('gamemain_connect',identify,log_id)
-                        send_to_Players("gameinfo")
+                        game('on_p1')
                 finally:
                     lock.release()
                     pass
@@ -287,7 +287,7 @@ def handle_client_connection(client_socket):
                         print("p2_start")
                         start=1
                         send_to_webserver('gamemain_connect',identify,log_id)
-                        send_to_Players("gameinfo")
+                        game('on_p2')
                         # break
                 finally:
                     lock.release()
@@ -317,10 +317,7 @@ def handle_client_connection(client_socket):
                         try:
                             barrier[0]=1 ## return to 0 in send_to_player
                             if barrier[1]==1:
-                                
-                                send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
-                                record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))
-                                game('on_p1')
+                                after_play('on_p1')
                                 lock.release()
                             else:
                                 lock.release()
@@ -333,9 +330,7 @@ def handle_client_connection(client_socket):
                         try:
                             barrier[1]=1
                             if barrier[0]==1:
-                                send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
-                                record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))
-                                game('on_p2')
+                                after_play('on_p2')
                                 lock.release()
                             else:
                                 lock.release()
@@ -427,9 +422,7 @@ def handle_client_connection(client_socket):
                         try:
                             barrier[0]=1 ## return to 0 in send_to_player
                             if barrier[1]==1:
-                                send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
-                                record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))
-                                game('python on_p1')
+                                after_play('python on_p1')
                                 lock.release()
                             else:
                                 lock.release()
@@ -443,9 +436,7 @@ def handle_client_connection(client_socket):
                         try:
                             barrier[1]=1
                             if barrier[0]==1:
-                                send_to_webserver(msg['type'],tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
-                                record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))
-                                game('python on_p2')
+                                after_play('python on_p2')
                                 lock.release()
                             else:
                                 lock.release()
@@ -547,8 +538,8 @@ def timeout_check():
                     p1_rt=time.time()
                     p2_rt=time.time()
                     send_to_webserver('p1timeout',p1_rt_sub,log_id)
-                    game('p1_timeout')
-                    
+                    after_play('p1_timeout')
+        
     
             elif barrier[1]==0:
                 p2_rt_sub = time.time()-p2_rt
@@ -559,13 +550,37 @@ def timeout_check():
                     p1_rt=time.time()
                     p2_rt=time.time()
                     send_to_webserver('p2timeout',p2_rt_sub,log_id)
-                    game('p2_timeout')
+                    after_play('p2_timeout')
+        except Exception as e:
+            print("timeout e:",e)
                     
         finally:
             #lock.release()
             pass
             
+def after_play(game_whom):
+    global ball, paddle1, paddle2,paddle1_movel,paddle2_move
+    send_to_webserver('info',tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
+    record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))
+    game(game_whom)
 
+
+class setInterval :
+    def __init__(self,interval,action) :
+        self.interval=interval
+        self.action=action
+        self.stopEvent=threading.Event()
+        thread=threading.Thread(target=self.__setInterval)
+        thread.start()
+
+    def __setInterval(self) :
+        nextTime=time.time()+self.interval
+        while not self.stopEvent.wait(nextTime-time.time()) :
+            nextTime+=self.interval
+            self.action()
+
+    def cancel(self) :
+        self.stopEvent.set()
 
 if __name__ == '__main__':
     __init__()
@@ -575,7 +590,7 @@ if __name__ == '__main__':
     binary =json.dumps({'type':'game_setted'}).encode()
     game_exec_client.send(binary)
     game_exec_client.close()
-
+    inter=setInterval(0.03,timeout_check)
     while True:
         client_sock, address = server.accept()
         playerlist.append(client_sock)
@@ -597,25 +612,6 @@ if __name__ == '__main__':
     # StartTime=time.time()
 
 
-class setInterval :
-    def __init__(self,interval,action) :
-        self.interval=interval
-        self.action=action
-        self.stopEvent=threading.Event()
-        thread=threading.Thread(target=self.__setInterval)
-        thread.start()
-
-    def __setInterval(self) :
-        nextTime=time.time()+self.interval
-        while not self.stopEvent.wait(nextTime-time.time()) :
-            nextTime+=self.interval
-            self.action()
-
-    def cancel(self) :
-        self.stopEvent.set()
-
-# start action every 0.6s
-inter=setInterval(0.03,timeout_check)
 print('just after setInterval -> time : {:.1f}s'.format(time.time()-StartTime))
 
 # # will stop interval in 5s
