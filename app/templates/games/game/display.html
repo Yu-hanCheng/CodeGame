@@ -59,10 +59,14 @@
         let ball="BALL";
         let p1="P1";
         let p1_move="PMOVE";
+        let p2="P2";
+        let p2_move="P2MOVE";
         for (var i = 0; i < display_content.length; i++) { 
             ball +=  display_content[i][0]+"''";
             p1 +=  display_content[i][1]+"''";
             p1_move +=  display_content[i][2]+"''";
+            p2 +=  display_content[i][3]+"''";
+            p2_move +=  display_content[i][4]+"''";
         }
         var element = document.createElement('a');
         element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(ball+"\n\n"+p1+"\n\n"+p1_move));
