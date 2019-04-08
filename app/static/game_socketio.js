@@ -66,11 +66,14 @@ $(document).ready(function(){
         if (data['code_id']==lan_mode.value){
             let code_decode = atob(data['code']);
             editor.setValue(code_decode);
+            // $('#code_commit_msg').val(data['commit_msg'])
+            document.getElementById("code_commit_msg").innerHTML = data['code_commit_msg'];
         }
     });
     $('#mode').on('change', function() {
         let lan_name = lan_mode.options[lan_mode.selectedIndex].text;
-        editor.session.setMode("ace/mode/"+ lan_name);
+        
+        editor.session.setMode("ace/mode/"+ lan_name.split("-")[0]);
         var code_selected = lan_mode.options[lan_mode.selectedIndex].value;
         if(code_selected=="code_id"){
             code_selected=lan_mode.options[1].value;

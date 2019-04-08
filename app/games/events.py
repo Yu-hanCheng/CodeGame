@@ -65,7 +65,7 @@ def join_room_from_browser(message):
 def change_code(message):
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
     select_code =Code.query.with_entities(Code.id,Code.body, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
-    emit('the_change_code',{'code':select_code.body,'code_id':message['code_id']},namespace = '/test',room= message['room']) 
+    emit('the_change_code',{'code':select_code.body,'code_commit_msg':select_code.commit_msg,'code_id':message['code_id']},namespace = '/test',room= message['room']) 
 
 @socketio.on('select_code' ,namespace = '/test')
 def select_code(message):
