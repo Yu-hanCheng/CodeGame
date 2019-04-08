@@ -6,44 +6,11 @@ from app.models import User, Game, Log, Code
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from app.games import bp, current_game, current_log, current_code, current_comment
+from app.games import bp
 from websocket import create_connection
 import json, sys
 from .events import * # //in codegame.py
 
-current_game = '3333'
-# print(current_log)
-class ComplexDecoder(json.JSONDecoder):
-    # 目前還沒用到
-    def default(obj):
-        return json.JSONDecoder.default(obj)
-class ComplexEncoder(json.JSONEncoder):
-    # 解開query時用到
-    def default(self, obj):
-        import datetime
-        if isinstance(obj, datetime.datetime):
-            return obj.strftime('%Y-%m-%d %H:%M:%S')
-        elif isinstance(obj, datetime.date):
-            return obj.strftime('%Y-%m-%d')
-        else:
-            return json.JSONEncoder.default(self, obj)
-
-def obj_to_json(obj_list):
-    # query出來之後 轉 json
-    out = [q.__dict__ for q in obj_list]
-    for objs, instance in zip(out, obj_list):
-        for obj in objs.values():
-            if callable(obj):
-                for name in obj.mapper.relationships.keys():
-                    tmp = getattr(instance, name).__dict__
-                    if "_sa_instance_state" in tmp.keys():
-                        tmp.pop("_sa_instance_state")
-                        tmp.pop("id")
-                        objs.update(tmp)
-                    objs.pop(name)
-        if "_sa_instance_state" in objs.keys():
-            objs.pop("_sa_instance_state")
-    return out
 @bp.route('/create_game', methods=['GET', 'POST'])
 @login_required
 def create_game():
@@ -57,28 +24,16 @@ def create_game():
 
         # '''obj_to_json'''
         g_query=Game.query.filter_by(gamename=form.gamename.data).first()
+        result=""
         if isinstance(g_query, list):
             result = obj_to_json(g_query)
-        elif getattr(g_query, '__dict__', ''):
-            result = obj_to_json([g_query])
-        else:
-            result = {'result': g_query}
+       
         game_result=json.dumps(result, cls=ComplexEncoder)
-        # '''obj_to_json'''end
-
         flash('Congratulations, the game is created!')
         return redirect(url_for('games.add_room', gameObj=game_result))
 
     return render_template('games/create_game.html', title='Register', form=form)
 
-def cate_required(func):
-    @wraps(func)
-    def wrapper(*args, **kargs):
-        if get_category:
-            return func(*args, **kargs)
-        else:
-            pass
-    return wrapper
 
 @bp.route('/add_room', methods=['GET','POST'])
 @login_required
@@ -86,19 +41,16 @@ def add_room():
     # 開房間, add log data with game,user
     
     add_form = AddRoomForm()
-    def room_category_list(user_id):
-        
+    def room_category_list(user_id):  
         result_cat = Code.query.with_entities(Code.id,Code.game_id,Game.category_id,Category.name).filter_by(user_id=user_id).join(Game,(Game.id==Code.game_id)).join(Category,(Category.id==Game.category_id)).group_by(Category.id).all()
         cat_choices=[(0,"default")]
         cat_choices.extend([(c.category_id,c.name) for c in result_cat])
         return cat_choices
     
     def room_game_list(user_id,cat_id):
-        
         code = Code.query.with_entities(Code.id,Code.game_id,Game.gamename,Game.descript,Category.name).filter(Code.user_id==user_id,Game.category_id==cat_id).join(Game,(Game.id==Code.game_id)).group_by(Game.id).all()
         game_choices=[(0,"default")]
         game_choices.extend([(g.game_id,g.gamename) for g in code])
-        
         return game_choices
 
     if request.method == 'POST':
@@ -110,10 +62,9 @@ def add_room():
             add_form.game.choices=room_game_list(current_user.id,add_form.game_category.data) 
             category_list=room_category_list(current_user.id)
             add_form.game_category.choices=category_list  
-            print('submit',add_form.game_category.data, add_form.game.data, add_form.privacy.data,add_form.players_status.data)
+
             if add_form.validate_on_submit():
-                print('validated successful')
-                if add_form.privacy.data is 3:
+                if add_form.privacy.data is 3: # 1-public, 2-friends, 3-invited
                     players = (add_form.players_status.data).split(',')
                 else:
                     game_player_num = Game.query.with_entities(Game.player_num).filter_by(id=add_form.game.data).first()
@@ -158,7 +109,6 @@ def wait_to_play(log_id):
     finally:
         if have_code:
             l= Log.query.filter_by(id=log_id).first()
-            print("log",log_id,l.privacy,l.status)
 
             players = l.current_users
 
@@ -175,9 +125,7 @@ def wait_to_play(log_id):
                             break
                     if not in_list:
                         join_log(l)
-                    if l.status is 0 :#這需要嗎? 開始遊戲的通知？
-                        # emit('arrived', {'msg': current_user.id},namespace = '/test',room= log_id)
-                        pass
+                    
             elif l.privacy == 2: # friend
                 pass
             else: # only invited
@@ -205,7 +153,7 @@ def display_record(log_id):
 def index():
     # 主畫面會有很多tab(News, NewsGame, HotGames,Discuss, Rooms)
     """Login form to enter a room."""
-    print("user:",session.get('username','nnnooo'))
+
     form = LoginForm()
     if form.validate_on_submit():
         # 進入觀賽
@@ -232,14 +180,6 @@ def gameover(log_id):
     log=Log.query.with_entities(Log.game_id).filter_by(id=log_id).first()
     print(Log.get_rank_list(Log,str(log[0])))# log[1]=game_id
     return render_template('games/index.html', title='Register')
-
-@bp.route('/uploader', methods = ['GET', 'POST'])
-@login_required
-def upload_file():
-    if request.method == 'POST':
-        f = request.files['file']
-        f.save(secure_filename(f.filename))
-        return 'file uploaded successfully'
 
 def join_log(l):
     game= Game.query.with_entities(Game.player_num,Game.category_id).filter_by(id=l.game_id).first()
