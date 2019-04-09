@@ -28,18 +28,14 @@ $(document).ready(function(){
         $('#page_title').html("enter room");
         document.getElementById('section_code').style.display = "block";
         timeout_initial()
-    }) 
+    }); 
     socket.on('wait_room', function(data){
         $('#page_title').html("wait for others");
-    }) 
+    }); 
     socket.on('connect_start', function(data){
         $('#map_left_user').html(data[0][0]); 
         $('#map_right_user').html(data[1][0]); 
 
-    })
-    socket.on('status', function(data) {
-        $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
-        $('#chat').scrollTop($('#chat')[0].scrollHeight);
     });
     socket.on('gameover', function(data){ 
         // alert('l_report:'+ JSON.stringify(data.msg.l_report))
@@ -58,8 +54,8 @@ $(document).ready(function(){
         
     });
 
-    socket.on('message', function(data) {
-        $('#chat').val($('#chat').val() + data.msg + '\n');
+    socket.on('chat_message_broadcast', function(data) {
+        $('#chat').val($('#chat').val() + '<' + data.user + '> '+ data.msg+'\n');
         $('#chat').scrollTop($('#chat')[0].scrollHeight);
     });
     socket.on('timeout', function(data) {
@@ -73,7 +69,6 @@ $(document).ready(function(){
             let code_decode = atob(data['code']);
             editor.setValue(code_decode);
             // $('#code_commit_msg').val(data['commit_msg'])
-            document.getElementById("code_commit_msg").innerHTML = data['code_commit_msg'];
         }
     });
     $('#mode').on('change', function() {
@@ -86,12 +81,12 @@ $(document).ready(function(){
         }
         socket.emit('change_code', {room: $('#join_room').val(),code_id:code_selected});
       });
-    $('#text').keypress(function(e) {
+    $('#chattext').keypress(function(e) {
         var code = e.keyCode || e.which;
         if (code == 13) {
-            text = $('#text').val();
-            $('#text').val('');
-            socket.emit('text', {msg: text});
+            text = $('#chattext').val();
+            $('#chattext').val('');
+            socket.emit('chat_message', text);
         }
     });
 });
@@ -111,7 +106,7 @@ function timeout_initial(){
     x=document.getElementById("countdown");
     x.innerHTML=countdownnumber;
     countdownnumber--;
-    countdownid=window.setInterval(countdownfunc,1000);
+    countdownid=window.setInterval(countdownfunc,10);
 }
 function countdownfunc(){ 
 x.innerHTML=countdownnumber;
@@ -168,6 +163,27 @@ function score_update(newscores){
 
     Scores.setLeft(newscores[0]);
     Scores.setRight(newscores[1]);
+}
+var chatroom = document.getElementById("chatroom");
+
+
+function addMsgToBox (data) {
+    var msgBox = document.createElement("span")
+        msgBox.className = "msg";
+    var msg = document.createTextNode(data.msg);
+
+    msgBox.appendChild(msg);
+    chatroom.appendChild(msgBox);
+
+    if (chatroom.children.length > max_record) {
+        rmMsgFromBox();
+    }
+}
+
+// 移除多餘的訊息
+function rmMsgFromBox () {
+    var childs = content.children;
+    childs[0].remove();
 }
 var startTime=new Date();
 var speed=10;

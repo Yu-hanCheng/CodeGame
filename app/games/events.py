@@ -116,11 +116,10 @@ def left(message):
     leave_room(room)
     emit('status', {'msg': session.get('name') + ' has left the room.'}, room=room)
 
-@socketio.on('text',namespace = '/test' )
-def left(message):
-    """Chat msg"""
-    room = session.get('room')
-    emit('message', {'msg': message['msg']}, room=room)
+@socketio.on('chat_message' ,namespace = '/test')
+def chat_message(message):
+    room = session.get('log_id')
+    emit('chat_message_broadcast',{'user':current_user.username,'msg':message},namespace = '/test', room=str(room)) #{'user': current_user.id,'msg': message}
 
 def emit_code(l,code):
 # join_log(log_id,message['code'],message['commit_msg'],l.game_id,current_user.id,players)
