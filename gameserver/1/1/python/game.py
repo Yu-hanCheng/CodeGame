@@ -44,6 +44,8 @@ r_score = 0
 cnt=0
 p1_rt=0.0001
 p2_rt=0.0001
+p1_timeout=0
+p2_timeout=0
 # 4 info
 paddle1_move = 0
 paddle2_move = 3
@@ -86,7 +88,8 @@ def __init__():
 
 
 def send_to_webserver(msg_type,msg_content,logId):
-    
+    if msg_type=="timeout_over":
+        print("send timeout")
     global socketIO
     try:
         socketIO.emit(msg_type,{'msg':msg_content,'log_id':logId})
@@ -258,7 +261,7 @@ def handle_client_connection(client_socket):
         msg = json.loads(req_split)
         if msg['type']=='connect':
             if msg['who']=='P1':
-                p1_rt=time.time()
+                
                 identify['P1']=msg['user_id']
                 print("p1 conn lock",lock.acquire())
                 try:
@@ -270,13 +273,14 @@ def handle_client_connection(client_socket):
                         print("recv connect p1_start")
                         start=1
                         send_to_webserver('gamemain_connect',identify,log_id)
+                        p1_rt=time.time()
+                        p2_rt=time.time()
                         game('on_p1')
                 finally:
                     lock.release()
                     pass
             elif msg['who']=='P2':
                 # print('P2 in',barrier)
-                p2_rt=time.time()
                 identify['P2']=msg['user_id']
                 print("p2 conn lock",lock.acquire())
                 try:
@@ -287,6 +291,8 @@ def handle_client_connection(client_socket):
                         print("p2_start")
                         start=1
                         send_to_webserver('gamemain_connect',identify,log_id)
+                        p1_rt=time.time()
+                        p2_rt=time.time()
                         game('on_p2')
                         # break
                 finally:
@@ -419,6 +425,7 @@ def handle_client_connection(client_socket):
                     if msg['who']=='P1':
                         paddle1_move=msg['content']         
                         print("p1 info lock",lock.acquire())
+                        p1_rt=time.time()
                         try:
                             barrier[0]=1 ## return to 0 in send_to_player
                             if barrier[1]==1:
@@ -455,24 +462,7 @@ def handle_client_connection(client_socket):
                         l_report = msg['content']                
                         if r_report!="":
                             lock.release()
-                            send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
-
-                            game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
-                            game_exec_address = (game_exec_ip, int(game_exec_port))
-                            print("game_exec_address:",game_exec_address)
-                            while True:
-                                try:
-                                    game_exec=game_exec_client.connect(game_exec_address)
-                                    print("connected")
-                                    break
-                                except:
-                                    time.sleep(0.1)
-                            binary =json.dumps({'type':'over'}).encode()
-                            print("binary:",binary)
-                            game_exec_client.send(binary)
-                            print("send game_exec:",game_exec_client)
-                            send_to_Players('score_recved')
-                            # sys.exit()
+                            gameover("over",l_report,r_report,record_content,log_id)
                             break
                         else:
                             lock.release()
@@ -482,25 +472,7 @@ def handle_client_connection(client_socket):
                         r_report = msg['content']
                         if l_report!="":
                             lock.release()
-                            send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)                       
-                            game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
-                            game_exec_address = (game_exec_ip, int(game_exec_port))
-                            print("game_exec_address:",game_exec_address)
-                            
-                            while True:
-                                try:
-                                    game_exec=game_exec_client.connect(game_exec_address)
-                                    print("connected")
-                                    break
-                                except:
-                                    time.sleep(0.1)
-                            
-                            
-                            binary =json.dumps({'type':'over'}).encode()
-                            print("binary:",binary)
-                            game_exec_client.send(binary)
-                            send_to_Players('score_recved')
-                            # sys.exit()
+                            gameover("over",l_report,r_report,record_content,log_id)
                             break
                         else:
                             lock.release()
@@ -514,9 +486,30 @@ def handle_client_connection(client_socket):
                 time.sleep(0.5)
                 # print("game not start, or had over")
                 lock.release()
-
+                
+def gameover(msg_type,l_report,r_report,record_content,log_id):
+    global game_exec_ip,game_exec_port
+    print("gameover",msg_type)
+    if msg_type=="timeout_over":
+        send_to_webserver(msg_type,record_content,log_id)                       
+    else:
+        send_to_webserver(msg_type,{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)                       
+    game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+    game_exec_address = (game_exec_ip, int(game_exec_port))
+    print("game_exec_address:",game_exec_address)
+    
+    while True:
+        try:
+            game_exec=game_exec_client.connect(game_exec_address)
+            print("connected")
+            break
+        except:
+            time.sleep(0.1)
+    binary =json.dumps({'type':'over'}).encode()
+    game_exec_client.send(binary)
+    send_to_Players('score_recved')
 def timeout_check():
-    global p1_rt, p2_rt,barrier, paddle1_move, paddle2_move, start,playerlist
+    global p1_rt, p2_rt,barrier, paddle1_move, paddle2_move, start,playerlist,p1_timeout,p2_timeout
     # print('active_count:',threading.active_count())
     timeout=0.5
     # while True:
@@ -531,15 +524,20 @@ def timeout_check():
                 # print('p1_rt_sub %f p2_rt_sub %f, barrier '%(p1_rt_sub,time.time()-p2_rt)+str(barrier))
                 if p1_rt_sub>timeout:
                     if barrier[1]==0:
-                        timeout+=0.005    
+                        timeout+=0.05    
                         # print('p2 also no response, timeout increase: ',timeout)
                     paddle1_move=0
                     barrier=[1,1]
+                    
+                    print("p1timeout:",p1_timeout,p1_rt_sub)
+                    p1_timeout+=1
+                    send_to_webserver('timeout',{'user':"P1","sub":p1_rt_sub},log_id)
+                    if p1_timeout==3:
+                        gameover("timeout_over","","",{'user':"P1","sub":p1_rt_sub},log_id)
+                        # gameover(msg_type,l_report,r_report,record_content,log_id)
+                    after_play('p1_timeout')
                     p1_rt=time.time()
                     p2_rt=time.time()
-                    send_to_webserver('p1timeout',p1_rt_sub,log_id)
-                    after_play('p1_timeout')
-        
     
             elif barrier[1]==0:
                 p2_rt_sub = time.time()-p2_rt
@@ -549,7 +547,10 @@ def timeout_check():
                     barrier=[1,1]
                     p1_rt=time.time()
                     p2_rt=time.time()
-                    send_to_webserver('p2timeout',p2_rt_sub,log_id)
+                    print("p2timeout:",p2_timeout)
+                    p2_timeout+=1
+                    if p2_timeout==3:
+                        gameover("timeout_over","","",{'user':"P2","sub":p2_rt_sub},log_id)
                     after_play('p2_timeout')
         except Exception as e:
             print("timeout e:",e)

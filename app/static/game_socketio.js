@@ -62,6 +62,12 @@ $(document).ready(function(){
         $('#chat').val($('#chat').val() + data.msg + '\n');
         $('#chat').scrollTop($('#chat')[0].scrollHeight);
     });
+    socket.on('timeout', function(data) {
+        alert("timeout:"+data)
+    });
+    socket.on('timeout_over', function(data) {
+        alert("timeout_over:"+data)
+    });
     socket.on('the_change_code', function(data) {
         if (data['code_id']==lan_mode.value){
             let code_decode = atob(data['code']);

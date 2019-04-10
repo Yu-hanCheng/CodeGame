@@ -12,7 +12,15 @@ import json,base64
 def gamemain_connect(message):
     users = User.query.with_entities(User.username).filter(User.id.in_([message['msg']['P1'],message['msg']['P2']])).all()
     emit('connect_start',users,namespace = '/test',room= message['log_id'])
-    
+
+@socketio.on('timeout_over') 
+def timeout_over(message):
+    emit('timeout_over',message['msg']['user'],namespace = '/test',room= message['log_id'])
+
+@socketio.on('timeout') 
+def timeout(message):
+    emit('timeout',message['msg']['user'],namespace = '/test',room= message['log_id'])
+
 @socketio.on('over') 
 def game_over(message):
     # msg：tuple([l_score,r_score,gametime])??
