@@ -81,7 +81,7 @@ def ws_msg_handler(msg):
                 is_ml= element[7]
             else:
                 is_ml=""
-            tcp_send_to_subserver(i,element[0],element[1],element[3],element[6],the_code,str(is_ml))
+            tcp_send_to_subserver(i,element[0],element[1],element[3],element[6],the_code,str(is_ml),element[7])
         log_id=element[0]
         time.sleep(0.1)
     start_game(log_id,element[4],element[3],element[6])
@@ -103,7 +103,7 @@ def tcp_send_rule(str_tosend,startlen):
     
 
 
-def tcp_send_to_subserver(subserver_index,log_id,user_id,compiler, fileEnd, code,is_ml):
+def tcp_send_to_subserver(subserver_index,log_id,user_id,compiler, fileEnd, code,is_ml,code_id):
     # subserverlist[subserver_cnt].send(json.dumps({'log_id':log_id,'user_id':user_id,'code':code}).encode())
     global subserverlist
     codeString = base64.b64encode(code.encode('utf-8')).decode('utf-8')
@@ -111,7 +111,7 @@ def tcp_send_to_subserver(subserver_index,log_id,user_id,compiler, fileEnd, code
     if len(is_ml)>0:
         with open("%s.sav"%(is_ml),"r") as f:
             ml_file = f.read()
-    jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'code':codeString,'ml_file':ml_file,'code_id':is_ml,'user_id':user_id})
+    jsonStr = json.dumps({'type':'new_code','compiler':compiler,'fileEnd':fileEnd,'log_id':log_id,'code':codeString,'ml_file':ml_file,'code_id':code_id,'user_id':user_id})
     # msg_tosend=str(len(jsonStr))
     # for i in range(8-len(msg_tosend)):
     #     msg_tosend+="|"

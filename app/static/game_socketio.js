@@ -98,7 +98,12 @@ function select_code(){
     }
     // document.getElementById('section_code').style.display = "none";
     document.getElementById('section_game').style.display = "block";
-    socket.emit('select_code', {room: $('#join_room').val(),code_id:code_selected});
+    let opponent = document.getElementById('opponent_rank');
+    let opponent_rank="";
+    if (opponent){ 
+        opponent_rank=opponent.value;
+    }
+    socket.emit('select_code', {room: $('#join_room').val(),code_id:code_selected,opponent:opponent_rank,status: $('#join_status').val()});
 }
 var countdownnumber=10;
 var countdownid,x;
@@ -106,7 +111,7 @@ function timeout_initial(){
     x=document.getElementById("countdown");
     x.innerHTML=countdownnumber;
     countdownnumber--;
-    countdownid=window.setInterval(countdownfunc,10);
+    countdownid=window.setInterval(countdownfunc,500);
 }
 function countdownfunc(){ 
 x.innerHTML=countdownnumber;

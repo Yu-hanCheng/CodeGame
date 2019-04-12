@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request, current_ap
 from app import db
 from app.games.forms import CreateGameForm,CommentCodeForm, AddRoomForm, LoginForm, JoinForm, LeaveForm
 from flask_login import current_user, login_user, logout_user,login_required
-from app.models import User, Game, Log, Code
+from app.models import User, Game, Log, Code,Privacy
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -54,31 +54,28 @@ def add_room():
         return game_choices
 
     if request.method == 'POST':
-        if "text/plain" in request.headers['Content-Type']:
-            set_g_option = room_game_list(current_user.id,int(request.data)) 
-            add_form.game.choices=set_g_option
-            return json.dumps({'g_list':set_g_option})
-        else:
-            add_form.game.choices=room_game_list(current_user.id,add_form.game_category.data) 
-            category_list=room_category_list(current_user.id)
-            add_form.game_category.choices=category_list  
-
-            if add_form.validate_on_submit():
-                if add_form.privacy.data is 3: # 1-public, 2-friends, 3-invited
-                    players = (add_form.players_status.data).split(',')
-                else:
-                    game_player_num = Game.query.with_entities(Game.player_num).filter_by(id=add_form.game.data).first()
-                    players = game_player_num[0]
-                log = Log(game_id=add_form.game.data,privacy=add_form.privacy.data,status=players)
-                db.session.add(log)
-                # 若是設定 privacy==friends(指定玩家), log.current_users.append((choose_form.player_list).split(','))
-                db.session.commit()
-                return redirect(url_for('games.wait_to_play',log_id=log.id))
-                # return redirect(url_for('games.room_wait',log_id=log.id))
-
+        add_form.game.choices=room_game_list(current_user.id,add_form.game_category.data) 
+        category_list=room_category_list(current_user.id)
+        add_form.game_category.choices=category_list  
+        add_form.privacy.choices = Privacy.query.with_entities(Privacy.id,Privacy.privacy_name).all()
+        if add_form.validate_on_submit():
+            privacy=add_form.privacy.data
+            status = add_form.players_status.data
+            if privacy == "2": # 1-public, 2-official, 3-invited
+                status = 0
+            elif privacy == "3":
+                invite_players = (add_form.invitelist.data).split(',')
+            log = Log(game_id=add_form.game.data,privacy=privacy,status=status)
+            db.session.add(log)
+            # 若是設定 privacy==friends(指定玩家), log.current_users.append((choose_form.player_list).split(','))
+            db.session.commit()
+            return redirect(url_for('games.wait_to_play',log_id=log.id,privacy=str(privacy)))
+            # return redirect(url_for('games.room_wait',log_id=log.id))
+        
     else:
         add_form.game_category.choices =  room_category_list(current_user.id)
         add_form.game.choices = [("0","default")]
+        add_form.privacy.choices =  Privacy.query.with_entities(Privacy.id,Privacy.privacy_name).all()
 
     return render_template('games/room/add_room.html', title='add_room',form=add_form)
 
@@ -113,6 +110,7 @@ def wait_to_play(log_id):
             players = l.current_users
 
             if l.privacy is 1: # public,可以
+                rank_list=""
                 if l.status is 0 : 
                     print("sorry room is full, can't join game")
                     return redirect(url_for('games.index'))
@@ -126,12 +124,12 @@ def wait_to_play(log_id):
                     if not in_list:
                         join_log(l)
                     
-            elif l.privacy == 2: # friend
-                pass
+            elif l.privacy == 2: # official
+                rank_list=l.get_rank_list()
             else: # only invited
                 pass
     
-    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,all_codes=all_codes)
+    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,rank_list=rank_list,all_codes=all_codes)
 
 @bp.route('/rank_list/<int:log_id>', methods=['GET','POST'])
 @login_required

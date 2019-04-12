@@ -41,16 +41,9 @@ class AddRoomForm(FlaskForm):
 	game_category = SelectField('Game Category',coerce=int,choices=[])
 	game =  SelectField('Game',coerce=int,choices=[])
 	user_id = HiddenField('User id', default=current_user)
-	privacy =  SelectField('privacy',choices=[('1', 'public'), ('2', 'friends'), ('3', 'invited')])
+	privacy =  SelectField('privacy',coerce=int,choices=[])
 	players_status = IntegerField('players_status')
 	submit = SubmitField('Enter Gameroom')
-
-
-  #   def validate_gamename(self, room_name):
-		# room = Room.query.filter_by(room_name=room_name.data).first()
-		# if room is not None:
-		# 	raise ValidationError('Please use a different roomname.')
-	
 
 
 

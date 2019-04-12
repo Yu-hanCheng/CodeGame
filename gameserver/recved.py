@@ -19,10 +19,10 @@ def connect_to_game():
         except:
             time.sleep(0.1)
 
-def on_gameinfo(log_id,compiler,user_id,usercode,fileEnd):
+def on_gameinfo(log_id,compiler,user_id,usercode,fileEnd,code_id):
     global subprocess_str
     save_code("usercode", usercode,fileEnd,"w")
-    subprocess_str=''+compiler + ' ' +"usercode" + fileEnd+ ' '  + str(game_exec_ip)+ ' '  + str(game_port)+ ' '  + str(user_id) + ' '
+    subprocess_str=''+compiler + ' ' +"usercode" + fileEnd+ ' '  + str(game_exec_ip)+ ' '  + str(game_port)+ ' '  + str(user_id) + ' '+str(code_id) + ' '
     return
 
 def save_code(filename, file, fileEnd,w_mode):
@@ -76,11 +76,10 @@ while True:
             s.send(binary)
             model=""
             if msg_recv['ml_file']!="":
-                print(msg_recv['ml_file'])
                 model = base64.b64decode(msg_recv['ml_file'])
                 save_code('model',model,".sav","wb")
             code = base64.b64decode(msg_recv['code']).decode('utf-8')
-            on_gameinfo(msg_recv['log_id'],msg_recv['compiler'],msg_recv['user_id'],code,msg_recv['fileEnd'])
+            on_gameinfo(msg_recv['log_id'],msg_recv['compiler'],msg_recv['user_id'],code,msg_recv['fileEnd'],msg_recv['code_id'])
         elif msg_recv['type']=='fork_subprocess':
             print("recv fork_subprocess")
             try:
