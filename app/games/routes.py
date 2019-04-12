@@ -34,48 +34,59 @@ def create_game():
 
     return render_template('games/create_game.html', title='Register', form=form)
 
+def room_game_list(user_id,cat_id):
+    code = Code.query.with_entities(Code.id,Code.game_id,Game.gamename,Game.descript,Category.name).filter(Code.user_id==user_id,Game.category_id==cat_id).join(Game,(Game.id==Code.game_id)).group_by(Game.id).all()
+    game_choices=[(0,"default")]
+    game_choices.extend([(g.game_id,g.gamename) for g in code])
+    return game_choices
 
+@bp.route('/get_g_list', methods=['GET','POST'])
+@login_required
+def get_g_list():
+        
+    if request.method == 'POST':
+        if "text/plain" in request.headers['Content-Type']:
+            set_g_option = room_game_list(current_user.id,int(request.data)) 
+            # add_form.game.choices=set_g_option   
+            return json.dumps({'g_list':set_g_option})
+
+@bp.route('/get_g_player_num', methods=['GET','POST'])
+@login_required
+def get_g_player_num():
+    if request.method == 'POST':
+        if "text/plain" in request.headers['Content-Type']:
+            game_player_num = Game.query.with_entities(Game.player_num).filter_by(id=int(request.data)).first()
+            return game_player_num[0]
 @bp.route('/add_room', methods=['GET','POST'])
 @login_required
 def add_room():
     # 開房間, add log data with game,user
-    
     add_form = AddRoomForm()
     def room_category_list(user_id):  
         result_cat = Code.query.with_entities(Code.id,Code.game_id,Game.category_id,Category.name).filter_by(user_id=user_id).join(Game,(Game.id==Code.game_id)).join(Category,(Category.id==Game.category_id)).group_by(Category.id).all()
         cat_choices=[(0,"default")]
         cat_choices.extend([(c.category_id,c.name) for c in result_cat])
         return cat_choices
-    
-    def room_game_list(user_id,cat_id):
-        code = Code.query.with_entities(Code.id,Code.game_id,Game.gamename,Game.descript,Category.name).filter(Code.user_id==user_id,Game.category_id==cat_id).join(Game,(Game.id==Code.game_id)).group_by(Game.id).all()
-        game_choices=[(0,"default")]
-        game_choices.extend([(g.game_id,g.gamename) for g in code])
-        return game_choices
 
     if request.method == 'POST':
-        if "text/plain" in request.headers['Content-Type']:
-            set_g_option = room_game_list(current_user.id,int(request.data)) 
-            add_form.game.choices=set_g_option
-            return json.dumps({'g_list':set_g_option})
-        else:
-            add_form.game.choices=room_game_list(current_user.id,add_form.game_category.data) 
-            category_list=room_category_list(current_user.id)
-            add_form.game_category.choices=category_list  
-
-            if add_form.validate_on_submit():
-                if add_form.privacy.data is 3: # 1-public, 2-friends, 3-invited
-                    players = (add_form.players_status.data).split(',')
-                else:
-                    game_player_num = Game.query.with_entities(Game.player_num).filter_by(id=add_form.game.data).first()
-                    players = game_player_num[0]
-                log = Log(game_id=add_form.game.data,privacy=add_form.privacy.data,status=players)
-                db.session.add(log)
-                # 若是設定 privacy==friends(指定玩家), log.current_users.append((choose_form.player_list).split(','))
-                db.session.commit()
-                return redirect(url_for('games.wait_to_play',log_id=log.id))
-                # return redirect(url_for('games.room_wait',log_id=log.id))
-
+        add_form.game.choices=room_game_list(current_user.id,add_form.game_category.data) 
+        category_list=room_category_list(current_user.id)
+        add_form.game_category.choices=category_list  
+        
+        if add_form.validate_on_submit():
+            privacy=add_form.privacy.data
+            status = add_form.players_status.data
+            if privacy == "2": # 1-public, 2-official, 3-invited
+                status = 0
+            elif privacy == "3":
+                invite_players = (add_form.invitelist.data).split(',')
+            log = Log(game_id=add_form.game.data,privacy=privacy,status=status)
+            db.session.add(log)
+            # 若是設定 privacy==friends(指定玩家), log.current_users.append((choose_form.player_list).split(','))
+            db.session.commit()
+            return redirect(url_for('games.wait_to_play',log_id=log.id,privacy=str(privacy)))
+            # return redirect(url_for('games.room_wait',log_id=log.id))
+        
     else:
         add_form.game_category.choices =  room_category_list(current_user.id)
         add_form.game.choices = [("0","default")]
@@ -87,6 +98,7 @@ def add_room():
 @login_required
 def wait_to_play(log_id):
     session['log_id']=log_id
+    privacy = request.args.get('privacy')
     # 檢查這個log的game有哪些可用的code, 列出語言, 有才讓 html的btn visable
     log_id = session.get('log_id', '')
     l=Log.query.filter_by(id=log_id).first()
@@ -126,7 +138,7 @@ def wait_to_play(log_id):
                     if not in_list:
                         join_log(l)
                     
-            elif l.privacy == 2: # friend
+            elif l.privacy == 2: # official
                 pass
             else: # only invited
                 pass

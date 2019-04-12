@@ -10,28 +10,42 @@
     </div>
     <script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='jquery-3.3.1.js') }}"></script>
     <script type="text/javascript">
+    $('select#game').change(function(event) {
+        let game_id = document.getElementById('game').value;
+        http_send_toweb('get_g_player_num',game_id,function(responseText) {
+            // show on add_form: log.status
+            console.log("get_g_player_num callback")
+            document.getElementById('players_status').value = responseText;
+        });
+    })
+    // $('select#privacy').change(function(event) {
+    //     var privacy = document.getElementById('privacy').value;
+    //     if (privacy ==2){
+    //         document.getElementById('players_status').value = 0;
+    //         document.getElementById('players_status').style.display = "none";
+    //     }
+    // })
     $('select#game_category').change(function(event) {
         
         var selected_category = document.getElementById('game_category').value;
-        
+        http_send_toweb('get_g_list',selected_category,function(responseText) {
+            let g_list = JSON.parse(responseText)['g_list']
+            var g_select = document.getElementById('game')
+            for (let index =0; index < g_list.length; index++) {
+                const lan_obj = g_list[index];
+                g_select.options[index] = new Option(lan_obj[1], lan_obj[0]);//(text,value(str))
+            }
+        });
+    })
+    function http_send_toweb(post_event,params, call_back) {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            response = JSON.parse(this.responseText)['g_list']
-            
-            var g_select = document.getElementById('game')
-            for (let index =0; index < response.length; index++) {
-                const lan_obj = response[index];
-                
-                g_select.options[index] = new Option(lan_obj[1], lan_obj[0]);//(text,value(str))
-            }
-            // document.getElementById("sandbox_res").innerHTML = this.response.Text;
-            // check code in Docker container first
-            // socket.emit('commit', {code: editor_content, commit_msg:commit_msg, game_id:game_id, glanguage:glanguage, user_id:1});
+            call_back(this.responseText);
         }
         };
-        xhttp.open("POST", "add_room", true);
-        xhttp.send(selected_category);
-    })
+        xhttp.open("POST", post_event, true);
+        xhttp.send(params);
+    }
     </script>
 {% endblock %}
