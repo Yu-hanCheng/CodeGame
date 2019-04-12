@@ -143,7 +143,7 @@ def wait_to_play(log_id):
             else: # only invited
                 pass
     
-    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,all_codes=all_codes)
+    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,privacy=l.privacy,all_codes=all_codes)
 
 @bp.route('/rank_list/<int:log_id>', methods=['GET','POST'])
 @login_required
