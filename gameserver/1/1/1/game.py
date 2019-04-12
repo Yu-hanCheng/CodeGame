@@ -85,8 +85,6 @@ def __init__():
     else:
         ball_init(False)
 
-
-
 def send_to_webserver(msg_type,msg_content,logId):
     if msg_type=="timeout_over":
         print("send timeout")
@@ -144,21 +142,16 @@ def play():
     try:
         global paddle1, paddle2,paddle1_move,paddle2_move, ball, ball_vel, l_score, r_score, cnt
         global barrier,start,endgame
-        # print('ball_play: ',ball)
 
         if paddle1[1] > HALF_PAD_HEIGHT and paddle1[1] < HEIGHT - HALF_PAD_HEIGHT:
             paddle1[1] += paddle1_move
-            # print('p1 normal')
         elif paddle1[1] <= HALF_PAD_HEIGHT and paddle1_move > 0:
             paddle1[1] = HALF_PAD_HEIGHT
             paddle1[1] += paddle1_move
-            # print('p1 top')
         elif paddle1[1] >= HEIGHT - HALF_PAD_HEIGHT and paddle1_move < 0:
             paddle1[1] = HEIGHT - HALF_PAD_HEIGHT
             paddle1[1] += paddle1_move
-            # print('p1 bottom')
         else:
-            # print('p1 else')
             pass
 
         if paddle2[1] > HALF_PAD_HEIGHT and paddle2[1] < HEIGHT - HALF_PAD_HEIGHT:
@@ -266,7 +259,6 @@ def handle_client_connection(client_socket):
                 print("p1 conn lock",lock.acquire())
                 try:
                     barrier[0]=1
-                    # print('P1 in',barrier)
                     if barrier[1]!=1:
                         pass
                     else:
@@ -280,7 +272,6 @@ def handle_client_connection(client_socket):
                     lock.release()
                     pass
             elif msg['who']=='P2':
-                # print('P2 in',barrier)
                 identify['P2']=msg['user_id']
                 print("p2 conn lock",lock.acquire())
                 try:
@@ -403,7 +394,6 @@ def handle_client_connection(client_socket):
                 
             else:
                 time.sleep(0.5)
-                # print("game not start, or had over")
                 lock.release()
     elif lib_lan==0:#python
         while True:
@@ -484,7 +474,6 @@ def handle_client_connection(client_socket):
                 
             else:
                 time.sleep(0.5)
-                # print("game not start, or had over")
                 lock.release()
                 
 def gameover(msg_type,l_report,r_report,record_content,log_id):
@@ -510,31 +499,22 @@ def gameover(msg_type,l_report,r_report,record_content,log_id):
     send_to_Players('score_recved')
 def timeout_check():
     global p1_rt, p2_rt,barrier, paddle1_move, paddle2_move, start,playerlist,p1_timeout,p2_timeout
-    # print('active_count:',threading.active_count())
+    
     timeout=0.5
-    # while True:
-        
-        # time.sleep(0.3)   
     if start==1:
-        # print("check")
-        #lock.acquire()
         try:
             if barrier[0]==0:
-                p1_rt_sub=time.time()-p1_rt
-                # print('p1_rt_sub %f p2_rt_sub %f, barrier '%(p1_rt_sub,time.time()-p2_rt)+str(barrier))
+                p1_rt_sub=time.time()-p1_rt        
                 if p1_rt_sub>timeout:
                     if barrier[1]==0:
                         timeout+=0.05    
-                        # print('p2 also no response, timeout increase: ',timeout)
                     paddle1_move=0
                     barrier=[1,1]
-                    
                     print("p1timeout:",p1_timeout,p1_rt_sub)
                     p1_timeout+=1
                     send_to_webserver('timeout',{'user':"P1","sub":p1_rt_sub},log_id)
                     if p1_timeout==3:
-                        gameover("timeout_over","","",{'user':"P1","sub":p1_rt_sub},log_id)
-                        # gameover(msg_type,l_report,r_report,record_content,log_id)
+                        gameover("timeout_over","","",{'user':"P1","sub":p1_rt_sub},log_id)                
                     after_play('p1_timeout')
                     p1_rt=time.time()
                     p2_rt=time.time()
@@ -542,7 +522,6 @@ def timeout_check():
             elif barrier[1]==0:
                 p2_rt_sub = time.time()-p2_rt
                 if (p2_rt_sub)>timeout:
-                    # print('p2_rt',time.time()-p2_rt)
                     paddle2_move=0
                     barrier=[1,1]
                     p1_rt=time.time()
@@ -595,22 +574,11 @@ if __name__ == '__main__':
     while True:
         client_sock, address = server.accept()
         playerlist.append(client_sock)
-        # print ('[%i users online]\n' % len(playerlist))
-        print(playerlist)
-        print('Accepted connection from {}:{}'.format(address[0], address[1]))
         client_handler = threading.Thread(
             target=handle_client_connection,
             args=(client_sock,)  # without comma you'd get a... TypeError: handle_client_connection() argument after * must be a sequence, not _socketobject
         )
         client_handler.start()
-
-    # wst = threading.Thread(target=serve_app)
-    # wst.daemon = False
-    # wst.start()
-    # wst.join()
-    # # timeout= threading.Thread(target=timeout_check)
-    # # timeout.start()
-    # StartTime=time.time()
 
 
 print('just after setInterval -> time : {:.1f}s'.format(time.time()-StartTime))
