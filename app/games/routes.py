@@ -125,6 +125,7 @@ def wait_to_play(log_id):
             players = l.current_users
 
             if l.privacy is 1: # public,可以
+                rank_list=""
                 if l.status is 0 : 
                     print("sorry room is full, can't join game")
                     return redirect(url_for('games.index'))
@@ -139,11 +140,11 @@ def wait_to_play(log_id):
                         join_log(l)
                     
             elif l.privacy == 2: # official
-                pass
+                rank_list=l.get_rank_list()
             else: # only invited
                 pass
     
-    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,privacy=l.privacy,all_codes=all_codes)
+    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,rank_list=rank_list,all_codes=all_codes)
 
 @bp.route('/rank_list/<int:log_id>', methods=['GET','POST'])
 @login_required
