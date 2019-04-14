@@ -34,14 +34,15 @@ def game_over(message):
     emit('gameover', {'msg': message['msg'],'log_id':message['log_id']},namespace = '/test',room= message['log_id'])
     
     
-    if l_report['score']>r_report['score']:
-        winner=l_report['user_id']
-    else:
-        winner=r_report['user_id']
+    
     
     l=Log.query.filter_by(id=message['log_id']).first()
-    
-    l.winner_id = winner
+    if l_report['score']>r_report['score']:
+        l.winner_id =l_report['user_id']
+        l.winner_code_id=l_report['code_id']
+    else:
+        l.winner_id =r_report['user_id']
+        l.winner_code_id=r_report['code_id']
     save_content = json.dumps(message['msg'])
     l.record_content = save_content
     
@@ -61,12 +62,10 @@ def test_connect(message):
 
 @socketio.on('join_room' ,namespace = '/test')
 def join_room_from_browser(message):
-    print("join_room client:",message['room'])
     join_room(message['room'])
     if int(message['status']) ==0:
         emit('enter_room',namespace = '/test',room= message['room'])
     else:
-        print("wait")
         emit('wait_room',namespace = '/test',room= message['room'])    
 
 @socketio.on('change_code',namespace = '/test')
@@ -77,13 +76,19 @@ def change_code(message):
 
 @socketio.on('select_code' ,namespace = '/test')
 def select_code(message):
+
     # Sent by clients when they click btn.
     # call emit_code to send code to gameserver.-- 0122/2019
-    
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
     select_code =Code.query.with_entities(Code.id,Code.body,Code.attach_ml, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
+    emit_code(l, select_code,current_user.id)
 
-    emit_code(l, select_code)
+    if message['opponent']!="":
+        opponent = json.loads(message['opponent'].replace("'", '"'))
+        select_code = Code.query.with_entities(Code.id,Code.body,Code.attach_ml, Code.commit_msg,Code.compile_language_id,Language.language_name).\
+        filter_by(id=opponent['code_id']).join(Language,(Language.id==Code.compile_language_id)).first()
+        emit_code(l, select_code,str(opponent['username']))
+    
 
 @socketio.on('upload_code')# ,namespace = '/local'
 def upload_code(message):
@@ -121,14 +126,19 @@ def chat_message(message):
     room = session.get('log_id')
     emit('chat_message_broadcast',{'user':current_user.username,'msg':message},namespace = '/test', room=str(room)) #{'user': current_user.id,'msg': message}
 
-def emit_code(l,code):
+def emit_code(l,code,the_user):
 # join_log(log_id,message['code'],message['commit_msg'],l.game_id,current_user.id,players)
+    if type(the_user) is not int:
+        opponent_id = User.query.with_entities(User.id).filter_by(username=the_user).first()
+        user_id=opponent_id
+    else:
+        user_id=the_user
     ml_file=""
     if code.attach_ml:
         with open("%s.sav"%(code.id), "rb") as f_ml:
             ml_file = f_ml.read().decode() # convert to str
     ws = create_connection("ws://127.0.0.1:6005")# to gameserver
-    ws.send(json.dumps({'from':'webserver','code_id':code.id,'code':code.body,'attach_ml':code.attach_ml,'ml_file':ml_file,'log_id':l.id,'user_id': current_user.id,'category_id':l.category_id,'game_id':l.game_id,'language':code.language_name,'player_num':int(l.player_num)}))
+    ws.send(json.dumps({'from':'webserver','code_id':code.id,'code':code.body,'attach_ml':code.attach_ml,'ml_file':ml_file,'log_id':l.id,'user_id': user_id,'category_id':l.category_id,'game_id':l.game_id,'language':code.language_name,'player_num':int(l.player_num)}))
     result =  ws.recv() #
     print("Received '%s'" % result)
     ws.close()
