@@ -216,7 +216,6 @@ class Code(db.Model):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     commit_msg = db.Column(db.String(140))
     game_id = db.Column(db.Integer, db.ForeignKey('game.id')) 
-    log_id = db.Column(db.Integer, db.ForeignKey('log.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     compile_language_id = db.Column(db.Integer, db.ForeignKey('language.id'))
     is_auto_compete = db.Column(db.Boolean,default=True)
@@ -232,7 +231,8 @@ class Code(db.Model):
 
 class Privacy(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    privacy_name =db.Column(db.String(30)) 
+    privacy_name =db.Column(db.String(15)) 
+    description =db.Column(db.String(50)) 
     def __repr__(self):
         return '<Privacy {}>'.format(self.id)
 
@@ -251,6 +251,7 @@ class Log(db.Model):
     
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
     winner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    winner_code_id = db.Column(db.Integer, db.ForeignKey('code.id'))
     status=db.Column(db.Integer,db.ForeignKey('status.id'))
     # room目前還有多少空位，會在 event的 joined update
     privacy=db.Column(db.Integer,db.ForeignKey('privacy.id'))
@@ -259,22 +260,12 @@ class Log(db.Model):
     current_users = db.relationship(
         'User', secondary=players_in_log)
 
-
-
-    # player_list = db.relationship(
-    #     'User', secondary=players,
-    #     primaryjoin=(players.c.log_id==id),
-    #     secondaryjoin=(players.c.user_id ==id),
-    #     backref=db.backref('players', lazy='dynamic'),lazy='dynamic'
-    # )
-
-
     def __repr__(self):
         return '<Log {}>'.format(self.id)
     
     def get_rank_list(self):
         
-        rank_list = Log.query.with_entities(Log.id,Log.game_id,User.username,Log.score).filter_by(game_id = self.game_id).join(User,(User.id==Log.winner_id)).order_by(Log.score.desc()).all()
+        rank_list = Log.query.with_entities(Log.id,Log.game_id,Log.winner_code_id,User.username,Log.score).filter_by(game_id = self.game_id).join(User,(User.id==Log.winner_id)).order_by(Log.score.desc()).all()
         
         return rank_list
 
