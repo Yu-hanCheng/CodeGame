@@ -11,6 +11,7 @@ game_ip = sys.argv[1]
 game_port = int(sys.argv[2])
 address = (game_ip, game_port)
 user_id = sys.argv[3]
+code_id = sys.argv[4]
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
 s_sucess=""
 time.sleep(0.5)
@@ -113,7 +114,7 @@ def score(msg_from_gamemain):# CPU, MEM Utility
     mem = round(reduce(lambda x, y: x + y, mem_list) / len(mem_list),3)
     avg_time=1
     # report="\""+str(user_id)+","+str(cpu)+","+str(mem)+","+str(avg_time)+"\""
-    report= '{\'score\':'+str(score)+',\'user_id\':'+str(user_id)+',\'cpu\':'+str(cpu)+',\'mem\':'+str(mem)+',\'avg_time\':'+str(avg_time)+'}'
+    report= '{\'score\':'+str(score)+',\'user_id\':'+str(user_id)+',\'code_id\':'+str(code_id)+',\'cpu\':'+str(cpu)+',\'mem\':'+str(mem)+',\'avg_time\':'+str(avg_time)+'}'
     # msg={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
     send_togame('score',report)
 def recvall(sock):
