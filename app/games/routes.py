@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request, current_ap
 from app import db
 from app.games.forms import CreateGameForm,CommentCodeForm, AddRoomForm, LoginForm, JoinForm, LeaveForm
 from flask_login import current_user, login_user, logout_user,login_required
-from app.models import User, Game, Log, Code
+from app.models import User, Game, Log, Code,Privacy
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -72,7 +72,7 @@ def add_room():
         add_form.game.choices=room_game_list(current_user.id,add_form.game_category.data) 
         category_list=room_category_list(current_user.id)
         add_form.game_category.choices=category_list  
-        
+        add_form.privacy.choices = Privacy.query.with_entities(Privacy.id,Privacy.privacy_name).all()
         if add_form.validate_on_submit():
             privacy=add_form.privacy.data
             status = add_form.players_status.data
@@ -90,6 +90,7 @@ def add_room():
     else:
         add_form.game_category.choices =  room_category_list(current_user.id)
         add_form.game.choices = [("0","default")]
+        add_form.privacy.choices =  Privacy.query.with_entities(Privacy.id,Privacy.privacy_name).all()
 
     return render_template('games/room/add_room.html', title='add_room',form=add_form)
 
