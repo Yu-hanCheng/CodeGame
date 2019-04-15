@@ -24,8 +24,12 @@
             <div id="game_code">
                 <pre id="editor" style="height:255px"></pre>
                 <br>
-                <input type="text" name="commit_msg" id="commit_msg" placeholder="commit msg">
+                <p>commit msg</p>
+                <input type="text" name="commit_msg" id="commit_msg">
                 <button class="btn-primary" onclick="commit_code()"> Commit Code</button>
+                <script>
+                    document.getElementById("commit_msg").value=new Date().toLocaleString();
+                </script>
             </div>
         </section>
         <section id="section_game" style="display:none">
