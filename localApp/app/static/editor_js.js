@@ -6,6 +6,9 @@ document.getElementsByTagName('head')[0].appendChild(script);
 var socket;
 var left_buff=[],right_buff=[],ball_buff=[];
 var buff_min=20,buff_normal=50;
+var record_content=[];
+var display=[];
+var replay_speed=10;
 web_port=5000
 local_port=5500
 namespace = '/local';
@@ -45,8 +48,11 @@ $(document).ready(function(){
                 
             });
     socket_local.on('gameover', function(data){ 
-        console.log("gameover")
+        console.log("gameover data.msg",data.msg.record_content)
         myPopupjs(data.msg,data.log_id);
+        record_content=data.msg.record_content
+        display=data.msg.record_content
+
     });
     socket_local.on('upload_ok', function(data){ 
         console.log("upload_ok")
@@ -69,19 +75,48 @@ $(document).ready(function(){
         }else{
             alert("This code is not available: "+data['msg'][1])
         }
-
     });
     socket_local.on('timeout', function(data){ 
         alert("timeout")
     });
-
 });
-
 
 function upload_code(){
     socket_local.emit('upload_toWeb', {msg: ""});
     document.getElementById("myPopup_dom").style.display = "none";
-    
+}
+function replay(){
+    var refreshIntervalId=setInterval(function(){
+        position=display.shift();
+        if(position == undefined){
+            console.log("clearInterval");
+            clearInterval(refreshIntervalId);
+            display_end();
+        }else{ 
+        let left = $('.left-goalkeeper')
+        let right = $('.right-goalkeeper')
+        ball_update(position[0]);
+        paddle_update(position[1],left);
+        paddle_update(position[3],right);
+        }
+    },replay_speed);
+}
+function download_log(){
+    let ball="BALL";
+    let p1="P1";
+    let p1_move="PMOVE";
+    for (var i = 0; i < record_content.length; i++) { 
+        ball +=  record_content[i][0]+"''";
+        p1 +=  record_content[i][1]+"''";
+        p1_move +=  record_content[i][2]+"''";
+    }
+    var element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(ball+"\n\n"+p1+"\n\n"+p1_move));
+    element.setAttribute('download', 'log_'+new Date());
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
 }
 function cancel(){
     document.getElementById("myPopup_dom").style.display = "none";
@@ -275,7 +310,8 @@ function myPopupjs(data_msg,log_id){
         mytable += "</tr><tr><td>" +key+ "</td>"+ "<td>" + l_data[key]+ "</td>"+"<td>" + r_data[key]+ "</td>";
     }
     
-    mytable += "</tr><tr><td></td><td><button onclick=\"upload_code()\" >upload to web</button></td><td><button onclick=\"location.reload()\" >cancel</button></td></tr></tbody></table>";
+    mytable += "</tr><tr><td></td><td><button onclick=\"upload_code()\" >upload to web</button></td><td><button onclick=\"location.reload()\" >cancel</button></td></tr>";
+    mytable += "</tr><tr><td></td><td><button onclick=\"replay()\" >replay</button></td><td><button onclick=\"download_log()\" >download_log</button></td></tr></tbody></table>";
     
     document.getElementById("myPopup_dom").style.display = "block";
     document.getElementById("myPopup_dom").innerHTML = mytable;

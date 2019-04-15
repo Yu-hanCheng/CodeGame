@@ -226,7 +226,7 @@ def handle_client_connection(client_socket):
                         if msg['who']=='P1':
                             l_report = msg['content']
                             r_report = {"user_id": "2", "score": 0, "cpu": 1.425, "mem": 0.054, "time": "554400"}
-                            send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':str(record_content)},log_id)
+                            send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
                             client_socket.close()
                             import os
                             os._exit(0)
