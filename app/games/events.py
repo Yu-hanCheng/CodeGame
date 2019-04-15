@@ -1,12 +1,13 @@
 # 處理 browser, localapp, gamemain的 socketio溝通, 目前browser 會用 namespace='/test', 其他沒用
-from flask import session,redirect, url_for,flash,request
+from flask import session,redirect, url_for,flash,request,current_app
 from flask_socketio import emit, join_room, leave_room,send
 from .. import socketio # //in CodeGame.py
 from flask_login import current_user
 from app.models import User, Game, Log, Code, Game_lib, Language, Category
 from app import db
 from websocket import create_connection
-import json,base64
+import json,base64,time
+from eventlet.green import threading
 
 @socketio.on('gamemain_connect')
 def gamemain_connect(message):
@@ -63,8 +64,13 @@ def test_connect(message):
 @socketio.on('join_room' ,namespace = '/test')
 def join_room_from_browser(message):
     join_room(message['room'])
+    app = current_app._get_current_object()  # get the real app instance
+    
+
     if int(message['status']) ==0:
         emit('enter_room',message['privacy'],namespace = '/test',room= message['room'])
+        if int(message['privacy'])==1:
+            set_interval(app,notify_browser,1,60,message['room'])
     else:
         emit('wait_room',namespace = '/test',room= message['room'])    
 
@@ -202,3 +208,20 @@ def set_language_id(filename_extension):
 def save_file(filename, file): # filename = code_id
     with open("%s.sav"%(filename), "w") as f:
         f.write(file)
+        
+def notify_browser(app,data,sendroom):
+    with app.app_context():
+        emit('countdown',data, namespace = '/test',room= sendroom)
+def set_interval(the_app,notify_browser, sec, times,sendroom):
+    
+    def func_wrapper(the_app, cntnum):
+        set_interval(the_app,notify_browser, sec,cntnum,sendroom)
+        notify_browser(the_app,cntnum,sendroom)
+    
+    if times==0:
+        return 
+    else:
+        times-=1
+    t = threading.Timer(sec, func_wrapper,[the_app,times])
+    t.start()
+    return t

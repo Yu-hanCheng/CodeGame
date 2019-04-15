@@ -12,6 +12,7 @@ var editor = ace.edit("editor");
 editor.setTheme("ace/theme/twilight");
 
 lan_mode = document.getElementById('mode');
+countdown=document.getElementById("countdown");
 
 namespace = '/test';
 socket = io.connect('http://' + document.domain + ':' + location.port+namespace );
@@ -27,9 +28,9 @@ $(document).ready(function(){
     socket.on('enter_room', function(data){
         $('#page_title').html("enter room");
         document.getElementById('section_code').style.display = "block";
-        if(data==1){
-            timeout_initial();
-        }
+        // if(data==1){
+        //     timeout_initial();
+        // }
     }); 
     socket.on('wait_room', function(data){
         $('#page_title').html("wait for others");
@@ -71,6 +72,14 @@ $(document).ready(function(){
             // $('#code_commit_msg').val(data['commit_msg'])
         }
     });
+    socket.on('countdown', function(data) {
+        console.log("countdown",data);
+        countdown.innerHTML=data;
+        if (data<1){
+            $('#page_title').html("send code");
+            select_code()
+        }
+    });
     $('#mode').on('change', function() {
         let lan_name = lan_mode.options[lan_mode.selectedIndex].text;
         
@@ -108,13 +117,14 @@ function select_code(){
 }
 var countdownnumber=30;
 var countdownid,x;
-function timeout_initial(){
-    x=document.getElementById("countdown");
-    x.style.display="block";
-    x.innerHTML=countdownnumber;
-    countdownnumber--;
-    countdownid=window.setInterval(countdownfunc,1000);
-}
+// function timeout_initial(){
+    
+    // x=document.getElementById("countdown");
+    // x.style.display="block";
+    // x.innerHTML=countdownnumber;
+    // countdownnumber--;
+    // countdownid=window.setInterval(countdownfunc,1000);
+// }
 function countdownfunc(){ 
 x.innerHTML=countdownnumber;
 if (countdownnumber<1){
