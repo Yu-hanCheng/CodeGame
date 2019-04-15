@@ -76,9 +76,9 @@ def add_room():
         if add_form.validate_on_submit():
             privacy=add_form.privacy.data
             status = add_form.players_status.data
-            if privacy == "2": # 1-public, 2-official, 3-invited
+            if privacy == 2: # 1-public, 2-official, 3-invited
                 status = 0
-            elif privacy == "3":
+            elif privacy == 3:
                 invite_players = (add_form.invitelist.data).split(',')
             log = Log(game_id=add_form.game.data,privacy=privacy,status=status)
             db.session.add(log)
