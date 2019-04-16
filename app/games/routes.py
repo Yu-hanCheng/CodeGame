@@ -179,12 +179,9 @@ def index():
     elif request.method == 'GET':
         form.name.data = session.get('name', '')
         form.room.data = session.get('room', '')
-        wait_rooms = Log.query.filter(Log.game_id>0).order_by(Log.timestamp.desc()).all()
-        gaming_room = Log.query.filter(Log.game_id==0).order_by(Log.timestamp.desc()).all()
-        # rooms = Room.query.order_by(Room.timestamp.desc()).all()
-        
-       
-    return render_template('games/index/index.html', form=form,wait_rooms=wait_rooms,gaming_room=gaming_room)
+        wait_rooms = Log.query.with_entities(Log.id,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.game_id>0).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
+    
+    return render_template('games/index/index.html', form=form,wait_rooms=wait_rooms)
 
 @bp.route('/gameover/<log_id>', methods=['GET','POST'])
 @login_required

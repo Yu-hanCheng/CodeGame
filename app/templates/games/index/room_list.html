@@ -9,7 +9,7 @@
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">RoomID</th>
-                        <th scope="col">RoomName</th>
+                        <th scope="col">GameName</th>
                         <th scope="col">目前人數</th>
                         <th scope="col">人數上限</th>
                     </tr>
@@ -20,9 +20,9 @@
                         <tr>
                             <th scope="row">1</th>
                             <td>{{ w_room.id }}</td>
-                            <td>{{ w_room.game_id }}</td>
-                            <td>online_people</td>
-                            <td>max_people</td>
+                            <td>{{ w_room.gamename }}</td>
+                            <td>{{ w_room.player_num  | int  + w_room.status | int  }}</td>
+                            <td>{{ w_room.player_num }}</td>
                             <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.wait_to_play',log_id=w_room.id ) }}'" >Enter</button></td>
                         </tr>
                     {% endfor %}
