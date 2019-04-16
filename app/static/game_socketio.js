@@ -17,7 +17,7 @@ namespace = '/test';
 socket = io.connect('http://' + document.domain + ':' + location.port+namespace );
 
 $(document).ready(function(){
-    socket.emit('join_room',  {room: $('#join_room').val(),status: $('#room_status').val()});
+    socket.emit('join_room',  {room: $('#join_room').val(),privacy: $('#room_privacy').val(),status: $('#room_status').val()});
     
     socket.on('arrived', function(data) {
         console.log("arrived:",data.msg)
@@ -27,7 +27,9 @@ $(document).ready(function(){
     socket.on('enter_room', function(data){
         $('#page_title').html("enter room");
         document.getElementById('section_code').style.display = "block";
-        timeout_initial()
+        if(data==1){
+            timeout_initial();
+        }
     }); 
     socket.on('wait_room', function(data){
         $('#page_title').html("wait for others");
@@ -103,10 +105,11 @@ function select_code(){
     }
     socket.emit('select_code', {room: $('#join_room').val(),code_id:code_selected,opponent:opponent_rank,status: $('#join_status').val()});
 }
-var countdownnumber=15;
+var countdownnumber=5;
 var countdownid,x;
 function timeout_initial(){
     x=document.getElementById("countdown");
+    x.style.display="block";
     x.innerHTML=countdownnumber;
     countdownnumber--;
     countdownid=window.setInterval(countdownfunc,1000);

@@ -64,7 +64,7 @@ def test_connect(message):
 def join_room_from_browser(message):
     join_room(message['room'])
     if int(message['status']) ==0:
-        emit('enter_room',namespace = '/test',room= message['room'])
+        emit('enter_room',message['privacy'],namespace = '/test',room= message['room'])
     else:
         emit('wait_room',namespace = '/test',room= message['room'])    
 

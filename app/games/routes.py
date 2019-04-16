@@ -85,7 +85,7 @@ def add_room():
             db.session.add(log)
             # 若是設定 privacy==friends(指定玩家), log.current_users.append((choose_form.player_list).split(','))
             db.session.commit()
-            return redirect(url_for('games.wait_to_play',log_id=log.id,privacy=str(privacy)))
+            return redirect(url_for('games.wait_to_play',log_id=log.id))
             # return redirect(url_for('games.room_wait',log_id=log.id))
         
     else:
@@ -100,7 +100,6 @@ def add_room():
 @login_required
 def wait_to_play(log_id):
     session['log_id']=log_id
-    privacy = request.args.get('privacy')
     # 檢查這個log的game有哪些可用的code, 列出語言, 有才讓 html的btn visable
     log_id = session.get('log_id', '')
     l=Log.query.filter_by(id=log_id).first()
@@ -146,7 +145,7 @@ def wait_to_play(log_id):
             else: # only invited
                 pass
     
-    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,rank_list=rank_list,all_codes=all_codes)
+    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,rank_list=rank_list,all_codes=all_codes,room_privacy=l.privacy)
 
 @bp.route('/rank_list/<int:log_id>', methods=['GET','POST'])
 @login_required
