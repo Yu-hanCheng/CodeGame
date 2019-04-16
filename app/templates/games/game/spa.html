@@ -12,7 +12,7 @@
     <div id="countdown"  style="font-size:40px" > </div> 
     <label for="mode" class="control-label">Language Mode:</label>
     <select id="mode" class="form-control">
-        <option value="code_id">"choose language"</option>
+        <option value="code_id">"choose language-code"</option>
         {% for code_id,code_msg,lan_name in all_codes %}
         <option value={{code_id}}>{{ lan_name }}-{{code_msg}}</option>
         {% endfor %}
@@ -22,7 +22,7 @@
             <label class="control-label">opponent rank:</label>
             <select id="opponent_rank" class="form-control" >
                 {% for rank in rank_list %}
-                <option value="{'username':{{rank[3]}},'code_id':{{rank[2]}}}">{{rank[3]}}-{{rank[4]}}</option>
+                <option value="{'username':'{{rank[3]}}','code_id':{{rank[2]}}}">{{rank[3]}}-{{rank[4]}}</option>
                 {% endfor %}
             </select>
         </div>

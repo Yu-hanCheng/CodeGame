@@ -130,7 +130,7 @@ def emit_code(l,code,the_user):
 # join_log(log_id,message['code'],message['commit_msg'],l.game_id,current_user.id,players)
     if type(the_user) is not int:
         opponent_id = User.query.with_entities(User.id).filter_by(username=the_user).first()
-        user_id=opponent_id
+        user_id=opponent_id[0]
     else:
         user_id=the_user
     ml_file=""

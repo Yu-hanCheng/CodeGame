@@ -48,10 +48,8 @@ $(document).ready(function(){
         let right = $('.right-goalkeeper')
         paddle_update(data['msg'][1], left);
         paddle_update(data['msg'][2], right);
-
         ball_update(data.msg[0]);
         score_update(data.msg[3]);
-        
     });
 
     socket.on('chat_message_broadcast', function(data) {
@@ -105,13 +103,13 @@ function select_code(){
     }
     socket.emit('select_code', {room: $('#join_room').val(),code_id:code_selected,opponent:opponent_rank,status: $('#join_status').val()});
 }
-var countdownnumber=10;
+var countdownnumber=15;
 var countdownid,x;
 function timeout_initial(){
     x=document.getElementById("countdown");
     x.innerHTML=countdownnumber;
     countdownnumber--;
-    countdownid=window.setInterval(countdownfunc,500);
+    countdownid=window.setInterval(countdownfunc,1000);
 }
 function countdownfunc(){ 
 x.innerHTML=countdownnumber;
