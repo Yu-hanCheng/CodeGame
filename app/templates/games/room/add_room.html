@@ -15,7 +15,7 @@
         http_send_toweb('get_g_player_num',game_id,function(responseText) {
             // show on add_form: log.status
             console.log("get_g_player_num callback")
-            document.getElementById('players_status').value = responseText;
+            document.getElementById('player_num').value = responseText;
         });
     })
     // $('select#privacy').change(function(event) {

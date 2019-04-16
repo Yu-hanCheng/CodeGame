@@ -42,7 +42,8 @@ class AddRoomForm(FlaskForm):
 	game =  SelectField('Game',coerce=int,choices=[])
 	user_id = HiddenField('User id', default=current_user)
 	privacy =  SelectField('privacy',coerce=int,choices=[])
-	players_status = IntegerField('players_status')
+	player_num  = IntegerField('player_num')#game.player_num
+	
 	submit = SubmitField('Enter Gameroom')
 
 

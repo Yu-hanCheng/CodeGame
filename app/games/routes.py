@@ -75,7 +75,8 @@ def add_room():
         add_form.privacy.choices = Privacy.query.with_entities(Privacy.id,Privacy.privacy_name).all()
         if add_form.validate_on_submit():
             privacy=add_form.privacy.data
-            status = add_form.players_status.data
+            player_num = add_form.player_num.data
+            status = 0-player_num
             if privacy == 2: # 1-public, 2-official, 3-invited
                 status = 0
             elif privacy == 3:
@@ -123,7 +124,7 @@ def wait_to_play(log_id):
         if have_code:
             l= Log.query.filter_by(id=log_id).first()
 
-            players = l.current_users
+            current_users = l.current_users
 
             if l.privacy is 1: # public,可以
                 rank_list=""
@@ -132,7 +133,7 @@ def wait_to_play(log_id):
                     return redirect(url_for('games.index'))
                 else: # room還沒滿,可以進來參賽(新增 player_in_log data, update user的 current_log) # if s is not (0 or 1) :
                     in_list=False
-                    for i,player in enumerate(players):
+                    for i,player in enumerate(current_users):
                         if player == current_user.id:
                             print("already in")
                             in_list=True
@@ -196,10 +197,9 @@ def gameover(log_id):
     return render_template('games/index.html', title='Register')
 
 def join_log(l):
-    game= Game.query.with_entities(Game.player_num,Game.category_id).filter_by(id=l.game_id).first()
     l.current_users.append(current_user) #current_users為該局的玩家名單
     current_users_len = len(l.current_users)
-    l.status = int(game.player_num) - current_users_len
+    l.status +=1
     current_user.current_log_id = l.id
 
     try:
