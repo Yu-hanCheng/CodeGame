@@ -17,6 +17,7 @@
         <option value={{code_id}}>{{ lan_name }}-{{code_msg}}</option>
         {% endfor %}
     </select>
+    <button onclick="select_code()">submit</button>
     {% if rank_list!="" %}
         <div id="opponent">
             <label class="control-label">opponent rank:</label>

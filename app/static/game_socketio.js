@@ -92,6 +92,7 @@ $(document).ready(function(){
 });
 
 function select_code(){
+    $('#page_title').html("send code");
     var code_selected=lan_mode.value;
     if(lan_mode.value=="code_id"){
         code_selected=lan_mode.options[1].value;
@@ -105,7 +106,7 @@ function select_code(){
     }
     socket.emit('select_code', {room: $('#join_room').val(),code_id:code_selected,opponent:opponent_rank,status: $('#join_status').val()});
 }
-var countdownnumber=5;
+var countdownnumber=30;
 var countdownid,x;
 function timeout_initial(){
     x=document.getElementById("countdown");
@@ -118,7 +119,6 @@ function countdownfunc(){
 x.innerHTML=countdownnumber;
 if (countdownnumber<1){
     clearInterval(countdownid);
-    $('#page_title').html("send code");
     select_code()
 }
 countdownnumber--;
