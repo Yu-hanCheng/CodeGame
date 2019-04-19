@@ -138,9 +138,10 @@ def wait_to_play(log_id):
                             in_list=True
                             break
                     if not in_list:
-                        join_log(l)
+                        join_log(l,l.privacy)
                     
             elif l.privacy == 2: # official
+                join_log(l,l.privacy)
                 rank_list=l.get_rank_list()
             else: # only invited
                 pass
@@ -192,11 +193,18 @@ def gameover(log_id):
     print(Log.get_rank_list(Log,str(log[0])))# log[1]=game_id
     return render_template('games/index.html', title='Register')
 
-def join_log(l):
+@bp.route('/leave_room', methods=['GET','POST'])
+@login_required
+def leave_room():
+    print("leave room:",request.data)
+    return render_template('games/index.html', title='Register')
+
+def join_log(l,privacy_info):
     l.current_users.append(current_user) #current_users為該局的玩家名單
     current_users_len = len(l.current_users)
-    l.status +=1
     current_user.current_log_id = l.id
+    if privacy_info==1:
+        l.status +=1
 
     try:
         db.session.commit()
