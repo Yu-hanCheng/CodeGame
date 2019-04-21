@@ -27,12 +27,13 @@ $(document).ready(function(){
     });
     socket.on('enter_room', function(data){
         $('#page_title').html("enter room");
-        document.getElementById('section_code').style.display = "block";
+        document.getElementById('btn_select_code').style.display = "block";
         // if(data==1){
         //     timeout_initial();
         // }
     }); 
     socket.on('wait_room', function(data){
+        document.getElementById('btn_select_code').style.display = "none";
         $('#page_title').html("wait for others");
     }); 
     socket.on('connect_start', function(data){
@@ -154,11 +155,8 @@ function myPopupjs(data_msg,log_id){
 }
 function left_room(){
     // socket.emit('left',{room: $('#join_room').val()});
-    socket.emit('left', {room: $('#join_room').val()}, function() {
-        socket.disconnect();
-        // go back to the login page
-        window.location.href = "../leftroom";
-    });
+    socket.disconnect();
+    window.location.href = "../leftroom";
 }
 function ball_update(position){
     var width = $(".ball").outerWidth();

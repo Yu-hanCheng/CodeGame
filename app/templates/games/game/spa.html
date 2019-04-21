@@ -52,7 +52,7 @@
 
     
 </section>
-<section id="section_code" style="display:none">
+<section id="section_code">
     <div id="countdown"  style="font-size:40px ;display:none" > </div> 
     <label for="mode" class="control-label">Language Mode:</label>
     <select id="mode" class="form-control">
@@ -61,7 +61,7 @@
         <option value={{code_id}}>{{ lan_name }}-{{code_msg}}</option>
         {% endfor %}
     </select>
-    <button onclick="select_code()">submit</button>
+    <button id="btn_select_code" onclick="select_code()" style="display:none">submit</button>
     {% if rank_list!="" %}
         <div id="opponent">
             <label class="control-label">opponent rank:</label>

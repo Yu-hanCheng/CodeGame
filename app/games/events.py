@@ -63,7 +63,6 @@ def test_connect(message):
 
 @socketio.on('join_room' ,namespace = '/test')
 def join_room_from_browser(message):
-    print("message",message)
     join_room(message['room'])
     app = current_app._get_current_object()  # get the real app instance
     
@@ -120,7 +119,6 @@ def upload_code(message):
     finally:
         pass
 # -- 0122/2019
-@socketio.on('left',namespace = '/test' )
 def left(message):
     """Sent by clients when they leave a room.
     A status message is broadcast to all people in the room."""
@@ -128,11 +126,12 @@ def left(message):
     g=Game.query.filter_by(id=l.game_id).first()
     l.status -=1
     l.current_users.remove(current_user)
-    leave_room(message['room'])
+    leave_room(str(message['room']))
     if l.status+g.player_num == 0:
         db.session.delete(l)
+    else:
+        emit('wait_room',namespace = '/test',room= str(message['room']))
     db.session.commit()
-    print("left")
     
 @socketio.on('chat_message' ,namespace = '/test')
 def chat_message(message):
@@ -202,6 +201,9 @@ def check_user(message):
         emit('checked_user',{'checked':True,'user_id':user.id}, room=sid)
         print("ok user")
 
+@socketio.on('disconnect')
+def test_disconnect():
+    left({'room':session['log_id']})
 
 def set_language_id(filename_extension):
     compiler = {

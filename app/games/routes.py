@@ -204,7 +204,7 @@ def join_log(l,privacy_info):
 
     try:
         db.session.commit()
-        print('update log status successfully')
+        print('update log status successfully',l.current_users)
     except Exception as e:
         db.session.rollback()
         print('update log error:',e)
