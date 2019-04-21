@@ -116,12 +116,10 @@ def wait_to_play(log_id):
             flash(all_lan,'test')
             have_code=True
         else:
-            flash("you need to upload code from the local app first",'test')
-            return redirect(url_for('games.index'))
+            return redirect(url_for('games.index',msg="you need to upload code from the local app first"))
     except Exception as e:
         print('error:',e)
-
-        return redirect(url_for('games.index'))
+        return redirect(url_for('games.index',msg="error:"+e))
     finally:
         if have_code:
             l= Log.query.filter_by(id=log_id).first()
@@ -132,7 +130,7 @@ def wait_to_play(log_id):
                 rank_list=""
                 if l.status is 0 : 
                     print("sorry room is full, can't join game")
-                    return redirect(url_for('games.index'))
+                    return redirect(url_for('games.index',msg="sorry room is full, can't join game"))
                 else: # room還沒滿,可以進來參賽(新增 player_in_log data, update user的 current_log) # if s is not (0 or 1) :
                     in_list=False
                     for i,player in enumerate(current_users):
@@ -167,12 +165,12 @@ def display_record(log_id):
     return render_template('games/game/display.html', title='display',content=record_content['record_content'],func_type=func_type,log_id=log_id)
 
 
-@bp.route('/', methods=['GET', 'POST'])
-def index():
+@bp.route('/<string:msg>', methods=['GET', 'POST'])
+def index(msg):
     # 主畫面會有很多tab(News, NewsGame, HotGames,Discuss, Rooms)
     """Login form to enter a room."""
-    
     form = LoginForm()
+    flash(msg)
     if form.validate_on_submit():
         # 進入觀賽
         session['name'] = form.name.data

@@ -14,7 +14,13 @@
             <button class="tablinks" onclick="openTab(event, 'Discuss')">Discuss</button>
             <button class="tablinks" onclick="openTab(event, 'Rooms')">Rooms</button>
         </div>
-        
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-info" role="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
         
         <div id="News" class="tabcontent">
                 {% include '/games/index/news.html' %}

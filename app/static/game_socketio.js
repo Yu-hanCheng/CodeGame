@@ -157,7 +157,7 @@ function left_room(){
     socket.emit('left', {room: $('#join_room').val()}, function() {
         socket.disconnect();
         // go back to the login page
-        window.location.href = "..";
+        window.location.href = "../leftroom";
     });
 }
 function ball_update(position){
