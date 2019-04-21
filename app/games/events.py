@@ -63,6 +63,7 @@ def test_connect(message):
 
 @socketio.on('join_room' ,namespace = '/test')
 def join_room_from_browser(message):
+    print("message",message)
     join_room(message['room'])
     app = current_app._get_current_object()  # get the real app instance
     
@@ -123,10 +124,16 @@ def upload_code(message):
 def left(message):
     """Sent by clients when they leave a room.
     A status message is broadcast to all people in the room."""
-    room = session.get('room')
-    leave_room(room)
-    emit('status', {'msg': session.get('name') + ' has left the room.'}, room=room)
-
+    l=Log.query.filter_by(id=message['room']).first()
+    g=Game.query.filter_by(id=l.game_id).first()
+    l.status -=1
+    l.current_users.remove(current_user)
+    leave_room(message['room'])
+    if l.status+g.player_num == 0:
+        db.session.delete(l)
+    db.session.commit()
+    print("left")
+    
 @socketio.on('chat_message' ,namespace = '/test')
 def chat_message(message):
     room = session.get('log_id')
@@ -211,7 +218,7 @@ def save_file(filename, file): # filename = code_id
         
 def notify_browser(app,data,sendroom):
     with app.app_context():
-        emit('countdown',data, namespace = '/test',room= sendroom)
+        emit('countdown',data+1, namespace = '/test',room= sendroom)
 def set_interval(the_app,notify_browser, sec, times,sendroom):
     
     def func_wrapper(the_app, cntnum):

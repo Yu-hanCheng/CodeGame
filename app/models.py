@@ -305,7 +305,7 @@ class Game(db.Model):
 
 
     # level = db.Column(db.String(1024))
-    player_num = db.Column(db.String(1024))
+    player_num = db.Column(db.Integer)
     rules = db.Column(db.String(1024))
     # language = db.Column(db.String(1024))
     # game_file = db.Column(db.String(1024))# with pygame

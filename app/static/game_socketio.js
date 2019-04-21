@@ -152,12 +152,12 @@ function myPopupjs(data_msg,log_id){
     document.getElementById("myPopup_dom").innerHTML = mytable;
 
 }
-function leave_room() {
-    socket.emit('left', {}, function() {
+function left_room(){
+    // socket.emit('left',{room: $('#join_room').val()});
+    socket.emit('left', {room: $('#join_room').val()}, function() {
         socket.disconnect();
-
         // go back to the login page
-        window.location.href = "{{ url_for('games.index') }}";
+        window.location.href = "..";
     });
 }
 function ball_update(position){

@@ -56,7 +56,10 @@ def get_g_player_num():
     if request.method == 'POST':
         if "text/plain" in request.headers['Content-Type']:
             game_player_num = Game.query.with_entities(Game.player_num).filter_by(id=int(request.data)).first()
-            return game_player_num[0]
+            if len(game_player_num)>0:
+                return str(game_player_num[0])
+            else:
+                return ""
 @bp.route('/add_room', methods=['GET','POST'])
 @login_required
 def add_room():
@@ -168,7 +171,7 @@ def display_record(log_id):
 def index():
     # 主畫面會有很多tab(News, NewsGame, HotGames,Discuss, Rooms)
     """Login form to enter a room."""
-
+    
     form = LoginForm()
     if form.validate_on_submit():
         # 進入觀賽
@@ -191,13 +194,8 @@ def gameover(log_id):
     # record display in many jpeg 為學習影像處理存擋, 也用來做回顧播放
     log=Log.query.with_entities(Log.game_id).filter_by(id=log_id).first()
     print(Log.get_rank_list(Log,str(log[0])))# log[1]=game_id
-    return render_template('games/index.html', title='Register')
+    return render_template('games/index/index.html', title='Register')
 
-@bp.route('/leave_room', methods=['GET','POST'])
-@login_required
-def leave_room():
-    print("leave room:",request.data)
-    return render_template('games/index.html', title='Register')
 
 def join_log(l,privacy_info):
     l.current_users.append(current_user) #current_users為該局的玩家名單
