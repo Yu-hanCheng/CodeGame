@@ -69,7 +69,7 @@
             p2_move +=  display_content[i][4]+"''";
         }
         var element = document.createElement('a');
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(ball+"\n\n"+p1+"\n\n"+p1_move));
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(ball+"\n\n"+p1+"\n\n"+p1_move+"\n\n"+p2+"\n\n"+p2_move));
         element.setAttribute('download', 'log_'+{{log_id}});
         element.style.display = 'none';
         document.body.appendChild(element);

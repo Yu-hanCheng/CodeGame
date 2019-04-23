@@ -31,7 +31,7 @@ body {
 }
 .goalkeeper {
 	width: 20px;
-	height: 30%;
+	height:133px;
 	position: relative;
 	background: red;
 	border: 1px solid rgba(0, 0, 0, 0.5);
