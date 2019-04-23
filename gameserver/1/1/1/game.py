@@ -30,12 +30,14 @@ start=0
 WIDTH = 800
 HEIGHT = 400
 BALL_RADIUS = 20
-PAD_WIDTH = 8
+PAD_WIDTH = 20
 PAD_HEIGHT = math.ceil(HEIGHT/3)
 HALF_PAD_WIDTH = PAD_WIDTH // 2
 HALF_PAD_HEIGHT = PAD_HEIGHT // 2
+PAD_END = HEIGHT - HALF_PAD_HEIGHT
 paddle1 = [HALF_PAD_WIDTH - 1, HEIGHT // 2]
 paddle2 = [WIDTH + 1 - HALF_PAD_WIDTH, HEIGHT //2]
+
 ball = [0, 0]
 ball_vel = [0, 0]
 record_content=[]
@@ -142,52 +144,55 @@ def play():
     try:
         global paddle1, paddle2,paddle1_move,paddle2_move, ball, ball_vel, l_score, r_score, cnt
         global barrier,start,endgame
-
-        if paddle1[1] > HALF_PAD_HEIGHT and paddle1[1] < HEIGHT - HALF_PAD_HEIGHT:
-            paddle1[1] += paddle1_move
-        elif paddle1[1] <= HALF_PAD_HEIGHT and paddle1_move > 0:
-            paddle1[1] = HALF_PAD_HEIGHT
-            paddle1[1] += paddle1_move
-        elif paddle1[1] >= HEIGHT - HALF_PAD_HEIGHT and paddle1_move < 0:
-            paddle1[1] = HEIGHT - HALF_PAD_HEIGHT
-            paddle1[1] += paddle1_move
-        else:
-            pass
-
-        if paddle2[1] > HALF_PAD_HEIGHT and paddle2[1] < HEIGHT - HALF_PAD_HEIGHT:
-            paddle2[1] += paddle2_move
-            # print('p2 normal')
-        elif paddle2[1] <= HALF_PAD_HEIGHT and paddle2_move > 0:
-            paddle2[1] = HALF_PAD_HEIGHT
-            paddle2[1] += paddle2_move
-            # print('p2 top')
-        elif paddle2[1] >= HEIGHT - HALF_PAD_HEIGHT and paddle2_move < 0:
-            paddle2[1] =HEIGHT- HALF_PAD_HEIGHT
-            paddle2[1] += paddle2_move
-            # print('p2 bottom')
-        else:
-            pass
-        # print('paddle:(%d,%d,%d)'%(paddle1[1],paddle2[1],ball[0]))
-
+        
+        def y_axis(the_paddle,the_move):
+            if the_paddle > HALF_PAD_HEIGHT and the_paddle < PAD_END:
+                
+                if the_paddle + the_move > PAD_END:
+                    the_paddle = PAD_END
+                elif the_paddle + the_move < HALF_PAD_HEIGHT:
+                    the_paddle = HALF_PAD_HEIGHT
+                else:
+                    the_paddle += the_move
+            elif the_paddle <= HALF_PAD_HEIGHT and the_move > 0:
+                the_paddle = HALF_PAD_HEIGHT
+                the_paddle += the_move
+            elif the_paddle >= PAD_END and the_move < 0:
+                the_paddle = PAD_END
+                the_paddle += the_move
+            else:
+                pass
+            return the_paddle
+        paddle2[1] = y_axis(copy.deepcopy(paddle2[1]),paddle2_move)    
+        paddle1[1] = y_axis(copy.deepcopy(paddle1[1]),paddle1_move)
+        print("paddle:",paddle1,paddle2)
+        
+        
         ball[0] += int(ball_vel[0])
         ball[1] += int(ball_vel[1])
 
-
+        # 上下邊界反彈
         if int(ball[1]) <= BALL_RADIUS:
             ball_vel[1] = - ball_vel[1]
-        if int(ball[1]) >= HEIGHT + 1 - BALL_RADIUS:
+        elif int(ball[1]) >= HEIGHT - BALL_RADIUS:
             ball_vel[1] = - ball_vel[1]
 
 
         if int(ball[0]) <= BALL_RADIUS + PAD_WIDTH and int(ball[1]) in range(paddle1[1] - HALF_PAD_HEIGHT,
                                                                                      paddle1[1] + HALF_PAD_HEIGHT, 1):
             ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.5
-            ball_vel[1] *= 1.5
-        elif int(ball[0]) <= BALL_RADIUS + PAD_WIDTH:
+            ball_vel[0] *= 1.2
+            ball_vel[1] *= 1.2
+        elif int(ball[0]) <= BALL_RADIUS + PAD_WIDTH and int(ball[0]) > PAD_WIDTH \
+        and ( (int(ball[1]) > (paddle1[1] - HALF_PAD_HEIGHT - BALL_RADIUS//2)) or (int(ball[1]) < (paddle1[1] + HALF_PAD_HEIGHT + BALL_RADIUS//2))):
+            ball_vel[0] = -ball_vel[0]
+            ball_vel[0] *= 1.2
+            ball_vel[1] *= 1.2                                                                   
+        elif int(ball[0]) <= BALL_RADIUS:
             r_score += 1
+            ball[0] = BALL_RADIUS
             print('r_score ',r_score)
-            
+            after_play('onP1')
             if r_score < 1:
                 send_to_Players('get_score')
                 ball_init(True)
@@ -201,12 +206,18 @@ def play():
         if int(ball[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH and int(ball[1]) in range(
                 paddle2[1] - HALF_PAD_HEIGHT, paddle2[1] + HALF_PAD_HEIGHT, 1):
             ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.5
-            ball_vel[1] *= 1.5
-        elif int(ball[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH:
+            ball_vel[0] *= 1.2
+            ball_vel[1] *= 1.2
+        elif int(ball[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH  and int(ball[0]) < WIDTH - PAD_WIDTH \
+        and ( (int(ball[1]) > (paddle1[1] - HALF_PAD_HEIGHT - BALL_RADIUS//2)) or (int(ball[1]) < (paddle1[1] + HALF_PAD_HEIGHT + BALL_RADIUS//2))):
+            ball_vel[0] = -ball_vel[0]
+            ball_vel[0] *= 1.2
+            ball_vel[1] *= 1.2   
+        elif int(ball[0]) >= WIDTH + 1 - BALL_RADIUS:
             l_score += 1
+            ball[0]=WIDTH + 1 - BALL_RADIUS
             print('l_score ',l_score)
-            
+            after_play('onP2')
             if l_score < 1:
                 ball_init(False)
                 
@@ -219,9 +230,9 @@ def play():
                 ball_init(True)
         else:
             pass
-    except(RuntimeError, TypeError, NameError):
+    except(RuntimeError, TypeError, NameError) as e:
         # raise SystemExit
-        print('play except')
+        print('play except',e)
         return
     
 def game(where):
