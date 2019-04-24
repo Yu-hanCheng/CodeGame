@@ -122,12 +122,13 @@ def upload_code(message):
 def left(message):
     """Sent by clients when they leave a room.
     A status message is broadcast to all people in the room."""
-    l=Log.query.filter_by(id=message['room']).first()
+    print("left log:",type(message['room']),message['room'])
+    l=Log.query.filter_by(id=int(message['room'])).first()
     g=Game.query.filter_by(id=l.game_id).first()
     l.status -=1
     l.current_users.remove(current_user)
     leave_room(str(message['room']))
-    if l.status+g.player_num == 0:
+    if l.status+g.player_num == 0 and not l.winner_id:
         db.session.delete(l)
     else:
         emit('wait_room',namespace = '/test',room= str(message['room']))
@@ -203,7 +204,12 @@ def check_user(message):
 
 @socketio.on('disconnect')
 def test_disconnect():
-    left({'room':session['log_id']})
+    log_id = session.get('log_id', '')
+
+    if log_id:
+        left({'room':log_id})
+    else:
+        print("log_id is ''")
 
 def set_language_id(filename_extension):
     compiler = {
