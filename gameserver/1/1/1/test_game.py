@@ -199,7 +199,7 @@ def handle_client_connection(client_socket):
                     break
                 else:
                     msg = json.loads(request.decode())
-
+                    
                     if msg['type']=='info':
                         print('info paddle_vel',msg['who'],msg['content'])#paddle_vel
                         if msg['who']=='P1':

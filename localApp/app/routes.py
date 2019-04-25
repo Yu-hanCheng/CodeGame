@@ -202,7 +202,7 @@ def append_lib(save_path,filename,file_end):
         elif lan=="2":
             f.write("\nwho='P1'\n")
 
-        with open(save_path+"lib"+file_end) as fin: 
+        with open(save_path+"test_lib"+file_end) as fin: 
             lines = fin.readlines() 
             for i, line in enumerate(lines):
                 if i >= 0 and i < 6800:
