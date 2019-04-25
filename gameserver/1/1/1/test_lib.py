@@ -89,6 +89,8 @@ def on_gameinfo(message):
     elif cnt ==2:
         ball_pos[1] = json_loads_res['ball']
     run()
+    if type(paddle_vel)!= int: 
+        raise TypeError("paddle_vel must be a integer")
     send_togame('info',paddle_vel)
 
 def send_togame(type_class,content):
