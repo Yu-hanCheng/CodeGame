@@ -35,6 +35,7 @@ PAD_HEIGHT = math.ceil(HEIGHT/3)
 HALF_PAD_WIDTH = PAD_WIDTH // 2
 HALF_PAD_HEIGHT = PAD_HEIGHT // 2
 PAD_END = HEIGHT - HALF_PAD_HEIGHT
+PAD_CATCH = HALF_PAD_HEIGHT + BALL_RADIUS//2
 paddle1 = [HALF_PAD_WIDTH - 1, HEIGHT // 2]
 paddle2 = [WIDTH + 1 - HALF_PAD_WIDTH, HEIGHT //2]
 
@@ -177,17 +178,15 @@ def play():
         elif int(ball[1]) >= HEIGHT - BALL_RADIUS:
             ball_vel[1] = - ball_vel[1]
 
-
-        if int(ball[0]) <= BALL_RADIUS + PAD_WIDTH and int(ball[1]) in range(paddle1[1] - HALF_PAD_HEIGHT,
-                                                                                     paddle1[1] + HALF_PAD_HEIGHT, 1):
+        # left normal catch
+        if int(ball[0]) <= BALL_RADIUS + PAD_WIDTH and int(ball[1]) in range(paddle1[1] - PAD_CATCH,
+                                                                                       paddle1[1] + PAD_CATCH, 1):
+            if int(ball[0]) < PAD_WIDTH :
+                ball[0] = BALL_RADIUS*2 + PAD_WIDTH
             ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.2
-            ball_vel[1] *= 1.2
-        elif int(ball[0]) <= BALL_RADIUS + PAD_WIDTH and int(ball[0]) > PAD_WIDTH \
-        and ( (int(ball[1]) > (paddle1[1] - HALF_PAD_HEIGHT - BALL_RADIUS//2)) or (int(ball[1]) < (paddle1[1] + HALF_PAD_HEIGHT + BALL_RADIUS//2))):
-            ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.2
-            ball_vel[1] *= 1.2                                                                   
+            ball_vel[0] *= 1.1
+            ball_vel[1] *= 1.1      
+        # left no catch                                                             
         elif int(ball[0]) <= BALL_RADIUS:
             r_score += 1
             ball[0] = BALL_RADIUS
@@ -202,17 +201,15 @@ def play():
                 ball_init(False)
                 start=0
                 endgame=1
-
+        # right normal catch
         if int(ball[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH and int(ball[1]) in range(
-                paddle2[1] - HALF_PAD_HEIGHT, paddle2[1] + HALF_PAD_HEIGHT, 1):
+                paddle2[1] - PAD_CATCH, paddle2[1] + PAD_CATCH, 1):
+            if int(ball[0]) > WIDTH - PAD_WIDTH :
+                ball[0] = BALL_RADIUS*2 + PAD_WIDTH
+            ball[0] = WIDTH - BALL_RADIUS*2 -1
             ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.2
-            ball_vel[1] *= 1.2
-        elif int(ball[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH  and int(ball[0]) < WIDTH - PAD_WIDTH \
-        and ( (int(ball[1]) > (paddle1[1] - HALF_PAD_HEIGHT - BALL_RADIUS//2)) or (int(ball[1]) < (paddle1[1] + HALF_PAD_HEIGHT + BALL_RADIUS//2))):
-            ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.2
-            ball_vel[1] *= 1.2   
+            ball_vel[0] *= 1.1
+            ball_vel[1] *= 1.1
         elif int(ball[0]) >= WIDTH + 1 - BALL_RADIUS:
             l_score += 1
             ball[0]=WIDTH + 1 - BALL_RADIUS
@@ -404,7 +401,7 @@ def handle_client_connection(client_socket):
 
                 
             else:
-                time.sleep(0.5)
+                time.sleep(0.2)
                 lock.release()
     elif lib_lan==0:#python
         while True:
@@ -484,7 +481,7 @@ def handle_client_connection(client_socket):
 
                 
             else:
-                time.sleep(0.5)
+                time.sleep(0.2)
                 lock.release()
                 
 def gameover(msg_type,l_report,r_report,record_content,log_id):
@@ -511,7 +508,7 @@ def gameover(msg_type,l_report,r_report,record_content,log_id):
 def timeout_check():
     global p1_rt, p2_rt,barrier, paddle1_move, paddle2_move, start,playerlist,p1_timeout,p2_timeout
     
-    timeout=0.5
+    timeout=0.7
     if start==1:
         try:
             if barrier[0]==0:
