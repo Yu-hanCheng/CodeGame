@@ -67,13 +67,13 @@ def index():
     return render_template('index.html', title='Home',glist=g_list,user_id=session['user_id'])
 
 @app.route('/library',methods=['GET','POST'])
-@login_required
 def library():
     
     savepath = request.form.get('path',False)
     file_end = request.form.get('end',False) 
-    save_code(savepath,"test_game",'.py',request.form.get('test_game',False))
-    save_code(savepath,"lib",file_end,request.form.get('lib',False))
+    save_code(savepath,"test_game",'.py',request.form.get('test_game',False),"")
+    save_code(savepath,"test_lib",file_end,request.form.get('test_lib',False),"")
+    
     return "set library ok"
 
 
@@ -251,6 +251,7 @@ def save_code(save_path,filename,file_end,code,have_M):
     except Exception as e:
         print('mkdir error:',e)
     decode = base64.b64decode(code)
+    print("decode:",decode)
     try:
         with open("%s%s%s"%(save_path,filename,file_end), "wb") as f:
             if have_M!="":

@@ -25,10 +25,11 @@ $(document).ready(function(){
     socket.on('library', function(data) {
         //Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension)
                 var FD  = new FormData();
-
+                let lib = String.fromCharCode.apply(null,  new Uint8Array(data[2]))
+                console.log("lib:",lib)
                 FD.append("path", data[0]);
                 FD.append("end", data[1]);
-                FD.append("lib", String.fromCharCode.apply(null,  new Uint8Array(data[2])));
+                FD.append("test_lib", lib);
                 FD.append("test_game", String.fromCharCode.apply(null,  new Uint8Array(data[3])));
 
                 document.getElementById('section_code').style.display="block";
