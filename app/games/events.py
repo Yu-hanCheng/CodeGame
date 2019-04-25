@@ -178,8 +178,7 @@ def get_lib(msg):
     path = "%s/%s/%s/"%(msg['category_id'],msg['game_id'],msg['language_id'])
     end = msg['filename_extension']
     global library,gamemain
-    print("path:",path,end)
-    with open("gameserver/%slib%s"%(path,end), "r") as f:
+    with open("gameserver/%stest_lib%s"%(path,end), "r") as f:
         library = base64.b64encode(bytes(f.read(), 'utf8'))
     with open("gameserver/%stest_game.py"%(path), "r") as f_game:
         gamemain = base64.b64encode(bytes(f_game.read(), 'utf8'))
