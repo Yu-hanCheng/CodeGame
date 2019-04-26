@@ -90,6 +90,7 @@ def on_gameinfo(message):
         ball_pos[1] = json_loads_res['ball']
     run()
     if type(paddle_vel)!= int: 
+        sys.stderr.write("paddle_vel must be a integer")
         raise TypeError("paddle_vel must be a integer")
     send_togame('info',paddle_vel)
 
@@ -182,7 +183,7 @@ while cnt>0:
                 pass
         except(RuntimeError, TypeError, NameError) as e:
             print('e:',e)
-            print("except data:",str_data)
+            os._exit(1)
     cnt-=1
 
 msg_leave={'type':'disconnect','who':who,'content':'0'} 
