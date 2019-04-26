@@ -11,12 +11,14 @@ body {
 } */
 
 .playground {
-	width: 800px;
-	height:400px;
-	position: absolute;
+	width: 100%;
+	height: 100%;
+	max-width: 800px;
+	max-height:400px;
+	/* position: absolute; */
 	left: 50%;
 	background: black;
-	margin-left: -400px;
+	/* margin-left: -400px; */
 	text-align: center;
 }
 .ball {
