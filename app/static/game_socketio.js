@@ -99,6 +99,11 @@ $(document).ready(function(){
             socket.emit('chat_message', text);
         }
     });
+    window.addEventListener('resize', evt => {
+        scaling_ratio=$(".playground").width()/800;
+        $(".playground").height(400 * scaling_ratio);
+        // 球要在這邊設長寬
+    });
 });
 
 function select_code(){
