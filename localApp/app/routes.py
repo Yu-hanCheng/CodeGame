@@ -215,23 +215,25 @@ def test_code(compiler,save_path,filename,file_end):
     append_lib(save_path,filename,file_end)
     
     try: 
-        p_gamemain = Popen('python '+save_path+'test_game.py'+' 5501',shell=True, stdout=PIPE, stderr=PIPE)
+        p_gamemain = Popen('python '+save_path+'test_game.py'+' 5501',shell=True, stdout=PIPE, stderr=PIPE,close_fds=True)
         
         time.sleep(2)
         if file_end=='.c':
-            p = Popen(compiler + ' '+save_path + 'test_usercode'+file_end,shell=True, stdout=PIPE, stderr=PIPE)
+            p = Popen(compiler + ' '+save_path + 'test_usercode'+file_end,shell=True, stdout=PIPE, stderr=PIPE,close_fds=True)
             stdout, stderr = p.communicate()
         elif file_end=='.py':
-            p = Popen(compiler + ' '+save_path + 'test_usercode'+file_end+' 0.0.0.0 8800 1',shell=True, stdout=PIPE, stderr=PIPE)
+            p = Popen(compiler + ' '+save_path + 'test_usercode'+file_end+' 0.0.0.0 8800 1',shell=True, stdout=PIPE, stderr=PIPE,close_fds=True)
             stdout, stderr = p.communicate()
         if stderr:
-            print('stderr:', stderr)
+            print('stderr:', p.returncode,stderr)
             p_gamemain.kill()
             p.kill()
             flash("oops, there is an error--",stderr)
             return [0,stderr]
         else:
-            print('stdout:', stdout)
+            print("p.returncode",p.returncode)
+            if p.returncode ==1:
+                return [0,"type of paddle is not int"]
             p_gamemain.kill()
             p.kill()
             flash("great, execuse successfully:",stdout)
@@ -251,7 +253,6 @@ def save_code(save_path,filename,file_end,code,have_M):
     except Exception as e:
         print('mkdir error:',e)
     decode = base64.b64decode(code)
-    print("decode:",decode)
     try:
         with open("%s%s%s"%(save_path,filename,file_end), "wb") as f:
             if have_M!="":
