@@ -9,80 +9,74 @@
 
 <h1 id="page_title">room wait</h1>
 <button onclick="left_room()">leave room</button>
-<section id="section_game" style="display:none">
-    <div class="scores">            
-            <div class="left-score">
-                <div><h1 id="map_left_user"> P1 username</h1></div>
-                <div>
-                    <span>0</span>
+
+<div class="popup"id="myPopup_dom" >
+</div>
+            
+
+<main class="main_container">
+    <div class ="play_space">
+        <h2> game_playground </h2>
+        <div class="players">
+                <div class="player">
+                    <div id="map_left_user"> P1 username</div>
+                    <div class="p_score left-score">
+                        <div><span>0</span></div>
+                    </div>
+                </div>
+                <span>vs</span>
+                <div class="player">
+                    <div id="map_right_user"> P2 username</div>
+                    <div class="p_score right-score">
+                        <div><span>0</span></div>
+                    </div>
                 </div>
             </div>
-            <div class="right-score">
-                <div><h1 id="map_right_user">P2 username</h1></div>
-                <div>
-                    <span>0</span>
-                </div>
-            </div>
-    </div>
-    <div class="popup"id="myPopup_dom" >
-    </div>
-    <div class="row">
-        <div>
+        <div class="playground">
+            <div class="ball"></div>
+            <div class = "left-goalkeeper goalkeeper"></div>
+            <div class = "right-goalkeeper goalkeeper"></div>
         </div>
-        <div class="container" id="game_playground"  width="600" height="800" >
-            <h2> game_playground </h2>
-            <div id="game_display">
-                <div class="row" style="height:500px">
-                    <div class="col-md-10">
-                        <div class =playground>
-                        <div class="ball"></div>
-                        <div class = "left-goalkeeper goalkeeper"></div>
-                        <div class = "right-goalkeeper goalkeeper"></div>
-                        </div>
-                    </div>
-                
-                    <div class="col-md-2">
-                        <textarea id="chat" class="col-md-10" rows="10"></textarea><br>
-                        <input id="chattext"  placeholder="Enter your message here"><br><br>
-                    </div>
-                </div>
+    </div>
+    <div class ="code_space">
+        <div id="countdown"  style="font-size:40px ;display:none" > </div> 
+        <label for="mode" class="control-label">Language Mode:</label>
+        <select id="mode" class="form-control">
+            <option value="code_id">"choose language-code"</option>
+            {% for code_id,code_msg,lan_name in all_codes %}
+            <option value={{code_id}}>{{ lan_name }}-{{code_msg}}</option>
+            {% endfor %}
+        </select>
+        <button id="btn_select_code" onclick="select_code()" style="display:none">submit</button>
+        {% if rank_list!="" %}
+            <div id="opponent">
+                <label class="control-label">opponent rank:</label>
+                <select id="opponent_rank" class="form-control" >
+                    {% for rank in rank_list %}
+                    <option value="{'username':'{{rank[3]}}','code_id':{{rank[2]}}}">{{rank[3]}}-{{rank[4]}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endif %}
+        <div id="game_code">
+            <pre id="editor" style="height:255px"></pre>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <input type="hidden" name="join_room" id="join_room" value={{room_id}}>
+                <input type="hidden" name="room_privacy" id="room_privacy" value={{room_privacy}}>
+                <input type="hidden" name="room_status" id="room_status" value={{room_status}}>
             </div>
         </div>
     </div>
 
+</main>
+<div class="chatroom">
+    <textarea id="chat" class="col-md-10" rows="10"></textarea><br>
+    <input id="chattext"  placeholder="Enter your message here"><br><br>
+</div>
+
     
-</section>
-<section id="section_code">
-    <div id="countdown"  style="font-size:40px ;display:none" > </div> 
-    <label for="mode" class="control-label">Language Mode:</label>
-    <select id="mode" class="form-control">
-        <option value="code_id">"choose language-code"</option>
-        {% for code_id,code_msg,lan_name in all_codes %}
-        <option value={{code_id}}>{{ lan_name }}-{{code_msg}}</option>
-        {% endfor %}
-    </select>
-    <button id="btn_select_code" onclick="select_code()" style="display:none">submit</button>
-    {% if rank_list!="" %}
-        <div id="opponent">
-            <label class="control-label">opponent rank:</label>
-            <select id="opponent_rank" class="form-control" >
-                {% for rank in rank_list %}
-                <option value="{'username':'{{rank[3]}}','code_id':{{rank[2]}}}">{{rank[3]}}-{{rank[4]}}</option>
-                {% endfor %}
-            </select>
-        </div>
-    {% endif %}
-    <div id="game_code">
-        <pre id="editor" style="height:255px"></pre>
-    </div>
-    <div class="row">
-        <div class="col-md-4">
-            <input type="hidden" name="join_room" id="join_room" value={{room_id}}>
-            <input type="hidden" name="room_privacy" id="room_privacy" value={{room_privacy}}>
-            <input type="hidden" name="room_status" id="room_status" value={{room_status}}>
-        </div>
-    </div>
-</section>
 
 {% endblock %}
 {% block scripts %}

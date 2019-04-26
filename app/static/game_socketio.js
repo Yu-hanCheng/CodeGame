@@ -74,7 +74,6 @@ $(document).ready(function(){
         }
     });
     socket.on('countdown', function(data) {
-        console.log("countdown",data);
         countdown.innerHTML=data;
         if (data<1){
             $('#page_title').html("send code");
@@ -100,20 +99,29 @@ $(document).ready(function(){
         }
     });
     window.addEventListener('resize', evt => {
-        scaling_ratio=$(".playground").width()/800;
-        $(".playground").height(400 * scaling_ratio);
-        // 球要在這邊設長寬
+        rwd_playground();
     });
 });
-
+function rwd_playground() {
+    scaling_ratio=$(".playground").width()/800;
+        $(".playground").height(400 * scaling_ratio);
+        // 球要在這邊設長寬
+        let ball_r=40 * scaling_ratio;
+        $(".ball").height(ball_r);
+        $(".ball").width(ball_r);
+    
+}
 function select_code(){
+    
     $('#page_title').html("send code");
+    $('.play_space').css("display", "block");
+    rwd_playground();
     var code_selected=lan_mode.value;
     if(lan_mode.value=="code_id"){
         code_selected=lan_mode.options[1].value;
     }
     // document.getElementById('section_code').style.display = "none";
-    document.getElementById('section_game').style.display = "block";
+    
     let opponent = document.getElementById('opponent_rank');
     let opponent_rank="";
     if (opponent){ 
@@ -166,15 +174,14 @@ function left_room(){
 function ball_update(position){
     var width = $(".ball").outerWidth();
     var height = $(".ball").outerHeight();
-    // console.log($(".ball").left())
-    $(".ball").css({"left":position[0]-width/2,"top":position[1]-height/2});
+    $(".ball").css({"left":position[0]*scaling_ratio-width/2,"top":position[1]*scaling_ratio-height/2});
 }
 function paddle_update(position, direction){
-    var windowHeight = $(window).height();
-    var height = direction.outerHeight();
-    var p_top = position[1]-height/2;
-    var topMax = windowHeight - p_top - 5;
-    if (p_top < 5) p_top = 5;
+    let groundHeight = $(".playground").height();
+    let height = direction.outerHeight();
+    let p_top = position[1]*scaling_ratio-height/2;
+    let topMax = groundHeight - p_top;
+    if (p_top < 5) p_top = 2;
     if (p_top > topMax) p_top = topMax;
     direction.css("top",p_top);	
 }

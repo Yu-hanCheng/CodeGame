@@ -1,18 +1,21 @@
-/* html,body {
-	height: 100%;
-	width: 100%;
-	margin: 0px;
-	padding: 0px;
-	overflow: hidden;
+
+.players {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+
 }
+.main_container {
+	display: flex;
+}
+.play_space {
+	display: none;
+	flex: 3 0 auto;
 
-body {
-	background-image: url('https://lukakva.github.io/NyanPong/resources/background.jpg');
-} */
-
+}
 .playground {
 	width: 100%;
-	height: 100%;
+	height: 400px;
 	max-width: 800px;
 	max-height:400px;
 	position: relative;
@@ -20,6 +23,10 @@ body {
 	background: black;
 	/* margin-left: -400px; */
 	text-align: center;
+}
+.code_space {
+	flex: 1 0 auto;
+	margin-left: 30px;
 }
 .ball {
 	width: 40px;
@@ -32,8 +39,8 @@ body {
 	border-radius: 50%;
 }
 .goalkeeper {
-	width: 20px;
-	height:133px;
+	width: 2.5%;
+	height:30%;
 	position: relative;
 	background: red;
 	border: 1px solid rgba(0, 0, 0, 0.5);
@@ -47,47 +54,17 @@ body {
 	float: right;
 	/* margin-right: 10px; */
 }
-.cat {
-	height: 50px;
-	width: 50px;
-	position: absolute;
-	background-image: url("https://lukakva.github.io/NyanPong/resources/Nyan-Cat.gif");
-	background-size: cover;
-	/*z-index: 1;
-	overflow: hidden;*/
-}
-.scores {
-	position: fixed;
-	top: 45px;
-	left: 12.5%;
-	width: 75%;
-	height: 48px;
-	overflow: hidden;
-}
-.scores div:first-child {
-	position: relative;
-	display: inline-block;
+.chatroom{
+	margin-top: 30px;
 }
 
-#score {
-	display: none;
-}
 .left-score, .right-score {
-	font-size: 50px;
-	font-weight: bold;
-	width: 50%;
-	height: 100%;
+	font-size: 30px;
 	text-align: center;
-	float: left;
-	font-family: monospace;
-	position: relative;
 	color: purple;
 	text-shadow: 
 	1px 0 pink,
 	0 1px pink,
 	-1px 0 pink,
 	0 -1px pink;
-}
-.right-score {
-	float: right;
 }
