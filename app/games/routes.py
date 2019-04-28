@@ -180,7 +180,7 @@ def index(msg):
     elif request.method == 'GET':
         form.name.data = session.get('name', '')
         form.room.data = session.get('room', '')
-        wait_rooms = Log.query.with_entities(Log.id,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.game_id>0).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
+        wait_rooms = Log.query.with_entities(Log.id,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.winner_id==None).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
     
     return render_template('games/index/index.html', form=form,wait_rooms=wait_rooms)
 
