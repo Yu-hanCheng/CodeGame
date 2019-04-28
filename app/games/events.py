@@ -70,6 +70,8 @@ def join_room_from_browser(message):
     if int(message['status']) ==0:
         emit('enter_room',message['privacy'],namespace = '/test',room= message['room'])
         if int(message['privacy'])==1:
+            name = str(message['room'])+"_stop"
+            globals()[name] = []
             set_interval(app,notify_browser,1,60,message['room'])
     else:
         emit('wait_room',namespace = '/test',room= message['room'])    
@@ -85,6 +87,8 @@ def select_code(message):
 
     # Sent by clients when they click btn.
     # call emit_code to send code to gameserver.-- 0122/2019
+    name = str(message['room'])+"_stop"
+    globals()[name].append(True)
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
     select_code =Code.query.with_entities(Code.id,Code.body,Code.attach_ml, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
     emit_code(l, select_code,current_user.id)
@@ -226,13 +230,13 @@ def save_file(filename, file): # filename = code_id
 def notify_browser(app,data,sendroom):
     with app.app_context():
         emit('countdown',data+1, namespace = '/test',room= sendroom)
-def set_interval(the_app,notify_browser, sec, times,sendroom):
-    
+def set_interval(the_app,notify_browser, sec, times,sendroom):  
+    name=str(sendroom)+"_stop"
     def func_wrapper(the_app, cntnum):
         set_interval(the_app,notify_browser, sec,cntnum,sendroom)
         notify_browser(the_app,cntnum,sendroom)
     
-    if times==0:
+    if times==0 or len(globals()[name])==2:
         return 
     else:
         times-=1
