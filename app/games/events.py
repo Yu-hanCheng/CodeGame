@@ -8,6 +8,7 @@ from app import db
 from websocket import create_connection
 import json,base64,time
 from eventlet.green import threading
+import eventlet
 
 @socketio.on('gamemain_connect')
 def gamemain_connect(message):
@@ -70,7 +71,15 @@ def join_room_from_browser(message):
     if int(message['status']) ==0:
         emit('enter_room',message['privacy'],namespace = '/test',room= message['room'])
         if int(message['privacy'])==1:
-            set_interval(app,notify_browser,1,60,message['room'])
+            # set_interval(app,notify_browser,1,60,message['room'])
+            all_code = message['room']+"_all"
+            globals()[all_code]=0
+            name = message['room']+"_stop"
+            globals()[name] = threading.Event()
+            globals()[name].clear()
+            eventlet.spawn(notify_browser,60,message['room'],app,globals()[name]) 
+            print("join room",message['room'],threading.enumerate())
+            
     else:
         emit('wait_room',namespace = '/test',room= message['room'])    
 
@@ -82,13 +91,20 @@ def change_code(message):
 
 @socketio.on('select_code' ,namespace = '/test')
 def select_code(message):
-
+    all_code = message['room']+"_all"
+    globals()[all_code]+=1
+    print('globals()[all_code]:',globals()[all_code])
     # Sent by clients when they click btn.
     # call emit_code to send code to gameserver.-- 0122/2019
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
+    if globals()[all_code]==l.player_num :
+        name = message['room']+"_stop"
+        globals()[name].set()
+
+    print(message['room'],threading.enumerate())
     select_code =Code.query.with_entities(Code.id,Code.body,Code.attach_ml, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
     emit_code(l, select_code,current_user.id)
-
+    
     if message['opponent']!="":
         opponent = json.loads(message['opponent'].replace("'", '"'))
         select_code = Code.query.with_entities(Code.id,Code.body,Code.attach_ml, Code.commit_msg,Code.compile_language_id,Language.language_name).\
@@ -131,9 +147,11 @@ def left(message):
     if l.status+g.player_num == 0 and not l.winner_id:
         db.session.delete(l)
     else:
+        name = str(message['room'])+"_stop"
+        globals()[name].set()
         emit('wait_room',namespace = '/test',room= str(message['room']))
     db.session.commit()
-    
+
 @socketio.on('chat_message' ,namespace = '/test')
 def chat_message(message):
     room = session.get('log_id')
@@ -223,19 +241,17 @@ def save_file(filename, file): # filename = code_id
     with open("%s.sav"%(filename), "w") as f:
         f.write(file)
         
-def notify_browser(app,data,sendroom):
+def notify_browser(data,sendroom,app,event):
     with app.app_context():
-        emit('countdown',data+1, namespace = '/test',room= sendroom)
-def set_interval(the_app,notify_browser, sec, times,sendroom):
-    
-    def func_wrapper(the_app, cntnum):
-        set_interval(the_app,notify_browser, sec,cntnum,sendroom)
-        notify_browser(the_app,cntnum,sendroom)
-    
-    if times==0:
-        return 
-    else:
-        times-=1
-    t = threading.Timer(sec, func_wrapper,[the_app,times])
-    t.start()
-    return t
+        times = data
+        while times>0: 
+            e = event.wait(1)
+            if e:
+                print("ready")
+                return
+            else:
+                print(sendroom,"emit")
+                emit('countdown',times, namespace = '/test',room= sendroom)
+                time.sleep(1) 
+                times -= 1
+        emit('countdown',times, namespace = '/test',room= sendroom)
