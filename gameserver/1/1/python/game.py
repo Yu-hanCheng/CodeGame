@@ -122,7 +122,7 @@ def send_to_Players(instr):
         json_str={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
         print("send info")
     elif instr == 'over':
-        json_str={'type':'over','content':{'ball':ball,'score':[l_score,r_score]}} # '{\'ball\':'+str(ball)+'}'
+        json_str={'type':'over','content':{'ball':ball,'score':[l_score,r_score],'normal':[3,3]}} # '{\'ball\':'+str(ball)+'}' normal：[cpu,mem]
         print('send game over')
 
     elif instr =="score_recved":

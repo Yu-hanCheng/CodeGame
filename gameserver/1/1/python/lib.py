@@ -113,6 +113,9 @@ def score(msg_from_gamemain):# CPU, MEM Utility
 
     cpu = round(reduce(lambda x, y: x + y, cpu_list) / len(cpu_list),3)
     mem = round(reduce(lambda x, y: x + y, mem_list) / len(mem_list),3)
+    normal_cpu = round(cpu/msg_from_gamemain['normal'][0],3)
+    normal_mem = round(mem/msg_from_gamemain['normal'][1],3)
+    score = score + 2 - normal_cpu - normal_mem
     avg_time=1
     # report="\""+str(user_id)+","+str(cpu)+","+str(mem)+","+str(avg_time)+"\""
     report= '{\'score\':'+str(score)+',\'user_id\':'+str(user_id)+',\'code_id\':'+str(code_id)+',\'cpu\':'+str(cpu)+',\'mem\':'+str(mem)+',\'avg_time\':'+str(avg_time)+'}'
