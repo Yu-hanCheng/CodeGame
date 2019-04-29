@@ -38,7 +38,7 @@ class CommentCodeForm(FlaskForm):
 	# 		if user is not None:
 	# 			raise ValidationError('Please use a different username.')
 class AddRoomForm(FlaskForm):
-	roomname = TextAreaField('roomname', validators=[DataRequired()])
+	roomname = StringField('roomname', validators=[DataRequired(),Length(min=0, max=60)])
 	game_category = SelectField('Game Category',coerce=int,choices=[])
 	game =  SelectField('Game',coerce=int,choices=[])
 	user_id = HiddenField('User id', default=current_user)

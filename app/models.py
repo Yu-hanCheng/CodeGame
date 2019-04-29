@@ -248,7 +248,7 @@ class Log(db.Model):
     record_content = db.Column(db.String(102400),default='record_content')
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     # user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    
+    roomname = db.Column(db.String(60),unique=True)
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
     winner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     winner_code_id = db.Column(db.Integer, db.ForeignKey('code.id'))

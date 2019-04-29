@@ -84,7 +84,7 @@ def add_room():
                 status = 0
             elif privacy == 3:
                 invite_players = (add_form.invitelist.data).split(',')
-            log = Log(game_id=add_form.game.data,privacy=privacy,status=status)
+            log = Log(roomname=add_form.roomname.data,game_id=add_form.game.data,privacy=privacy,status=status)
             db.session.add(log)
             # 若是設定 privacy==friends(指定玩家), log.current_users.append((choose_form.player_list).split(','))
             db.session.commit()
@@ -180,7 +180,7 @@ def index(msg):
     elif request.method == 'GET':
         form.name.data = session.get('name', '')
         form.room.data = session.get('room', '')
-        wait_rooms = Log.query.with_entities(Log.id,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.winner_id==None).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
+        wait_rooms = Log.query.with_entities(Log.id,Log.roomname,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.winner_id==None).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
     
     return render_template('games/index/index.html', form=form,wait_rooms=wait_rooms)
 
