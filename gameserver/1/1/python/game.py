@@ -4,6 +4,7 @@ import threading,math, random,copy
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
 import re
+WIN_SCORE = 1
 game_exec_ip = sys.argv[1]
 game_exec_port = sys.argv[2]
 log_id = sys.argv[3]
@@ -74,9 +75,9 @@ def ball_init(right):
     vert = random.randrange(1, 3)
 
     if right == False:
-        print("init move left")
         horz = - horz
     ball_vel = [horz, -vert]
+    print("init move",horz,-vert)
 
 def __init__():
     global paddle1, paddle2, paddle1_move, paddle2_move, l_score, r_score  # these are floats
@@ -191,16 +192,15 @@ def play():
             r_score += 1
             ball[0] = BALL_RADIUS
             print('r_score ',r_score)
-            after_play('onP1')
-            if r_score < 1:
-                send_to_Players('get_score')
+            if r_score < WIN_SCORE:
                 ball_init(True)
+                after_play('onP1')
             else:
                 # barrier=1
                 send_to_Players('over')
-                ball_init(False)
                 start=0
                 endgame=1
+                after_play('onP1')
         # right normal catch
         if int(ball[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH and int(ball[1]) in range(
                 paddle2[1] - PAD_CATCH, paddle2[1] + PAD_CATCH, 1):
@@ -214,17 +214,16 @@ def play():
             l_score += 1
             ball[0]=WIDTH + 1 - BALL_RADIUS
             print('l_score ',l_score)
-            after_play('onP2')
-            if l_score < 1:
+            if l_score < WIN_SCORE:
                 ball_init(False)
+                after_play('onP2')
                 
             else:
                 # barrier=1
                 send_to_Players('over')
                 start=0
                 endgame=1
-                print('ball ',ball)
-                ball_init(True)
+                after_play('onP2')
         else:
             pass
     except(RuntimeError, TypeError, NameError) as e:
@@ -234,13 +233,13 @@ def play():
     
 def game(where):
     global start
-    try:
-        print(where)
-        play()
-    except:
-        return
     if start==1:
-        send_to_Players('gameinfo')
+        try:
+            print(where)
+            play()
+            send_to_Players('gameinfo')
+        except:
+            return
 
 def handle_client_connection(client_socket):
     # connect就進入 socket就進入 handler了, 為什麼connect後還要recv？ 為了判斷是p1連進來 還是p2

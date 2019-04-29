@@ -4,6 +4,7 @@ import threading,math, random,copy
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
 import re
+WIN_SCORE = 1
 game_exec_ip = sys.argv[1]
 game_exec_port = sys.argv[2]
 log_id = sys.argv[3]
@@ -35,6 +36,7 @@ PAD_HEIGHT = math.ceil(HEIGHT/3)
 HALF_PAD_WIDTH = PAD_WIDTH // 2
 HALF_PAD_HEIGHT = PAD_HEIGHT // 2
 PAD_END = HEIGHT - HALF_PAD_HEIGHT
+PAD_CATCH = HALF_PAD_HEIGHT + BALL_RADIUS//2
 paddle1 = [HALF_PAD_WIDTH - 1, HEIGHT // 2]
 paddle2 = [WIDTH + 1 - HALF_PAD_WIDTH, HEIGHT //2]
 
@@ -73,9 +75,9 @@ def ball_init(right):
     vert = random.randrange(1, 3)
 
     if right == False:
-        print("init move left")
         horz = - horz
     ball_vel = [horz, -vert]
+    print("init move",horz,-vert)
 
 def __init__():
     global paddle1, paddle2, paddle1_move, paddle2_move, l_score, r_score  # these are floats
@@ -177,57 +179,51 @@ def play():
         elif int(ball[1]) >= HEIGHT - BALL_RADIUS:
             ball_vel[1] = - ball_vel[1]
 
-
-        if int(ball[0]) <= BALL_RADIUS + PAD_WIDTH and int(ball[1]) in range(paddle1[1] - HALF_PAD_HEIGHT,
-                                                                                     paddle1[1] + HALF_PAD_HEIGHT, 1):
+        # left normal catch
+        if int(ball[0]) <= BALL_RADIUS + PAD_WIDTH and int(ball[1]) in range(paddle1[1] - PAD_CATCH,
+                                                                                       paddle1[1] + PAD_CATCH, 1):
+            if int(ball[0]) < PAD_WIDTH :
+                ball[0] = BALL_RADIUS*2 + PAD_WIDTH
             ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.2
-            ball_vel[1] *= 1.2
-        elif int(ball[0]) <= BALL_RADIUS + PAD_WIDTH and int(ball[0]) > PAD_WIDTH \
-        and ( (int(ball[1]) > (paddle1[1] - HALF_PAD_HEIGHT - BALL_RADIUS//2)) or (int(ball[1]) < (paddle1[1] + HALF_PAD_HEIGHT + BALL_RADIUS//2))):
-            ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.2
-            ball_vel[1] *= 1.2                                                                   
+            ball_vel[0] *= 1.1
+            ball_vel[1] *= 1.1      
+        # left no catch                                                             
         elif int(ball[0]) <= BALL_RADIUS:
             r_score += 1
             ball[0] = BALL_RADIUS
             print('r_score ',r_score)
-            after_play('onP1')
-            if r_score < 1:
-                send_to_Players('get_score')
+            if r_score < WIN_SCORE:
                 ball_init(True)
+                after_play('onP1')
             else:
                 # barrier=1
                 send_to_Players('over')
-                ball_init(False)
                 start=0
                 endgame=1
-
+                after_play('onP1')
+        # right normal catch
         if int(ball[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH and int(ball[1]) in range(
-                paddle2[1] - HALF_PAD_HEIGHT, paddle2[1] + HALF_PAD_HEIGHT, 1):
+                paddle2[1] - PAD_CATCH, paddle2[1] + PAD_CATCH, 1):
+            if int(ball[0]) > WIDTH - PAD_WIDTH :
+                ball[0] = BALL_RADIUS*2 + PAD_WIDTH
+            ball[0] = WIDTH - BALL_RADIUS*2 -1
             ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.2
-            ball_vel[1] *= 1.2
-        elif int(ball[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH  and int(ball[0]) < WIDTH - PAD_WIDTH \
-        and ( (int(ball[1]) > (paddle1[1] - HALF_PAD_HEIGHT - BALL_RADIUS//2)) or (int(ball[1]) < (paddle1[1] + HALF_PAD_HEIGHT + BALL_RADIUS//2))):
-            ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.2
-            ball_vel[1] *= 1.2   
+            ball_vel[0] *= 1.1
+            ball_vel[1] *= 1.1
         elif int(ball[0]) >= WIDTH + 1 - BALL_RADIUS:
             l_score += 1
             ball[0]=WIDTH + 1 - BALL_RADIUS
             print('l_score ',l_score)
-            after_play('onP2')
-            if l_score < 1:
+            if l_score < WIN_SCORE:
                 ball_init(False)
+                after_play('onP2')
                 
             else:
                 # barrier=1
                 send_to_Players('over')
                 start=0
                 endgame=1
-                print('ball ',ball)
-                ball_init(True)
+                after_play('onP2')
         else:
             pass
     except(RuntimeError, TypeError, NameError) as e:
@@ -237,13 +233,13 @@ def play():
     
 def game(where):
     global start
-    try:
-        print(where)
-        play()
-    except:
-        return
     if start==1:
-        send_to_Players('gameinfo')
+        try:
+            print(where)
+            play()
+            send_to_Players('gameinfo')
+        except:
+            return
 
 def handle_client_connection(client_socket):
     # connect就進入 socket就進入 handler了, 為什麼connect後還要recv？ 為了判斷是p1連進來 還是p2
@@ -404,7 +400,7 @@ def handle_client_connection(client_socket):
 
                 
             else:
-                time.sleep(0.5)
+                time.sleep(0.2)
                 lock.release()
     elif lib_lan==0:#python
         while True:
@@ -484,7 +480,7 @@ def handle_client_connection(client_socket):
 
                 
             else:
-                time.sleep(0.5)
+                time.sleep(0.2)
                 lock.release()
                 
 def gameover(msg_type,l_report,r_report,record_content,log_id):
@@ -511,7 +507,7 @@ def gameover(msg_type,l_report,r_report,record_content,log_id):
 def timeout_check():
     global p1_rt, p2_rt,barrier, paddle1_move, paddle2_move, start,playerlist,p1_timeout,p2_timeout
     
-    timeout=0.5
+    timeout=0.7
     if start==1:
         try:
             if barrier[0]==0:
