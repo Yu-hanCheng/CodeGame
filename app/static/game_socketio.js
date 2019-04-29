@@ -28,9 +28,7 @@ $(document).ready(function(){
     socket.on('enter_room', function(data){
         $('#page_title').html("enter room");
         document.getElementById('btn_select_code').style.display = "block";
-        // if(data==1){
-        //     timeout_initial();
-        // }
+        document.getElementById('leave_btn').style.display = "none";
     }); 
     socket.on('wait_room', function(data){
         document.getElementById('btn_select_code').style.display = "none";
@@ -181,8 +179,6 @@ function paddle_update(position, direction){
     let height = direction.outerHeight();
     let p_top = position[1]*scaling_ratio-height/2;
     let topMax = groundHeight - p_top;
-    if (p_top < 5) p_top = 2;
-    if (p_top > topMax) p_top = topMax;
     direction.css("top",p_top);	
 }
 function score_update(newscores){
