@@ -1,60 +1,86 @@
 <body>
-{% extends "base.html" %}
-{% import 'bootstrap/wtf.html' as wtf %}
+        {% extends "base.html" %}
+        {% import 'bootstrap/wtf.html' as wtf %}
 
-{% block app_content %}
+        {% block app_content %}
 
 
-        <h1 >Sign In</h1>
+        <h1>Sign In</h1>
         <div class="row">
                 <div class="col-md-4">
                         {{ wtf.quick_form(form,button_map={'submit': 'success'},extra_classes="label_loginform") }}
                 </div>
                 <div class="col-md-6">
-                                <iframe src="https://giphy.com/embed/MhHmVf60oEZQQ" width="480" height="154" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/frog-ping-pong-glove-and-boots-MhHmVf60oEZQQ">via GIPHY</a></p>
-                        </div>
+                        <iframe src="https://giphy.com/embed/MhHmVf60oEZQQ" width="480" height="154" frameBorder="0"
+                                class="giphy-embed" allowFullScreen></iframe>
+                        <p><a href="https://giphy.com/gifs/frog-ping-pong-glove-and-boots-MhHmVf60oEZQQ">via GIPHY</a>
+                        </p>
+                </div>
         </div>
         <br>
         <p>New User? <a class="btn btn-warning" href="{{ url_for('auth.register') }}">Click to Register!</a></p>
         <p>Forgot Your Password?
                 <a class="btn btn-info" href="{{ url_for('auth.reset_password_request') }}">Click to Reset It</a>
         </p>
-		<p><a class="btn btn-primary" href="{{ url_for('auth.oauth_authorize', provider='facebook') }}">Login with Facebook</a></p>       
+
+        <div id="fb-root"></div>
+        <span id="status"></span>
+        <script async defer crossorigin="anonymous"
+                src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.3&appId=160139164703343&autoLogAppEvents=1">
+        </script>
         <script>
-                window.fbAsyncInit = function() {
-                FB.init({
-                        appId            : '160139164703343',
-                        autoLogAppEvents : true,
-                        xfbml            : true,
-                        version          : 'v3.2'
+                window.fbAsyncInit = function () {
+                        console.log("(window)")
+                        FB.init({
+                                appId: '160139164703343',
+                                autoLogAppEvents: true,
+                                xfbml: true,
+                                version: 'v3.2'
                         });
 
-                        FB.AppEvents.logPageView();   
-//                      FB.getLoginStatus(function(response) {
-                                //Verify response
-//                              window.location.href="{{ url_for('auth.oauth_authorize', provider='facebook') }}"
-//                      });           
+                        // FB.AppEvents.logPageView();   
                 };
 
-                (function(d, s, id){
-                     var js, fjs = d.getElementsByTagName(s)[0];
-                     if (d.getElementById(id)) {return;}
-                     js = d.createElement(s); js.id = id;
-                     js.src = "https://connect.facebook.net/en_US/sdk.js";
-                     fjs.parentNode.insertBefore(js, fjs);
-                 }(document, 'script', 'facebook-jssdk'));      
-        
+                function statusChangeCallback(response) {
+                        console.log('statusChangeCallback');
+                        console.log(response);
+                        // The response object is returned with a status field that lets the
+                        // app know the current login status of the person.
+                        // Full docs on the response object can be found in the documentation
+                        // for FB.getLoginStatus().
+                        if (response.status === 'connected') {
+                                // Logged into your app and Facebook.
+                                // window.location.href = "{{ url_for('auth.oauth_authorize', provider='facebook') }}"
+                        } else {
+                                // The person is not logged into your app or we are unable to tell.
+                                document.getElementById('status').innerHTML = 'Please log ' +
+                                        'into this app.';
+                        }
+                }
+
+                function checkLoginState() {
+                        FB.getLoginStatus(function (response) {
+                                statusChangeCallback(response);
+                        });
+                }
+                (function (d, s, id) {
+                        console.log("()")
+                        var js, fjs = d.getElementsByTagName(s)[0];
+                        if (d.getElementById(id)) {
+                                return;
+                        }
+                        js = d.createElement(s);
+                        js.id = id;
+                        js.src = "https://connect.facebook.net/en_US/sdk.js";
+                        fjs.parentNode.insertBefore(js, fjs);
+                }(document, 'script', 'facebook-jssdk'));
         </script>
 
-                        <div
-                        class="fb-login-button"
-                        data-max-rows="1"
-                        data-size="large"
-                        data-button-type="continue_with"
-                        data-use-continue-as="true">
-                </div>
-                <br>
-                <fb:login-button scope="public_profile,email" onlogin="checkLoginState();"></fb:login-button>
-                <link rel="stylesheet" href="/static/basic.css" />
-{% endblock %}
+        <div class="fb-login-button" data-max-rows="1" data-size="large" data-button-type="continue_with"
+                data-use-continue-as="true" data-onlogin="checkLoginState();" data-scope="public_profile,email">
+        </div>
+        <br>
+        <!-- <fb:login-button scope="public_profile,email" onlogin="checkLoginState();"></fb:login-button> -->
+        <link rel="stylesheet" href="/static/basic.css" />
+        {% endblock %}
 </body>

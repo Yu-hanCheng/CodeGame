@@ -111,6 +111,7 @@ def reset_password(token):
 @bp.route('/authorize/<provider>')
 def oauth_authorize(provider):
     if not current_user.is_anonymous:
+        print("current_user authorize")
         return redirect(url_for('main.index'))
     oauth = OAuthSignIn.get_provider(provider)
     return oauth.authorize()
@@ -118,6 +119,7 @@ def oauth_authorize(provider):
 
 @bp.route('/callback/<provider>')
 def oauth_callback(provider):
+    print("oauth_callback")
     if not current_user.is_anonymous:
         return redirect(url_for('main.index'))
     oauth = OAuthSignIn.get_provider(provider)
