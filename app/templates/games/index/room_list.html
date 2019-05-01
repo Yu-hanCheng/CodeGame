@@ -25,6 +25,7 @@
                                 <td>{{ w_room.id }}</td>
                                 <td>{{ w_room.roomname }}</td>
                                 <td>{{ w_room.gamename }}</td>
+                                <td>{% for u in l_users[loop.index-1].current_users %} {{ u.username }} {% endfor %}</td>
                                 <td>{{ w_room.player_num  | int  + w_room.status | int  }}</td>
                                 <td>{{ w_room.player_num }}</td>
                                 <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.wait_to_play',log_id=w_room.id ) }}'" >Enter</button></td>
