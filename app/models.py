@@ -350,6 +350,11 @@ class Category(db.Model):
     def __repr__(self):
         return '<Category %r>' % self.name
 
+class News(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String(500), nullable=False)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
 
-   
+    def __repr__(self):
+        return '<News %r>' % self.id
         
