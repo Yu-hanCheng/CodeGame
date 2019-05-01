@@ -1,2 +1,26 @@
 <br>
-<h3>news</h3>
+<h3>News</h3>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='moment.js') }}">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='list_css.css') }}">
+<div class="container">
+        <div class="modal-content">
+            <div class="panel-body table-responsive">
+                <table class="table ">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">News</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for n in news %}
+                        <tr>
+                            <td>{{ n.timestamp }}</td>
+                            <td>{{  n.content }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+</div>

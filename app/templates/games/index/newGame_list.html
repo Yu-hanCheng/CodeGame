@@ -1,0 +1,25 @@
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='moment.js') }}">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='list_css.css') }}">
+<div class="container">
+        <div class="modal-content">
+            <div class="panel-body table-responsive">
+                <table class="table ">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">New Games</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for g in games %}
+                        <tr>
+                            <td>{{ g.timestamp }}</td>
+                            <td>{{ g.gamename }}</td>
+                            <td>{{  g.descript }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+</div>

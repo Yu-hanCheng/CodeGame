@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request, current_ap
 from app import db
 from app.games.forms import CreateGameForm,CommentCodeForm, AddRoomForm, LoginForm, JoinForm, LeaveForm
 from flask_login import current_user, login_user, logout_user,login_required
-from app.models import User, Game, Log, Code,Privacy
+from app.models import User, Game, Log, Code,Privacy,News
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -182,8 +182,9 @@ def index(msg):
         form.room.data = session.get('room', '')
         wait_rooms = Log.query.with_entities(Log.id,Log.roomname,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.winner_id==None).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
         l_users = Log.query.filter(Log.winner_id==None).order_by(Log.timestamp.desc()).all()
-        games = Game.query.all()
-        news = News.query.all()
+        games = Game.query.order_by(Game.timestamp.desc()).all()
+        h_games = Game.query.order_by(Game.cnt.desc()).all()
+        news = News.query.order_by(News.timestamp.desc()).all()
 
     return render_template('games/index/index.html', form=form,wait_rooms=wait_rooms,l_users=l_users,news=news,games=games)
 
