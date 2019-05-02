@@ -1,4 +1,3 @@
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='moment.js') }}">
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='list_css.css') }}">
 <div class="container">
         <div class="modal-content">
@@ -12,7 +11,7 @@
                     <tbody>
                     {% for g in games %}
                         <tr>
-                            <td>{{ g.timestamp }}</td>
+                            <td>{{ moment(g.timestamp).format('LL') }}</td>
                             <td>{{ g.gamename }}</td>
                             <td>{{  g.descript }}</td>
                         </tr>

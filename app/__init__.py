@@ -9,7 +9,7 @@ from logging.handlers import SMTPHandler, RotatingFileHandler
 from flask_mail import Mail
 from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO
-
+from flask_moment import Moment
 db = SQLAlchemy()
 migrate = Migrate()
 login = LoginManager()
@@ -17,7 +17,7 @@ login = LoginManager()
 login.login_view = 'auth.login' #would use in a url_for() call to get the URL.
 mail = Mail()
 bootstrap = Bootstrap()
-# moment = Moment()
+moment = Moment()
 # babel = Babel()
 
 socketio = SocketIO()
@@ -38,7 +38,7 @@ def create_app(config_class=Config):
 	login.init_app(app)
 	mail.init_app(app)
 	bootstrap.init_app(app)
-    # moment.init_app(app)
+	moment.init_app(app)
     # babel.init_app(app)
 	
 	

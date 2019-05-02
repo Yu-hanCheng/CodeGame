@@ -183,10 +183,10 @@ def index(msg):
         wait_rooms = Log.query.with_entities(Log.id,Log.roomname,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.winner_id==None).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
         l_users = Log.query.filter(Log.winner_id==None).order_by(Log.timestamp.desc()).all()
         games = Game.query.order_by(Game.timestamp.desc()).all()
-        h_games = Game.query.order_by(Game.cnt.desc()).all()
+        h_games = Game.query.order_by(Game.timestamp.desc()).all()
         news = News.query.order_by(News.timestamp.desc()).all()
 
-    return render_template('games/index/index.html', form=form,wait_rooms=wait_rooms,l_users=l_users,news=news,games=games)
+    return render_template('games/index/index.html', form=form,wait_rooms=wait_rooms,l_users=l_users,news=news,games=games,h_games=h_games)
 
 @bp.route('/gameover/<log_id>', methods=['GET','POST'])
 @login_required

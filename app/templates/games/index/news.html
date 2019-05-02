@@ -1,6 +1,5 @@
 <br>
 <h3>News</h3>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='moment.js') }}">
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='list_css.css') }}">
 <div class="container">
         <div class="modal-content">
@@ -14,7 +13,7 @@
                     <tbody>
                     {% for n in news %}
                         <tr>
-                            <td>{{ n.timestamp }}</td>
+                            <td>{{ moment(n.timestamp).format('LL') }}</td>
                             <td>{{  n.content }}</td>
                         </tr>
                     {% endfor %}
