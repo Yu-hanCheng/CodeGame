@@ -8,6 +8,7 @@ from datetime import datetime
 from app.auth.email import send_password_reset_email,s_confirm_email
 from oauth import OAuthSignIn
 from app.auth import bp
+import json
 
 
 @bp.route('/send_confirm_email/<email_data>',methods=['GET'])
@@ -108,41 +109,20 @@ def reset_password(token):
         return redirect(url_for('auth.login'))
     return render_template('auth/reset_password.html', form=form)
 
-@bp.route('/authorize/<provider>')
-def oauth_authorize(provider):
-    if not current_user.is_anonymous:
-        print("current_user authorize")
-        return redirect(url_for('main.index'))
-    oauth = OAuthSignIn.get_provider(provider)
-    return oauth.authorize()
 
-
-@bp.route('/callback/<provider>')
-def oauth_callback(provider):
-    print("oauth_callback")
-    if not current_user.is_anonymous:
-        return redirect(url_for('main.index'))
-    oauth = OAuthSignIn.get_provider(provider)
-    try:
-        social_id, username, email,picture,friends= oauth.callback()
-        print('/friends:',friends[0])
-    except:
-        print("except")
-    # for element in friends:
-    #     print('element:',element[0])
-    # ff=int(element[0] or 0)
-    # if friend :
-    #     print("No friend here")
-    # else:
-    #     print(element[0])
-    if social_id is None:
+@bp.route('/social_login/<provider>', methods=['GET','POST'])
+def social_login(provider):
+    
+    print("social_login:",request.data)
+    res=json.loads(request.data)
+    if res['id'] is None:
         flash('Authentication failed.')
         return redirect(url_for('main.index'))
-    user = User.query.filter_by(social_id=social_id).first()
+    user = User.query.filter_by(social_id=res['id']).first()
     if not user:
-        user = User(social_id=social_id,username=username, email=email)
+        user = User(social_id=res['id'],username=res['name'], email=res['email'],confirm = True)
         db.session.add(user)
         db.session.commit()
     login_user(user, True)
     # return redirect(url_for('main.index',friends=friends['data']))
-    return redirect(url_for('main.index',friends=["www","sss"]))
+    return redirect(url_for('main.index'))

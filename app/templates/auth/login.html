@@ -29,6 +29,16 @@
                 src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v3.3&appId=160139164703343&autoLogAppEvents=1">
         </script>
         <script>
+                function http_send_toweb(post_event, params) {
+                        var xhttp = new XMLHttpRequest();
+                        xhttp.onreadystatechange = function () {
+                                if (this.readyState == 4 && this.status == 200) {
+                                        console.log(this.responseText);
+                                }
+                        };
+                        xhttp.open("POST", post_event, true);
+                        xhttp.send(params);
+                }
                 window.fbAsyncInit = function () {
                         console.log("(window)")
                         FB.init({
@@ -43,14 +53,19 @@
 
                 function statusChangeCallback(response) {
                         console.log('statusChangeCallback');
-                        console.log(response);
                         // The response object is returned with a status field that lets the
                         // app know the current login status of the person.
                         // Full docs on the response object can be found in the documentation
                         // for FB.getLoginStatus().
                         if (response.status === 'connected') {
                                 // Logged into your app and Facebook.
-                                // window.location.href = "{{ url_for('auth.oauth_authorize', provider='facebook') }}"
+                                FB.api('/me/?fields=id,name,email,friends', function (response) {
+                                        console.log(JSON.stringify(response));
+                                        // 在這裡傳data給後端
+                                        content_to_send = JSON.stringify(response)
+                                        http_send_toweb('social_login/facebook', content_to_send)
+                                        //後端存起來
+                                });
                         } else {
                                 // The person is not logged into your app or we are unable to tell.
                                 document.getElementById('status').innerHTML = 'Please log ' +
