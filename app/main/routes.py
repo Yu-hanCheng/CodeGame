@@ -8,6 +8,9 @@ from datetime import datetime
 from oauth import OAuthSignIn
 from app.main import bp
 
+request.environ['REMOTE_ADDR']
+request.environ.get('HTTP_X_REAL_IP', request.remote_addr) 
+
 @bp.before_app_request
 def before_request():
     if current_user.is_authenticated:
@@ -41,8 +44,7 @@ def index():
 
 @bp.route('/localapp', methods=['GET','POST'])
 def localapp():
-    print("client",request)
-    print("client",request.sid)
+    print("client",request.remote_addr)
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
