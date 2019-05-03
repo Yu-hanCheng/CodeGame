@@ -32,10 +32,16 @@ mem_list=[0]
      
 pid=os.getpid()
 p = psutil.Process(pid)
+# the first time this function is called with interval = 0.0 or None it will return a meaningless 0.0 value which you are supposed to ignore.
+p.cpu_percent()
 def get_usage():
     global p,cpu_list, mem_list
-    cpu_list.append(p.cpu_percent())
-    mem_list.append(p.memory_percent())
+    cpu=p.cpu_percent()
+    mem=p.memory_percent()
+    cpu_list.append(cpu)
+    mem_list.append(mem)    
+    # cpu_list.append(p.cpu_percent())
+    # mem_list.append(p.memory_percent())
 
 class setInterval :
     def __init__(self,interval,func) :
@@ -112,6 +118,7 @@ def score(msg_from_gamemain):# CPU, MEM Utility
 
     cpu = round(reduce(lambda x, y: x + y, cpu_list) / len(cpu_list),3)
     mem = round(reduce(lambda x, y: x + y, mem_list) / len(mem_list),3)
+    score = score + 1 - round((normal_cpu + normal_mem*10)/100,3)
     avg_time=1
     # report="\""+str(user_id)+","+str(cpu)+","+str(mem)+","+str(avg_time)+"\""
     report= '{\'score\':'+str(score)+',\'user_id\':'+str(user_id)+',\'code_id\':'+str(code_id)+',\'cpu\':'+str(cpu)+',\'mem\':'+str(mem)+',\'avg_time\':'+str(avg_time)+'}'
