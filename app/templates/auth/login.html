@@ -5,7 +5,8 @@
         {% block app_content %}
 
 
-        <h1>Sign In</h1>
+        <h1>Sign In {{ is_local }} </h1>
+        <input type="hidden" name="is_local" id="is_local" value={{is_local}}>
         <div class="row">
                 <div class="col-md-4">
                         {{ wtf.quick_form(form,button_map={'submit': 'success'},extra_classes="label_loginform") }}
@@ -62,9 +63,16 @@
                                 FB.api('/me/?fields=id,name,email,friends', function (response) {
                                         console.log(JSON.stringify(response));
                                         // 在這裡傳data給後端
-                                        content_to_send = JSON.stringify(response)
+                                        let is_local = document.getElementById("is_local");
+                                        let content_to_send = [is_local,JSON.stringify(response)];
+                                        if (is_local){
+                                                http_send_toweb('local_login',content_to_send);
+                                                return
+                                        }
                                         http_send_toweb('social_login/facebook', content_to_send)
                                         //後端存起來
+                                        window.location.href="../.."
+
                                 });
                         } else {
                                 // The person is not logged into your app or we are unable to tell.

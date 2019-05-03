@@ -119,7 +119,7 @@ class User(PaginatedAPIMixin, UserMixin, db.Model):
         return 'https://www.gravatar.com/avatar/{}?d=identicon&s={}'.format(digest, size)
     def social_photo(self):
         social_id_list=self.social_id.split("$")
-        return 'https://graph.facebook.com/v3.0/{}/picture?type=large'.format(social_id_list[1])
+        return 'https://graph.facebook.com/v3.0/{}/picture?type=large'.format(social_id_list[0])
     def follow(self, user):
         if not self.is_following(user):
             self.followed.append(user)

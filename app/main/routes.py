@@ -38,6 +38,12 @@ def index():
 		if posts.has_prev else None
 	return render_template('index.html', title="Home", form=form, posts=posts.items, next_url=next_url,prev_url=prev_url)
 
+
+@bp.route('/localapp', methods=['GET','POST'])
+def localapp():
+	print("client",requests)
+    return render_template('auth/login.html', title='Sign In', form=form, is_local="local")
+
 @bp.route('/explore')
 @login_required
 def explore():

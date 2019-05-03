@@ -126,3 +126,21 @@ def social_login(provider):
     login_user(user, True)
     # return redirect(url_for('main.index',friends=friends['data']))
     return redirect(url_for('main.index'))
+
+@bp.route('/local_login/<provider>', methods=['GET','POST'])
+def local_login(provider):
+    
+    print("local_login:",request.data)
+    res=json.loads(request.data[1])
+    if res['id'] is None:
+        flash('Authentication failed.')
+        return redirect(url_for('main.index'))
+    user = User.query.filter_by(social_id=res['id']).first()
+    if not user:
+        user = User(social_id=res['id'],username=res['name'], email=res['email'],confirm = True)
+        db.session.add(user)
+        db.session.commit()
+    login_user(user, True)
+    # return redirect(url_for('main.index',friends=friends['data']))
+    return redirect(url_for('main.index'))
+
