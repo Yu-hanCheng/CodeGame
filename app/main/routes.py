@@ -10,66 +10,81 @@ from app.main import bp
 
 @bp.before_app_request
 def before_request():
-	if current_user.is_authenticated:
-		current_user.last_seen = datetime.utcnow()
-		db.session.commit()
-	# g.locale = str(get_locale())
+    if current_user.is_authenticated:
+        current_user.last_seen = datetime.utcnow()
+        db.session.commit()
+    # g.locale = str(get_locale())
 
 @bp.route('/', methods=['GET','POST'])
 @bp.route('/index', methods=['GET','POST'])
 @login_required
 def index():
-	print('/index')
-	print(request.args.get('friends'))
-	form= PostForm()
-	session['username']=current_user.username
-	if form.validate_on_submit():
-		post = Post(body=form.post.data, author=current_user)
-		db.session.add(post)
-		db.session.commit()
-		flash('Your post is now live!')
-		return redirect(url_for('main.index'))
-		#If a POST request with a form submission returns a regular response, then a refresh will re-submit the form.
-	page = request.args.get('page', 1, type=int)
-	posts = current_user.followed_posts().paginate(page, current_app.config['POSTS_PER_PAGE'],False)
-	next_url = url_for('main.index', page=posts.next_num) \
-		if posts.has_next else None
-	prev_url = url_for('main.index',page = posts.prev_num) \
-		if posts.has_prev else None
-	return render_template('index.html', title="Home", form=form, posts=posts.items, next_url=next_url,prev_url=prev_url)
+    print('/index')
+    print(request.args.get('friends'))
+    form= PostForm()
+    session['username']=current_user.username
+    if form.validate_on_submit():
+        post = Post(body=form.post.data, author=current_user)
+        db.session.add(post)
+        db.session.commit()
+        flash('Your post is now live!')
+        return redirect(url_for('main.index'))
+        #If a POST request with a form submission returns a regular response, then a refresh will re-submit the form.
+    page = request.args.get('page', 1, type=int)
+    posts = current_user.followed_posts().paginate(page, current_app.config['POSTS_PER_PAGE'],False)
+    next_url = url_for('main.index', page=posts.next_num) \
+        if posts.has_next else None
+    prev_url = url_for('main.index',page = posts.prev_num) \
+        if posts.has_prev else None
+    return render_template('index.html', title="Home", form=form, posts=posts.items, next_url=next_url,prev_url=prev_url)
 
 
 @bp.route('/localapp', methods=['GET','POST'])
 def localapp():
-	print("client",requests)
-    return render_template('auth/login.html', title='Sign In', form=form, is_local="local")
+    print("client",request)
+    print("client",request.sid)
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user is None or not user.check_password(form.password.data):
+            flash('Invalid username or password')
+            return redirect(url_for('auth.login'))
+        elif not user.confirm:
+            flash('please confirm email first')
+            return redirect(url_for('auth.login'))
+        login_user(user, remember=form.remember_me.data)
+        next_page = request.args.get('next')
+        if not next_page or url_parse(next_page).netloc !='':# not have a next argument or is set to a full URL
+            next_page = url_for('main.index')
+        return redirect(next_page)
+    return render_template('auth/login.html', title='Sign In', form=form, is_local=request.sid)
 
 @bp.route('/explore')
 @login_required
 def explore():
-	page = request.args.get('page', 1, type=int)
-	posts = Post.query.order_by(Post.timestamp.desc()).paginate(
-        page, current_app.config['POSTS_PER_PAGE'], False)	
-	next_url = url_for('main.explore', page=posts.next_num) \
-		if posts.has_next else None
-	prev_url = url_for('main.explore',page = posts.prev_num) \
-		if posts.has_prev else None
-	return render_template('index.html', title='Explore', posts=posts.items, next_url=next_url,prev_url=prev_url)
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.timestamp.desc()).paginate(
+        page, current_app.config['POSTS_PER_PAGE'], False)    
+    next_url = url_for('main.explore', page=posts.next_num) \
+        if posts.has_next else None
+    prev_url = url_for('main.explore',page = posts.prev_num) \
+        if posts.has_prev else None
+    return render_template('index.html', title='Explore', posts=posts.items, next_url=next_url,prev_url=prev_url)
 
 @bp.route('/user/<username>')
 @login_required
 def user(username):
-	user =User.query.filter_by(username=username).first_or_404()
-	page = request.args.get('page',1,type=int)
-	posts = user.posts.order_by(Post.timestamp.desc()).paginate(
-		page, current_app.config['POSTS_PER_PAGE'], False)
-	next_url = url_for('main.user',username=user.username, page=posts.next_num) \
-		if posts.has_next else None
-	prev_url = url_for('main.user', username=user.username, page= posts.prev_num) \
-		if posts.has_prev else None	
-	return render_template('user.html', user=user, posts=posts.items,
+    user =User.query.filter_by(username=username).first_or_404()
+    page = request.args.get('page',1,type=int)
+    posts = user.posts.order_by(Post.timestamp.desc()).paginate(
+        page, current_app.config['POSTS_PER_PAGE'], False)
+    next_url = url_for('main.user',username=user.username, page=posts.next_num) \
+        if posts.has_next else None
+    prev_url = url_for('main.user', username=user.username, page= posts.prev_num) \
+        if posts.has_prev else None    
+    return render_template('user.html', user=user, posts=posts.items,
                            next_url=next_url, prev_url=prev_url)
-	
+    
 @bp.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
@@ -88,17 +103,17 @@ def edit_profile():
 @bp.route('/follow/<username>')
 @login_required
 def follow(username):
-	user = User.query.filter_by(username = username).first()
-	if user is None:
-		flash("User {} not found.".format(username))
-		return redirect(url_for('main.index'))
-	if user == current_user:
-		flash('You cannot follow yourself!')
-		return redirect(url_for('main.user',username=username))
-	current_user.follow(user)
-	db.session.commit()
-	flash('You are following {}!'.format(username))
-	return redirect(url_for('main.user',username=username))
+    user = User.query.filter_by(username = username).first()
+    if user is None:
+        flash("User {} not found.".format(username))
+        return redirect(url_for('main.index'))
+    if user == current_user:
+        flash('You cannot follow yourself!')
+        return redirect(url_for('main.user',username=username))
+    current_user.follow(user)
+    db.session.commit()
+    flash('You are following {}!'.format(username))
+    return redirect(url_for('main.user',username=username))
 
 @bp.route('/unfollow/<username>')
 @login_required
