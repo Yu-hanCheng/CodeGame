@@ -118,10 +118,12 @@ def score(msg_from_gamemain):# CPU, MEM Utility
 
     cpu = round(reduce(lambda x, y: x + y, cpu_list) / len(cpu_list),3)
     mem = round(reduce(lambda x, y: x + y, mem_list) / len(mem_list),3)
-    score = score + 1 - round((normal_cpu + normal_mem*10)/100,3)
-    avg_time=1
+    
+    score = score + 1 - round((cpu + mem)/200,3)
+    max_val=[max(cpu_list),round(max(mem_list),6)]
+
     # report="\""+str(user_id)+","+str(cpu)+","+str(mem)+","+str(avg_time)+"\""
-    report= '{\'score\':'+str(score)+',\'user_id\':'+str(user_id)+',\'code_id\':'+str(code_id)+',\'cpu\':'+str(cpu)+',\'mem\':'+str(mem)+',\'avg_time\':'+str(avg_time)+'}'
+    report= '{\'score\':'+str(score)+',\'user_id\':'+str(user_id)+',\'code_id\':'+str(code_id)+',\'cpu\':'+str(cpu)+',\'mem\':'+str(mem)+',\'max_val\':'+str(max_val)+'}'
     # msg={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
     send_togame('score',report)
 def recvall(sock):

@@ -82,6 +82,6 @@
 {% block scripts %}
 {{  super ()  }}
 <script language="JavaScript" type="text/javascript" src="{{ url_for('static', filename='socketio_1.3.6.js') }}"></script>
-<script src="{{ url_for('static', filename='src-noconflict/ace.js') }}" type="text/javascript" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/ace.js" type="text/javascript" charset="utf-8"></script>
 <script src="{{ url_for('static', filename='game_socketio.js') }}"></script>
 {% endblock %}
