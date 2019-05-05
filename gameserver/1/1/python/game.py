@@ -7,7 +7,8 @@ import re
 game_exec_ip = sys.argv[1]
 game_exec_port = sys.argv[2]
 log_id = sys.argv[3]
-socketIO=SocketIO('0.0.0.0', 5000, LoggingNamespace)
+
+socketIO=SocketIO('http://vegelephant.club',80, LoggingNamespace)
 socketIO.emit('info',{'msg':'gameconnected','log_id':log_id})
 print("SocketIO:",threading.active_count())
 bind_ip = '0.0.0.0'
@@ -98,15 +99,6 @@ def send_to_webserver(msg_type,msg_content,logId):
         socketIO.emit(msg_type,{'msg':msg_content,'log_id':logId})
     except (RuntimeError, TypeError, NameError) as e:
         print(' send_to_webserver error:',e)
-# def send_to_gameserver(score_msg):
-#     global logId
-#     print('gameserver')
-#     ws = create_connection("ws://localhost:6005")
-#     ws.send(json.dumps({'from':"game",'logId':logId,'score_msg':score_msg}))
-#     ws.close()
-#     exit()
-#     quit()
-
 def tcp_send_rule(str_tosend,startlen):
     msg_tosend=str(len(str_tosend))
     for i in range(startlen-len(msg_tosend)):
@@ -505,7 +497,7 @@ def handle_client_connection(client_socket):
                 
 def gameover(msg_type,l_report,r_report,record_content,log_id):
     global game_exec_ip,game_exec_port
-    print("gameover",msg_type)
+    print("gameover",l_report,r_report)
     if msg_type=="timeout_over":
         send_to_webserver(msg_type,record_content,log_id)                       
     else:

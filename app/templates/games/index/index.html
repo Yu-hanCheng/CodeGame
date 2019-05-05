@@ -11,7 +11,6 @@
             <button class="tablinks" onclick="openTab(event, 'News')">News</button>
             <button class="tablinks" onclick="openTab(event, 'NewGames')">NewGames</button>
             <button class="tablinks" onclick="openTab(event, 'HotGames')">HotGames</button>
-            <button class="tablinks" onclick="openTab(event, 'Discuss')">Discuss</button>
             <button class="tablinks" style="z-index:2" onclick="openTab(event, 'Rooms')">Rooms</button>
         </div>
         {% with messages = get_flashed_messages() %}
@@ -39,22 +38,13 @@
         <div id="HotGames" class="tabcontent">
                 {% include '/games/index/hotGame_list.html' %}
         </div>
-        <div id="Discuss" class="tabcontent">
-                {% include '/games/index/discuss.html' %}
-        </div>
         <div id="Rooms" class="tabcontent">
             <button onclick="javascript:location.href='/games/add_room'">add room</button>
             {% if wait_rooms or game_rooms %}
                 {% include '/games/index/room_list.html' %}
             {% endif %}
         </div>
-        <h1 color="white">Enter room to watch Game</h1>
-        <form method="POST">
-            {{ form.hidden_tag() }}
-            {{ form.name.label }}: {{ form.name() }} {% for error in form.name.errors %}{{ error }}{% endfor %}<br>
-            {{ form.room.label }}: {{ form.room() }} {% for error in form.room.errors %}{{ error }}{% endfor %}<br>
-            {{ form.submit() }}
-        </form>
+      
         <script>
                 function openTab(evt, evtName) {
                     var i, tabcontent, tablinks;
