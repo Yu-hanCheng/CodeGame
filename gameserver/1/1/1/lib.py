@@ -38,8 +38,9 @@ def get_usage():
     global p,cpu_list, mem_list
     cpu=p.cpu_percent()
     mem=p.memory_percent()
-    cpu_list.append(cpu)
-    mem_list.append(mem)    
+    if cpu>0 and mem>0:
+        cpu_list.append(cpu)
+        mem_list.append(mem)    
     # cpu_list.append(p.cpu_percent())
     # mem_list.append(p.memory_percent())
 
@@ -61,7 +62,7 @@ class setInterval :
         self.stopEvent.set()
 
 # start action every 0.6s
-inter=setInterval(0.1,get_usage)
+inter=setInterval(0.5,get_usage)
 
 
 def gameover():
@@ -71,6 +72,7 @@ def gameover():
 
 connecttoserver = s.recv(2048)
 msg={'type':'connect','who':who,'user_id':user_id}
+print("userid:",who,user_id)
 str_ = json.dumps(msg)
 binary =str_.encode()
 s.send(binary)
@@ -100,7 +102,6 @@ def on_gameinfo(message):
 def send_togame(type_class,content):
     global paddle_vel,s,who
     msg={'type':type_class,'who':who,'content':content, 'cnt':cnt}
-    print('content:',content)
     str_ = json.dumps(msg)
     binary =str_.encode()
     s.send(binary)
@@ -120,8 +121,9 @@ def score(msg_from_gamemain):# CPU, MEM Utility
     mem = round(reduce(lambda x, y: x + y, mem_list) / len(mem_list),3)
     score = score + 1 - round((cpu + mem)/200,3)
     max_val=[max(cpu_list),round(max(mem_list),6)]
+
     # report="\""+str(user_id)+","+str(cpu)+","+str(mem)+","+str(avg_time)+"\""
-    report= '{\'score\':'+str(score)+',\'user_id\':'+str(user_id)+',\'code_id\':'+str(code_id)+',\'cpu\':'+str(cpu)+',\'mem\':'+str(mem)+',\'avg_time\':'+str(max_val)+'}'
+    report= '{\'score\':'+str(score)+',\'user_id\':'+str(user_id)+',\'code_id\':'+str(code_id)+',\'cpu\':'+str(cpu)+',\'mem\':'+str(mem)+',\'max_val\':'+str(max_val)+'}'
     # msg={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
     send_togame('score',report)
 def recvall(sock):
@@ -134,25 +136,21 @@ def recvall(sock):
     part = sock.recv(BUFF_SIZE)
     first_part_split=part.decode("utf-8").split("|")
     if len(first_part_split)>7:
-        print("two msg")
         for p in first_part_split:
             p_list = p.split("*")
             if len(p_list)>1:
                 data_len=p_list[-1]
                 break        
     else:
-        print("one msg")
         data_len = first_part_split[0]
     data_tail = first_part_split[-1]
-    print('len(data)',data_len,len(data_tail))
+    
     if int(data_len)==len(data_tail)-1:
-        print("==")
         part_split=data_tail.split("*")
         data += part_split[0]
     elif int(data_len)>len(data_tail):
         while True:
             part = sock.recv(BUFF_SIZE)
-            print('part',part)
             if part==b"":
                 print("no msg")
                 data=""
@@ -169,7 +167,7 @@ cnt =6000
 run()
 while cnt>0:
     str_data = recvall(s)
-    print("str_data",str_data)
+    
     if str_data =="":
         print("none")
         gameover()
