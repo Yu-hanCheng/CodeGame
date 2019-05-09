@@ -19,15 +19,18 @@ socket = io.connect('http://' + document.domain + ':' + location.port+namespace 
 
 $(document).ready(function(){
     socket.emit('join_room',  {room: $('#join_room').val(),privacy: $('#room_privacy').val(),status: $('#room_status').val()});
-    
-    socket.on('arrived', function(data) {
-        console.log("arrived:",data.msg)
-        $('#game_playground').css("display","block");
+    socket.on('gamemain_connect', function(data) {
+        document.getElementById('countdown').style.display = "none";
         $('#page_title').html("Game Start");
+    });
+    socket.on('arrived', function(data) {
+        $('#game_playground').css("display","block");
+        $('#page_title').html("Send Code");
     });
     socket.on('enter_room', function(data){
         $('#page_title').html("enter room");
         document.getElementById('btn_select_code').style.display = "block";
+        document.getElementById('countdown').style.display = "block";
         document.getElementById('leave_btn').style.display = "none";
     }); 
     socket.on('wait_room', function(data){
