@@ -6,7 +6,7 @@
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='gameover.css') }}">
 {% endblock %}
 {% block app_content %}
-
+<h1 id="roomname">{{ roomname }}</h1>
 <h1 id="page_title">room wait</h1>
 <button onclick="left_room()" id="leave_btn">leave room</button>
 

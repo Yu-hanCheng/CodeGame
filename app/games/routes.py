@@ -84,6 +84,8 @@ def add_room():
                 status = 0
             elif privacy == 3:
                 invite_players = (add_form.invitelist.data).split(',')
+            g = Game.query.filter_by(id=add_form.game.data).first()
+            g.count +=1
             log = Log(roomname=add_form.roomname.data,game_id=add_form.game.data,privacy=privacy,status=status)
             db.session.add(log)
             # 若是設定 privacy==friends(指定玩家), log.current_users.append((choose_form.player_list).split(','))
@@ -147,7 +149,7 @@ def wait_to_play(log_id):
             else: # only invited
                 pass
     
-    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,rank_list=rank_list,all_codes=all_codes,room_privacy=l.privacy)
+    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,rank_list=rank_list,all_codes=all_codes,room_privacy=l.privacy,roomname=l.roomname)
 
 @bp.route('/rank_list/<int:log_id>', methods=['GET','POST'])
 @login_required
@@ -183,7 +185,7 @@ def index(msg):
         wait_rooms = Log.query.with_entities(Log.id,Log.roomname,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.winner_id==None).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
         l_users = Log.query.filter(Log.winner_id==None).order_by(Log.timestamp.desc()).all()
         games = Game.query.order_by(Game.timestamp.desc()).all()
-        h_games = Game.query.order_by(Game.timestamp.desc()).all()
+        h_games = Game.query.order_by(Game.count.desc()).all()
         news = News.query.order_by(News.timestamp.desc()).all()
 
     return render_template('games/index/index.html', form=form,wait_rooms=wait_rooms,l_users=l_users,news=news,games=games,h_games=h_games)

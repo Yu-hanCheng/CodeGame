@@ -26,12 +26,13 @@ $(document).ready(function(){
     socket.on('arrived', function(data) {
         $('#game_playground').css("display","block");
         $('#page_title').html("Send Code");
+        document.getElementById('leave_btn').style.display = "none";
     });
     socket.on('enter_room', function(data){
         $('#page_title').html("enter room");
         document.getElementById('btn_select_code').style.display = "block";
         document.getElementById('countdown').style.display = "block";
-        document.getElementById('leave_btn').style.display = "none";
+        
     }); 
     socket.on('wait_room', function(data){
         document.getElementById('btn_select_code').style.display = "none";

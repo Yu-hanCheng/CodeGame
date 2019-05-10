@@ -7,15 +7,20 @@
                 <table class="table ">
                     <thead class="thead-dark">
                     <tr>
-                        <th scope="col">Hot Games</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Hot</th>
+                        <th scope="col">遊戲名稱</th>
+                        <th scope="col">遊戲描述</th>
                     </tr>
                     </thead>
                     <tbody>
                     {% for hg in h_games %}
                         <tr>
                             <td>{{ moment(hg.timestamp).format('LL') }}</td>
+                            <td>{{  hg.count }}</td>
                             <td>{{ hg.gamename }}</td>
                             <td>{{  hg.descript }}</td>
+                            
                         </tr>
                     {% endfor %}
                     </tbody>

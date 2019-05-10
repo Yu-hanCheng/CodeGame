@@ -320,6 +320,7 @@ class Game(db.Model):
     #             # print(x)
     #             pass
     #     return json.dumps(self)
+    count = db.Column(db.Integer,default=0)
 
     def followed_posts(self):
         followed = Post.query.join(

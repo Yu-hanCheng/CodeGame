@@ -7,7 +7,6 @@
                 <table class="table ">
                     <thead class="thead-dark">
                     <tr>
-                        <th scope="col">#</th>
                         <th scope="col">RoomID</th>
                         <th scope="col">RoomName</th>
                         <th scope="col">GameName</th>
@@ -21,7 +20,6 @@
                     {% for w_room in wait_rooms %}
                         {% if  w_room.status < 0 %}
                             <tr>
-                                <th scope="row">1</th>
                                 <td>{{ w_room.id }}</td>
                                 <td>{{ w_room.roomname }}</td>
                                 <td>{{ w_room.gamename }}</td>
