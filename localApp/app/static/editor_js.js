@@ -12,7 +12,8 @@ var replay_speed=10;
 web_port=5000
 local_port=5500
 namespace = '/local';
-socket = io.connect('http://' + document.domain + ':' + web_port );
+// socket = io.connect('http://' + document.domain + ':' + web_port );
+socket = io.connect('http://vegelephant.club');
 socket_local = io.connect('http://' + document.domain + ':' + local_port );
 socket_local.emit('conn', {msg: "conn"});
 $(document).ready(function(){
