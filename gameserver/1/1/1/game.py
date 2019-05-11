@@ -249,7 +249,7 @@ def handle_client_connection(client_socket):
     recv_request = client_socket.recv(1024)
     request=re.split(r'(\"|\\x)\s*', str(recv_request))[2]
     lib_lan=0
-    if len(request)>5:
+    if len(request)>15:
         print("this is c lib")
         lib_lan=1
         req =request.replace("\'","\"")

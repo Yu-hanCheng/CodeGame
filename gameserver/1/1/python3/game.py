@@ -9,7 +9,7 @@ game_exec_ip = sys.argv[1]
 game_exec_port = sys.argv[2]
 log_id = sys.argv[3]
 
-socketIO=SocketIO('0.0.0.0', 5000, LoggingNamespace)
+socketIO=SocketIO('http://192.168.0.54', 5000, LoggingNamespace)
 socketIO.emit('info',{'msg':'gameconnected','log_id':log_id})
 bind_ip = '0.0.0.0'
 bind_port = int(game_exec_port)+1
@@ -249,7 +249,7 @@ def handle_client_connection(client_socket):
     recv_request = client_socket.recv(1024)
     request=re.split(r'(\"|\\x)\s*', str(recv_request))[2]
     lib_lan=0
-    if len(request)>5:
+    if len(request)>15:
         print("this is c lib")
         lib_lan=1
         req =request.replace("\'","\"")

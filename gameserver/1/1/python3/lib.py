@@ -72,8 +72,8 @@ def gameover():
 
 connecttoserver = s.recv(2048)
 msg={'type':'connect','who':who,'user_id':user_id}
-print("userid:",who,user_id)
 str_ = json.dumps(msg)
+print("json str_:",str_)
 binary =str_.encode()
 s.send(binary)
 
