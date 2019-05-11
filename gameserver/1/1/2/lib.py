@@ -72,8 +72,8 @@ def gameover():
 
 connecttoserver = s.recv(2048)
 msg={'type':'connect','who':who,'user_id':user_id}
-print("userid:",who,user_id)
 str_ = json.dumps(msg)
+print("json str_:",str_)
 binary =str_.encode()
 s.send(binary)
 
@@ -119,7 +119,6 @@ def score(msg_from_gamemain):# CPU, MEM Utility
 
     cpu = round(reduce(lambda x, y: x + y, cpu_list) / len(cpu_list),3)
     mem = round(reduce(lambda x, y: x + y, mem_list) / len(mem_list),3)
-    score = score + 1 - round((cpu + mem)/200,3)
     max_val=[max(cpu_list),round(max(mem_list),6)]
 
     # report="\""+str(user_id)+","+str(cpu)+","+str(mem)+","+str(avg_time)+"\""
