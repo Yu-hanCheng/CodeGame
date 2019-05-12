@@ -262,7 +262,7 @@ def serve_app():
 
 def timeout_check(client_socket):
     global p1_rt, p2_rt,barrier, paddle1_move, paddle2_move, start,playerlist
-    timeout=0.5
+    timeout=0.7
     if start==1:
         try:
             barrier[1]=1

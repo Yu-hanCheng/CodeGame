@@ -511,7 +511,7 @@ def gameover(msg_type,l_report,r_report,record_content,log_id):
 def timeout_check():
     global p1_rt, p2_rt,barrier, paddle1_move, paddle2_move, start,playerlist,p1_timeout,p2_timeout
     
-    timeout=0.7
+    timeout=1
     if start==1:
         try:
             if barrier[0]==0:
