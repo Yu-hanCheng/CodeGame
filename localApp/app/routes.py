@@ -123,8 +123,8 @@ def commit():
         
         
         code_res = test_code(compiler,save_path,filename,file_end) # run code and display on browser
-        
-        if code_res[0]:
+
+        if code_res[0] and isCodeOk!=2 :
             print("code_ok")
             isCodeOk=1
             return "test ok"
@@ -172,6 +172,10 @@ def upload_code(message):
 @socketio.on('timeout')#from localbrowser
 def timeout(message):
     socketio.emit('timeout', {'msg':""})
+    global p_gamemain,p,isCodeOk
+    isCodeOk=2
+    p.kill()
+    p_gamemain.kill()
 
 def test_security(only_user_code):
     a=[' os',' sys',' subprocess']
