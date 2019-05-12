@@ -172,6 +172,10 @@ def play():
         
         ball[0] += int(ball_vel[0])
         ball[1] += int(ball_vel[1])
+        if int(ball[1]) <= BALL_RADIUS:
+            ball[1] = BALL_RADIUS
+        elif int(ball[1]) >= HEIGHT - BALL_RADIUS:
+            ball[1] = HEIGHT - BALL_RADIUS
 
         # 上下邊界反彈
         if int(ball[1]) <= BALL_RADIUS:
