@@ -21,22 +21,6 @@ class CreateGameForm(FlaskForm):
 	)
 	create = SubmitField('Create Game')
 	
-class CommentCodeForm(FlaskForm):
-	body = TextAreaField('Comment', validators=[DataRequired(),Length(min=0, max=1024)])
-	user_id = HiddenField('User id', default=current_user)
-	code_id = HiddenField('Code id', default=current_code)
-	comment = SubmitField('Comment')
-	# def __init__(self, arg):
-	# 	super(CreateGameForm, self).__init__()
-	# 	self.arg = arg
-
-
-
-	# def validate_username(self,username):
-	# 	if username.data != self.original_username:
-	# 		user = User.query.filter_by(username=self.username.data).first()
-	# 		if user is not None:
-	# 			raise ValidationError('Please use a different username.')
 class AddRoomForm(FlaskForm):
 	roomname = StringField('roomname', validators=[DataRequired(),Length(min=0, max=60)])
 	game_category = SelectField('Game Category',coerce=int,choices=[])

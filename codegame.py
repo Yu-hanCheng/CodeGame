@@ -7,7 +7,7 @@ app = create_app()
 
 @app.shell_context_processor
 def make_shell_context():
-	return {'db':db, 'User':User, 'Post':Post, 'Log':Log, 'Comment':Comment, 'Code':Code}
+	return {'db':db, 'User':User, 'Post':Post, 'Log':Log, 'Code':Code}
 	
 if __name__ == '__main__':
 	socketio.run(app)#,host='140.116.1.136'

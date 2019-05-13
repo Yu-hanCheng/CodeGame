@@ -1,11 +1,10 @@
 from flask import Blueprint
 
 bp = Blueprint('games', __name__)
-global current_game, current_log, current_code, current_comment# comment need current_code
+global current_game, current_log, current_code
 current_game=123 
 current_log='001'
 current_code='010'
-current_comment='888'
 from app.games import routes,events
 
 # class current_log(object):

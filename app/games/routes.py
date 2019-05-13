@@ -1,6 +1,6 @@
 from flask import render_template, flash, redirect, url_for, request, current_app, session
 from app import db
-from app.games.forms import CreateGameForm,CommentCodeForm, AddRoomForm, LoginForm, JoinForm, LeaveForm
+from app.games.forms import CreateGameForm, AddRoomForm, LoginForm, JoinForm, LeaveForm
 from flask_login import current_user, login_user, logout_user,login_required
 from app.models import User, Game, Log, Code,Privacy,News
 from werkzeug.urls import url_parse

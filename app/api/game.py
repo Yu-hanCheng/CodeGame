@@ -36,20 +36,6 @@ def over_game(id):
 	per_page = min(request.args.get('per_page',10,type=int),100)
 	data = User.to_collection_dict(user.followers, page, per_page,'api.get_followers',id=id)
 	return jsonify(data)
-
-@bp.route('/codes/<int:codeId>', methods=['GET','POST'])
-@login_required
-def comment_code(codeId):
-	form = CommentCodeForm() #current_log.id
-	if form.validate_on_submit():
-		comment = Comment(code_id=form.code_id.data, body=form.body.data)
-		db.session.add(code)
-		db.session.commit()
-		flash('Your code have been saved.')
-		# return redirect(url_for('game.start_game')) #不重新整理頁面
-	# elif request.method == 'GET':
-	return render_template('games/comment_code.html', title='Commit Code',
-                           form=form)
 	
 @bp.route('/games', methods=['POST'])
 def create_game():
