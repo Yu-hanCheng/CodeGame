@@ -29,8 +29,6 @@ $(document).ready(function(){
                 FD.append("end", data[1]);
                 FD.append("test_lib", String.fromCharCode.apply(null,  new Uint8Array(data[2])));
                 FD.append("test_game", String.fromCharCode.apply(null,  new Uint8Array(data[3])));
-
-                document.getElementById('section_code').style.display="block";
                 
                 send_to_back(FD,"multipart/form-data","library")
             });
@@ -69,14 +67,15 @@ $(document).ready(function(){
         console.log("security",data);
         // window.location.refresh();
         if (data['msg'][0]==1){
-            document.getElementById('section_code').style.display = "none";
-            document.getElementById('section_game').style.display = "block";
+            $('.play_space').css("display", "block");
         }else{
             alert("This code is not available: "+data['msg'][1])
+            document.getElementById("commit_btn").disabled="False"
         }
     });
     socket_local.on('timeout', function(data){ 
         alert("timeout")
+        document.getElementById("commit_btn").disabled="False"
     });
 });
 
@@ -124,6 +123,7 @@ function commit_code(){
     let editor_content=editor.getValue();
     var encodedData = window.btoa(unescape(encodeURIComponent(editor_content)));
     let choosed= $("#chooseFile")[0].files;
+    document.getElementById("commit_btn").disabled = "True";
     console.log('choosed:',choosed.length);
     if(choosed.length!=0){
         convertFile(choosed[0]).then(data => {
