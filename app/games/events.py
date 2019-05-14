@@ -12,8 +12,12 @@ import eventlet
 
 @socketio.on('gamemain_connect')
 def gamemain_connect(message):
-    users = User.query.with_entities(User.username).filter(User.id.in_([message['msg']['P1'],message['msg']['P2']])).all()
-    emit('connect_start',users,namespace = '/test',room= message['log_id'])
+    users_list=[]
+    the_p1 = User.query.with_entities(User.username).filter_by(id=message['msg']['P1']).first()
+    users_list.append(the_p1[0])
+    the_p2 = User.query.with_entities(User.username).filter_by(id=message['msg']['P2']).first()
+    users_list.append(the_p2[0])
+    emit('connect_start',users_list,namespace = '/test',room= message['log_id'])
 
 @socketio.on('timeout_over') 
 def timeout_over(message):

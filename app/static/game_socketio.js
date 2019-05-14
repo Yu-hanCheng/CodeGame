@@ -39,8 +39,8 @@ $(document).ready(function(){
         $('#page_title').html("wait for others");
     }); 
     socket.on('connect_start', function(data){
-        $('#map_left_user').html(data[0][0]); 
-        $('#map_right_user').html(data[1][0]); 
+        $('#map_left_user').html(data[0]); 
+        $('#map_right_user').html(data[1]); 
 
     });
     socket.on('gameover', function(data){ 
