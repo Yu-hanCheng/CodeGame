@@ -7,7 +7,7 @@
 var socket;
 var left_buff=[],right_buff=[],ball_buff=[];
 var buff_min=20,buff_normal=50;
-
+var scaling_ratio;
 var editor = ace.edit("editor");    
 editor.setTheme("ace/theme/twilight");
 
