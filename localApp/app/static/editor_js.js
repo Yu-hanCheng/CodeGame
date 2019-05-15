@@ -282,7 +282,7 @@ function before_sendback(Data,content_type,post_dest){
     var lan_compiler
         switch(res[7]) {
             case ".py":
-            lan_compiler = "python3"
+            lan_compiler = "python"
               break;
             case ".c":
             lan_compiler = "gcc"
