@@ -23,7 +23,7 @@ class MaxSizeList(object):
 				self.ls.insert(i,user_element)
 				return 0
 		except Exception as e:
-			print("push error: ",e)
+			print("insert error: ",e)
 			return 1
 
 	def push(self, st):
@@ -44,7 +44,7 @@ class MaxSizeList(object):
 			else:
 				return [0,self.ls.pop(i)]
 		except Exception as e:
-			print("push error: ",e)
+			print(e)
 			return [1,e]
 	
 	def get_list(self):
@@ -73,6 +73,7 @@ def push_to_room_list(user_code_str):
 		rooms = room_list.get_list()
 		for i in range(0,len(rooms)):
 			if user_code_str[0]==rooms[i][0]: #find same room
+				print("find same room:",rooms[i][0])
 				# 應該不會發生同一位玩家重複傳訊息來,所以直接-1不用check(前端的join btn按完就會鎖)
 				if user_code_str[1]==rooms[i][1]: #怕怕的,還是check一下,如果已經有 userId就直接 return -1(不用update因為是一樣的東西)
 					return -1
@@ -159,14 +160,13 @@ load_model = pickle.load(open(filename, 'rb'))\n","utf-8")
 def code_address(server,data):
 	# 先經過 sandbox, 將結果回傳給user, (確定要使用)再排進 room_list
 	global webserver_id,room_list
-
+	
 	path, filename, fileEnd, compiler = save_code(data['code_id'],data['code'],data['attach_ml'],data['ml_file'],data['log_id'],data['user_id'],data['category_id'],data['game_id'],data['language'])
 
 	msg=""	
 	log_id_index = push_to_room_list([data['log_id'],data['user_id'],data['category_id'],compiler,path,filename,fileEnd,data['code_id'],data['attach_ml'],data['player_num']])
 	if log_id_index >= 0: # arrived 
 		popped_codes_list = pop_code_in_room(log_id_index, data['log_id'])
-		print("popped_codes_list:",popped_codes_list)
 		push_to_serv_list(popped_codes_list) 
 	else:
 		msg +="wait for other players..." 
