@@ -100,7 +100,10 @@ def pop_code_in_room(i,the_log_id):
 		else:
 			popped.append(pop[1])
 			print("popped",popped)
-			if len(_rooms) == 0:
+			try:
+				if _rooms[i][0]!= the_log_id:
+					pass
+			except:
 				break
 
 
