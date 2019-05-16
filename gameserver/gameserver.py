@@ -79,11 +79,12 @@ def push_to_room_list(user_code_str):
 
 				rooms[i][-1] -=1 #應到人數-1，結果代表還剩幾位玩家可以加入
 				user_code_str[-1]=rooms[i][-1]
-				if user_code_str[-1]==0: # if all arrived
+				if user_code_str[-1]==0: # if all arrived				
 					room_list.insert(i,user_code_str)
 					return i #arrived_index
 			else:
 				pass
+		user_code_str[-1] -=1
 		room_list.push(user_code_str) # no same room, then append to the last
 	return -1
 	
@@ -98,6 +99,7 @@ def pop_code_in_room(i,the_log_id):
 			print("error: ",pop[1])
 		else:
 			popped.append(pop[1])
+			print("popped",popped)
 			if len(_rooms) == 0:
 				break
 
