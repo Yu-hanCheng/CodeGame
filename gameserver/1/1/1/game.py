@@ -499,7 +499,7 @@ def gameover(msg_type,l_report,r_report,record_content,log_id):
     print("gameover",msg_type)
     if msg_type=="timeout_over":
         send_to_webserver(msg_type,record_content,log_id)                       
-    else:
+    else:# msg_type == "over"
         send_to_webserver(msg_type,{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)                       
     game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
     game_exec_address = (game_exec_ip, int(game_exec_port))
