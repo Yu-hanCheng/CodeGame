@@ -216,7 +216,7 @@ def chat_message(message):
     emit('chat_message_broadcast',{'user':current_user.username,'msg':message},namespace = '/test', room=str(room)) #{'user': current_user.id,'msg': message}
 
 def send_togameserver(msg_data):
-    ws = create_connection("ws://127.0.0.1:6005")# to gameserver
+    ws = create_connection("ws://192.168.0.48:6005")# to gameserver
     ws.send(msg_data)
     result =  ws.recv() #
     print("Received '%s'" % result)
