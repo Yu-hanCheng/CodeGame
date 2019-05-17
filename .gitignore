@@ -8,4 +8,3 @@ app.db
 .DS_Store
 *app/static/src-noconflict
 *localApp/app/static/src-noconflict
-*localApp/app/static/jquery-3.3.1.js
