@@ -173,14 +173,14 @@ def play():
         ball[0] += int(ball_vel[0])
         ball[1] += int(ball_vel[1])
         if int(ball[1]) <= BALL_RADIUS:
-            ball[1] = BALL_RADIUS
+            ball[1] = BALL_RADIUS+1
         elif int(ball[1]) >= HEIGHT - BALL_RADIUS:
-            ball[1] = HEIGHT - BALL_RADIUS
+            ball[1] = HEIGHT - BALL_RADIUS-1
 
         # 上下邊界反彈
-        if int(ball[1]) <= BALL_RADIUS:
+        if int(ball[1]) <= BALL_RADIUS+1:
             ball_vel[1] = - ball_vel[1]
-        elif int(ball[1]) >= HEIGHT - BALL_RADIUS:
+        elif int(ball[1]) >= HEIGHT - BALL_RADIUS-1:
             ball_vel[1] = - ball_vel[1]
 
         # left normal catch
@@ -192,9 +192,9 @@ def play():
             ball_vel[0] *= 1.1
             ball_vel[1] *= 1.1      
         # left no catch                                                             
-        elif int(ball[0]) <= BALL_RADIUS:
+        elif int(ball[0]) <= BALL_RADIUS+1:
             r_score += 1
-            ball[0] = BALL_RADIUS
+            ball[0] = BALL_RADIUS+1
             print('r_score ',r_score)
             if r_score < WIN_SCORE:
                 ball_init(True)
@@ -214,9 +214,9 @@ def play():
             ball_vel[0] = -ball_vel[0]
             ball_vel[0] *= 1.1
             ball_vel[1] *= 1.1
-        elif int(ball[0]) >= WIDTH + 1 - BALL_RADIUS:
+        elif int(ball[0]) >= WIDTH  - BALL_RADIUS -1:
             l_score += 1
-            ball[0]=WIDTH + 1 - BALL_RADIUS
+            ball[0]=WIDTH - BALL_RADIUS-1
             print('l_score ',l_score)
             if l_score < WIN_SCORE:
                 ball_init(False)
