@@ -32,9 +32,9 @@ WIDTH = 800
 HEIGHT = 400
 BALL_RADIUS = 20
 PAD_WIDTH = 20
-PAD_HEIGHT = math.ceil(HEIGHT/3)
+PAD_HEIGHT = math.floor(HEIGHT/3)
 HALF_PAD_WIDTH = PAD_WIDTH // 2
-HALF_PAD_HEIGHT = PAD_HEIGHT // 2
+HALF_PAD_HEIGHT = math.floor(PAD_HEIGHT // 2)
 PAD_END = HEIGHT - HALF_PAD_HEIGHT
 PAD_CATCH = HALF_PAD_HEIGHT + BALL_RADIUS//2
 paddle1 = [HALF_PAD_WIDTH - 1, HEIGHT // 2]
@@ -148,10 +148,10 @@ def play():
         global barrier,start,endgame
         
         def y_axis(the_paddle,the_move):
-            if the_paddle > HALF_PAD_HEIGHT and the_paddle < PAD_END:
+            if the_paddle > HALF_PAD_HEIGHT and the_paddle < PAD_END+10:
                 
-                if the_paddle + the_move > PAD_END:
-                    the_paddle = PAD_END
+                if the_paddle + the_move > PAD_END+10:
+                    the_paddle = PAD_END+10
                 elif the_paddle + the_move < HALF_PAD_HEIGHT:
                     the_paddle = HALF_PAD_HEIGHT
                 else:
@@ -159,9 +159,10 @@ def play():
             elif the_paddle <= HALF_PAD_HEIGHT and the_move > 0:
                 the_paddle = HALF_PAD_HEIGHT
                 the_paddle += the_move
-            elif the_paddle >= PAD_END and the_move < 0:
-                the_paddle = PAD_END
-                the_paddle += the_move
+            elif the_paddle >= PAD_END+10:
+                the_paddle = PAD_END+10
+                if the_move < 0:
+                    the_paddle += the_move
             else:
                 pass
             return the_paddle
@@ -550,9 +551,9 @@ def timeout_check():
             
 def after_play(game_whom):
     global ball, paddle1, paddle2
-    ratio_ball=[round((ball[0]-BALL_RADIUS)/8),round((ball[1]-BALL_RADIUS)/4)]
-    ratio_paddle1 = round((paddle1[1]-HALF_PAD_HEIGHT)/4)
-    ratio_paddle2 = round((paddle2[1]-HALF_PAD_HEIGHT)/4)
+    ratio_ball=[round((ball[0]-BALL_RADIUS)/8,1),round((ball[1]-BALL_RADIUS)/4,1)]
+    ratio_paddle1 = round((paddle1[1]-HALF_PAD_HEIGHT)/4,1)
+    ratio_paddle2 = round((paddle2[1]-HALF_PAD_HEIGHT)/4,1)
     print("ratio_ball:",ratio_ball,ratio_paddle1)
     send_to_webserver('info',tuple([ratio_ball,ratio_paddle1,ratio_paddle2,[l_score,r_score]]),log_id)
     record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))

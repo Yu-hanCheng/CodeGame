@@ -39,7 +39,7 @@
 	top: 50%;
 	left: 50%;
 	background: green;
-	border: 1px solid rgba(0, 0, 0, 0.5);
+	/* border: 1px solid rgba(0, 0, 0, 0.5); */
 	border-radius: 50%;
 }
 .goalkeeper {
@@ -47,7 +47,7 @@
 	height:30%;
 	position: relative;
 	background: red;
-	border: 1px solid rgba(0, 0, 0, 0.5);
+	/* border: 1px solid rgba(0, 0, 0, 0.5); */
 	border-radius: 5px;
 }
 .left-goalkeeper {
