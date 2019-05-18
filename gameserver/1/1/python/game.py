@@ -167,8 +167,7 @@ def play():
             return the_paddle
         paddle2[1] = y_axis(copy.deepcopy(paddle2[1]),paddle2_move)    
         paddle1[1] = y_axis(copy.deepcopy(paddle1[1]),paddle1_move)
-        print("paddle:",paddle1,paddle2)
-        
+    
         
         ball[0] += int(ball_vel[0])
         ball[1] += int(ball_vel[1])
@@ -550,8 +549,12 @@ def timeout_check():
             pass
             
 def after_play(game_whom):
-    global ball, paddle1, paddle2,paddle1_movel,paddle2_move
-    send_to_webserver('info',tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
+    global ball, paddle1, paddle2
+    ratio_ball=[round((ball[0]-BALL_RADIUS)/8),round((ball[1]-BALL_RADIUS)/4)]
+    ratio_paddle1 = round((paddle1[1]-HALF_PAD_HEIGHT)/4)
+    ratio_paddle2 = round((paddle2[1]-HALF_PAD_HEIGHT)/4)
+    print("ratio_ball:",ratio_ball,ratio_paddle1)
+    send_to_webserver('info',tuple([ratio_ball,ratio_paddle1,ratio_paddle2,[l_score,r_score]]),log_id)
     record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))
     game(game_whom)
 

@@ -173,17 +173,13 @@ function left_room(){
     socket.disconnect();
     window.location.href = "../leftroom";
 }
-function ball_update(position){
+function ball_update(relative_pos){
     var width = $(".ball").outerWidth();
     var height = $(".ball").outerHeight();
-    $(".ball").css({"left":position[0]*scaling_ratio-width/2,"top":position[1]*scaling_ratio-height/2});
+    $(".ball").css({"left":relative_pos[0]+"%" ,"top":relative_pos[1]+"%"});
 }
-function paddle_update(position, direction){
-    let groundHeight = $(".playground").height();
-    let height = direction.outerHeight();
-    let p_top = position[1]*scaling_ratio-height/2;
-    let topMax = groundHeight - p_top;
-    direction.css("top",p_top);	
+function paddle_update(relative_pos, direction){
+    direction.css("top",relative_pos+"%");	
 }
 function score_update(newscores){
 
