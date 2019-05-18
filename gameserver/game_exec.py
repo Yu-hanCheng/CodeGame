@@ -8,7 +8,7 @@ import json, sys,os,time, socket, threading,copy
 import subprocess,base64
 from subprocess import PIPE,Popen
 subserverlist=[]
-
+subserver_cnt=0
 bind_ip = '0.0.0.0'
 bind_port = int(sys.argv[1])
 subservers=2
@@ -133,7 +133,6 @@ def tcp_serve_for_sub():
             args=(client_sock,)  # without comma you'd get a... TypeError: handle_client_connection() argument after * must be a sequence, not _socketobject
         )
         client_handler.start()
-subserver_cnt=0
 def recvall(sock):
     
     BUFF_SIZE = 1024 # 4 KiB
@@ -158,21 +157,20 @@ def tcp_client_handle(client_socket):
                 # without comma you'd get a... TypeError: handle_client_connection() argument after * must be a sequence, not _socketobject
             )
             recv_from_gameserv_handler.start()
-        
     while True:
         try:
             request = recvall(client_socket)
             if request==b"":
-                Can_recving=True
-                print("no msg")
-                break 
+                subserver_cnt-=1
+                if subserver_cnt!=subservers: # default setting: there are two subservers
+                    Can_recving=False
+                print("no msg, subserver disconnect",Can_recving,subserver_cnt)
             msg = json.loads(request.decode())
             
             if msg['type']=='over': # from game
-                print("over")
                 global p
                 p.kill()
-                subserver_cnt-=1
+                subserver_cnt+=1 #because there must recv no msg "" later
                 # client_socket.close()
                 Can_recving=True
             elif msg['type']=='game_setted':
@@ -181,14 +179,15 @@ def tcp_client_handle(client_socket):
                 for s_c in subserverlist:
                     print("s_c",msg,s_c)
                     s_c.sendall(msg)
+                subserver_cnt+=1  #because there must recv no msg "" later
+                Can_recving=False
             else:
                 pass
         except Exception as e:
-            subserver_cnt-=1
-            Can_recving=False
             print("error:",e)           
             for i,e in enumerate(subserverlist):
                 if e.getpeername() ==copy_client_socket:
+                    Can_recving=False
                     subserverlist.remove(client_socket)
                     print("remove index",i)
             client_socket.close()
