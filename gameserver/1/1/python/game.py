@@ -35,7 +35,8 @@ PAD_WIDTH = 20
 PAD_HEIGHT = math.floor(HEIGHT/3)
 HALF_PAD_WIDTH = PAD_WIDTH // 2
 HALF_PAD_HEIGHT = math.floor(PAD_HEIGHT // 2)
-PAD_END = HEIGHT - HALF_PAD_HEIGHT
+PAD_END = 346
+
 PAD_CATCH = HALF_PAD_HEIGHT + BALL_RADIUS//2
 paddle1 = [HALF_PAD_WIDTH - 1, HEIGHT // 2]
 paddle2 = [WIDTH + 1 - HALF_PAD_WIDTH, HEIGHT //2]
@@ -148,10 +149,10 @@ def play():
         global barrier,start,endgame
         
         def y_axis(the_paddle,the_move):
-            if the_paddle > HALF_PAD_HEIGHT and the_paddle < PAD_END+10:
+            if the_paddle > HALF_PAD_HEIGHT and the_paddle < PAD_END:
                 
-                if the_paddle + the_move > PAD_END+10:
-                    the_paddle = PAD_END+10
+                if the_paddle + the_move > PAD_END:
+                    the_paddle = PAD_END
                 elif the_paddle + the_move < HALF_PAD_HEIGHT:
                     the_paddle = HALF_PAD_HEIGHT
                 else:
@@ -159,8 +160,8 @@ def play():
             elif the_paddle <= HALF_PAD_HEIGHT and the_move > 0:
                 the_paddle = HALF_PAD_HEIGHT
                 the_paddle += the_move
-            elif the_paddle >= PAD_END+10:
-                the_paddle = PAD_END+10
+            elif the_paddle >= PAD_END:
+                the_paddle = PAD_END
                 if the_move < 0:
                     the_paddle += the_move
             else:
