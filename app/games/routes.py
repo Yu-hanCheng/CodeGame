@@ -60,6 +60,13 @@ def get_g_player_num():
                 return str(game_player_num[0])
             else:
                 return ""
+        else:
+            print("not \"text/plain\"")
+            return ""
+    else:
+        print("not \"post\"")
+        return ""
+
 @bp.route('/add_room', methods=['GET','POST'])
 @login_required
 def add_room():
