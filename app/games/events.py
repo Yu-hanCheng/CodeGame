@@ -22,6 +22,11 @@ def gamemain_connect(message):
 @socketio.on('timeout_over') 
 def timeout_over(message):
     emit('timeout_over',message['msg']['user'],namespace = '/test',room= message['log_id'])
+    app = current_app._get_current_object() 
+    name = message['log_id']+"_stop"
+    globals()[name] = threading.Event()
+    globals()[name].clear()
+    eventlet.spawn(notify_browser,60,message['log_id'],app,globals()[name]) 
 
 @socketio.on('timeout') 
 def timeout(message):

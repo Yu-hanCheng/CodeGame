@@ -62,6 +62,10 @@ $(document).ready(function(){
     });
     socket.on('timeout_over', function(data) {
         alert("timeout_over:"+data)
+        document.getElementById('countdown').style.display = "block";
+        document.getElementById('btn_select_code').style.display = "block";
+        $('#page_title').html("The code can't return paddle value in a second, please try another code");
+        
     });
     socket.on('the_change_code', function(data) {
         if (data['code_id']==lan_mode.value){
