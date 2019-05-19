@@ -17,7 +17,7 @@ def gamemain_connect(message):
     users_list.append(the_p1[0])
     the_p2 = User.query.with_entities(User.username).filter_by(id=message['msg']['P2']).first()
     users_list.append(the_p2[0])
-    emit('connect_start',users_list,namespace = '/test',room= message['log_id'])
+    emit('gamemain_connect',users_list,namespace = '/test',room= message['log_id'])
 
 @socketio.on('timeout_over') 
 def timeout_over(message):

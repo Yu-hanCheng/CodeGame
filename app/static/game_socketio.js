@@ -21,12 +21,11 @@ $(document).ready(function(){
     socket.emit('join_room',  {room: $('#join_room').val(),privacy: $('#room_privacy').val(),status: $('#room_status').val()});
     socket.on('gamemain_connect', function(data) {
         document.getElementById('countdown').style.display = "none";
-        $('#page_title').html("Game Start");
-    });
-    socket.on('arrived', function(data) {
-        $('#game_playground').css("display","block");
-        $('#page_title').html("Send Code");
+        document.getElementById('btn_select_code').style.display = "none";
         document.getElementById('leave_btn').style.display = "none";
+        $('#page_title').html("Game Start");
+        $('#map_left_user').html(data[0]); 
+        $('#map_right_user').html(data[1]); 
     });
     socket.on('enter_room', function(data){
         $('#page_title').html("enter room");
@@ -38,11 +37,7 @@ $(document).ready(function(){
         document.getElementById('btn_select_code').style.display = "none";
         $('#page_title').html("wait for others");
     }); 
-    socket.on('connect_start', function(data){
-        $('#map_left_user').html(data[0]); 
-        $('#map_right_user').html(data[1]); 
 
-    });
     socket.on('gameover', function(data){ 
         // alert('l_report:'+ JSON.stringify(data.msg.l_report))
         myPopupjs(data.msg,data.log_id);
