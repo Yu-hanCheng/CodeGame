@@ -112,6 +112,7 @@ def add_room():
 @login_required
 def wait_to_play(log_id):
     session['log_id']=log_id
+    print("wait_to play:",session.get('user_id', ''),session['_id'],session.get('log_id', ''),session.get('game_start', ''))
     # 檢查這個log的game有哪些可用的code, 列出語言, 有才讓 html的btn visable
     log_id = session.get('log_id', '')
     l=Log.query.filter_by(id=log_id).first()
@@ -132,22 +133,18 @@ def wait_to_play(log_id):
     finally:
         if have_code:
             l= Log.query.filter_by(id=log_id).first()
-
             current_users = l.current_users
-
             if l.privacy is 1: # public,可以
                 rank_list=""
-                if l.status is 0 : 
-                    print("sorry room is full, can't join game")
-                    return redirect(url_for('games.index',msg="sorry room is full, can't join game"))
+                if l.status is 0 :
+                    if current_user not in current_users: 
+                        print("sorry room is full, can't join game")
+                        return redirect(url_for('games.index',msg="sorry room is full, can't join game"))
+                    else:
+                        game_start=True
                 else: # room還沒滿,可以進來參賽(新增 player_in_log data, update user的 current_log) # if s is not (0 or 1) :
-                    in_list=False
-                    for i,player in enumerate(current_users):
-                        if player == current_user.id:
-                            print("already in")
-                            in_list=True
-                            break
-                    if not in_list:
+                    game_start=False
+                    if current_user not in current_users:
                         join_log(l,l.privacy)
                     
             elif l.privacy == 2: # official
@@ -155,8 +152,7 @@ def wait_to_play(log_id):
                 rank_list=l.get_rank_list()
             else: # only invited
                 pass
-    
-    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,rank_list=rank_list,all_codes=all_codes,room_privacy=l.privacy,roomname=l.roomname)
+    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,rank_list=rank_list,all_codes=all_codes,room_privacy=l.privacy,roomname=l.roomname,game_start=game_start)
 
 @bp.route('/rank_list/<int:log_id>', methods=['GET','POST'])
 @login_required
@@ -190,13 +186,15 @@ def index(msg):
         form.name.data = session.get('name', '')
         form.room.data = session.get('room', '')
         wait_rooms = Log.query.with_entities(Log.id,Log.roomname,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.winner_id==None).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
-        l_users = Log.query.filter(Log.winner_id==None).order_by(Log.timestamp.desc()).limit(10).all()
+        wait_room_users = Log.query.filter(Log.winner_id==None).order_by(Log.timestamp.desc()).all()
+        game_rooms = Log.query.with_entities(Log.id,Log.roomname,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.status==0,User.id==current_user.id).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
+        game_room_users = Log.query.filter(Log.status==0,User.id==current_user.id).order_by(Log.timestamp.desc()).all()
         games = Game.query.order_by(Game.timestamp.desc()).limit(10).all()
         h_games = Game.query.order_by(Game.count.desc()).limit(10).all()
         news = News.query.order_by(News.timestamp.desc()).limit(5).all()
  
      
-    return render_template('games/index/index.html', form=form,wait_rooms=wait_rooms,l_users=l_users,news=news,games=games,h_games=h_games)
+    return render_template('games/index/index.html', form=form,wait_rooms=wait_rooms,game_rooms=game_rooms,w_users=wait_room_users,g_users=game_room_users,news=news,games=games,h_games=h_games)
 
 @bp.route('/gameover/<log_id>', methods=['GET','POST'])
 @login_required
@@ -215,7 +213,7 @@ def join_log(l,privacy_info):
     current_user.current_log_id = l.id
     if privacy_info==1:
         l.status +=1
-
+    session['user_id']=current_user.id
     try:
         db.session.commit()
         print('update log status successfully',l.current_users)

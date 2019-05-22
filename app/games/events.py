@@ -10,16 +10,21 @@ import json,base64,time
 from eventlet.green import threading
 import eventlet
 
-@socketio.on('gamemain_connect')
+@socketio.on('gamemain_connect') #from game.py
 def gamemain_connect(message):
+    print("gamemain:",request.sid)
     users_list=[]
     the_p1 = User.query.with_entities(User.username).filter_by(id=message['msg']['P1']).first()
     users_list.append(the_p1[0])
     the_p2 = User.query.with_entities(User.username).filter_by(id=message['msg']['P2']).first()
     users_list.append(the_p2[0])
     emit('gamemain_connect',users_list,namespace = '/test',room= message['log_id'])
+@socketio.on('game_start',namespace = '/test') 
+def game_start(message):
+    session['game_start']=True
+    print("gamestart:",session['user_id'],session['_id'],session['game_start'])
 
-@socketio.on('timeout_over') 
+@socketio.on('timeout_over') #from game.py
 def timeout_over(message):
     emit('timeout_over',message['msg']['user'],namespace = '/test',room= message['log_id'])
     app = current_app._get_current_object() 
@@ -28,11 +33,11 @@ def timeout_over(message):
     globals()[name].clear()
     eventlet.spawn(notify_browser,60,message['log_id'],app,globals()[name]) 
 
-@socketio.on('timeout') 
+@socketio.on('timeout') #from game.py
 def timeout(message):
     emit('timeout',message['msg']['user'],namespace = '/test',room= message['log_id'])
 
-@socketio.on('over') 
+@socketio.on('over') #from game.py
 def game_over(message):
     # msg：tuple([l_score,r_score,gametime])??
     # alert myPopupjs(玩家成績報告) on browser
@@ -56,6 +61,7 @@ def game_over(message):
         l.winner_code_id=r_report['code_id']
     save_content = json.dumps(message['msg'])
     l.record_content = save_content
+    l.status = 1 
     
     try:
         db.session.commit()
@@ -65,7 +71,7 @@ def game_over(message):
         pass
 
 
-@socketio.on('info')
+@socketio.on('info')#from game.py
 def test_connect(message):
     # 接收來自 gamemain的訊息並再傳至browser
     # msg={'type':type_class,'who':who,'content':content, 'cnt':cnt} -- 0122/2019
@@ -73,27 +79,31 @@ def test_connect(message):
 
 @socketio.on('join_room' ,namespace = '/test')
 def join_room_from_browser(message):
+    print("join room :session.get('log_id', '')",session.get('_id', ''),session.get('log_id', ''))
     join_room(message['room'])
-    app = current_app._get_current_object()  # get the real app instance
-    
-
+    session['game_start'] = message['game_start']
     if int(message['status']) ==0:
-        emit('enter_room',message['privacy'],namespace = '/test',room= message['room'])
-        if int(message['privacy'])==1:
-            # set_interval(app,notify_browser,1,60,message['room'])
-            all_code = message['room']+"_all"
-            globals()[all_code]=0
-            name = message['room']+"_stop"
-            globals()[name] = threading.Event()
-            globals()[name].clear()
-            eventlet.spawn(notify_browser,60,message['room'],app,globals()[name]) 
-            print("join room",message['room'],threading.enumerate())
+        if message['game_start']=="False":
+            emit('enter_room',message['privacy'],namespace = '/test',room= message['room'])
+            if int(message['privacy'])==1:
+                app = current_app._get_current_object()  # get the real app instance
+                # set_interval(app,notify_browser,1,60,message['room'])
+                all_code = message['room']+"_all"
+                globals()[all_code]=0
+                name = message['room']+"_stop"
+                globals()[name] = threading.Event()
+                globals()[name].clear()
+                eventlet.spawn(notify_browser,60,message['room'],app,globals()[name]) 
+                print("join room",message['room'],threading.enumerate())
+        else:
+            pass # gaming
             
     else:
         emit('wait_room',namespace = '/test',room= message['room'])    
 
 @socketio.on('change_code',namespace = '/test')
 def change_code(message):
+    print("change_code:",session.get('user_id', ''),session['_id'],session.get('log_id', ''))
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
     select_code =Code.query.with_entities(Code.id,Code.body, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
     emit('the_change_code',{'code':select_code.body,'code_commit_msg':select_code.commit_msg,'code_id':message['code_id']},namespace = '/test',room= message['room']) 
@@ -143,11 +153,17 @@ def upload_code(message):
         db.session.rollback()
     finally:
         pass
+@socketio.on('get_players',namespace = '/test')
+def get_players(message):
+    emit('get_players',"", room=message['room'],namespace = '/test')
+    
+@socketio.on('the_players',namespace = '/test')
+def the_players(message):
+    emit('the_players',message, room=message['room'],namespace = '/test')
 # -- 0122/2019
 def left(message):
     """Sent by clients when they leave a room.
     A status message is broadcast to all people in the room."""
-    print("left log:",type(message['room']),message['room'])
     l=Log.query.filter_by(id=int(message['room'])).first()
     g=Game.query.filter_by(id=l.game_id).first()
     l.status -=1
@@ -231,11 +247,12 @@ def check_user(message):
 @socketio.on('disconnect')
 def test_disconnect():
     log_id = session.get('log_id', '')
-
-    if log_id:
-        left({'room':log_id})
-    else:
-        print("log_id is ''")
+    print("disconnect session:",current_user,log_id,session.get('game_start', ''))
+    if session.get('game_start', '')=="False":
+        if log_id:
+            left({'room':log_id})
+        else:
+            print("log_id is ''")
 
 def set_language_id(filename_extension):
     compiler = {

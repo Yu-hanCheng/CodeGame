@@ -18,14 +18,24 @@ namespace = '/test';
 socket = io.connect('http://' + document.domain + ':' + location.port+namespace );
 
 $(document).ready(function(){
-    socket.emit('join_room',  {room: $('#join_room').val(),privacy: $('#room_privacy').val(),status: $('#room_status').val()});
+    socket.emit('join_room',  {room: $('#join_room').val(),privacy: $('#room_privacy').val(),status: $('#room_status').val(),game_start:$('#game_start').val()});
+    if($('#game_start').val()=="True"){
+        socket.emit('get_players',{room:$('#join_room').val()});
+    } 
+    socket.on('get_players', function() {
+        let left_player = $('#map_left_user').text();
+        if(left_player!=" P1 username"){
+            socket.emit('the_players',{room:$('#join_room').val(),left:$('#map_left_user').text(),right:$('#map_right_user').text()});  
+        }
+    });
+    socket.on('the_players', function(data) {
+        let players=[data.left,data.right];
+        game_start(players);
+    });
+    
     socket.on('gamemain_connect', function(data) {
-        document.getElementById('countdown').style.display = "none";
-        document.getElementById('btn_select_code').style.display = "none";
-        document.getElementById('leave_btn').style.display = "none";
-        $('#page_title').html("Game Start");
-        $('#map_left_user').html(data[0]); 
-        $('#map_right_user').html(data[1]); 
+        game_start(data);
+        socket.emit('game_start','');
     });
     socket.on('enter_room', function(data){
         $('#page_title').html("enter room");
@@ -103,6 +113,17 @@ $(document).ready(function(){
         rwd_playground();
     });
 });
+function game_start(data){
+    
+    document.getElementById('countdown').style.display = "none";
+    document.getElementById('btn_select_code').style.display = "none";
+    document.getElementById('leave_btn').style.display = "none";
+    $('#page_title').html("Game Start");
+    $('#map_left_user').html(data[0]); 
+    $('#map_right_user').html(data[1]);
+    $('.play_space').css("display", "block");
+    rwd_playground();
+}
 function rwd_playground() {
     scaling_ratio=$(".playground").width()/800;
         $(".playground").height(400 * scaling_ratio);
@@ -110,13 +131,10 @@ function rwd_playground() {
         let ball_r=40 * scaling_ratio;
         $(".ball").height(ball_r);
         $(".ball").width(ball_r);
-    
 }
 function select_code(){
     
     $('#page_title').html("send code");
-    $('.play_space').css("display", "block");
-    rwd_playground();
     var code_selected=lan_mode.value;
     if(lan_mode.value=="code_id"){
         code_selected=lan_mode.options[1].value;

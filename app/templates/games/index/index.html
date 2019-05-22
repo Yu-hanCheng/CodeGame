@@ -43,10 +43,10 @@
                 {% include '/games/index/discuss.html' %}
         </div>
         <div id="Rooms" class="tabcontent">
+            <button onclick="javascript:location.href='/games/add_room'">add room</button>
             {% if wait_rooms %}
                 {% include '/games/index/room_list.html' %}
             {% endif %}
-            <button onclick="javascript:location.href='/games/add_room'">add room</button>
         </div>
         <h1 color="white">Enter room to watch Game</h1>
         <form method="POST">

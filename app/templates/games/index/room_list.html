@@ -16,19 +16,45 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <p>room_wait</p>
+                    <p>Room_Waiting</p>
                     {% for w_room in wait_rooms %}
                         {% if  w_room.status < 0 %}
                             <tr>
                                 <td>{{ w_room.id }}</td>
                                 <td>{{ w_room.roomname }}</td>
                                 <td>{{ w_room.gamename }}</td>
-                                <td>{% for u in l_users[loop.index-1].current_users %} {{ u.username }} {% endfor %}</td>
+                                <td>{% for u in w_users[loop.index-1].current_users %} {{ u.username }} {% endfor %}</td>
                                 <td>{{ w_room.player_num  | int  + w_room.status | int  }}</td>
                                 <td>{{ w_room.player_num }}</td>
                                 <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.wait_to_play',log_id=w_room.id ) }}'" >Enter</button></td>
                             </tr>
                         {% endif %}
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <table class="table ">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">RoomID</th>
+                        <th scope="col">RoomName</th>
+                        <th scope="col">GameName</th>
+                        <th scope="col">Players</th>
+                        <th scope="col">目前人數</th>
+                        <th scope="col">人數上限</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <p>Room_Gaming</p>
+                    {% for g_room in game_rooms %}
+                        <tr>
+                            <td>{{ g_room.id }}</td>
+                            <td>{{ g_room.roomname }}</td>
+                            <td>{{ g_room.gamename }}</td>
+                            <td>{% for u in g_users[loop.index-1].current_users %} {{ u.username }} {% endfor %}</td>
+                            <td>{{ g_room.player_num  | int  + g_room.status | int  }}</td>
+                            <td>{{ g_room.player_num }}</td>
+                            <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.wait_to_play',log_id=g_room.id ) }}'" >Enter</button></td>
+                        </tr>
                     {% endfor %}
                     </tbody>
                 </table>
