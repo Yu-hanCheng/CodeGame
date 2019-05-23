@@ -114,45 +114,48 @@ def wait_to_play(log_id):
     # 檢查這個log的game有哪些可用的code, 列出語言, 有才讓 html的btn visable
     log_id = session.get('log_id', '')
     l=Log.query.filter_by(id=log_id).first()
-    all_codes =Code.query.with_entities(Code.id, Code.commit_msg,Language.language_name).filter_by(game_id=l.game_id, user_id=current_user.id).join(Log,(Log.id==log_id)).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).all()
-    all_lan=[]
-    have_code=False
-    try: 
-        if len(all_codes) :
-            for e in all_codes:
-                all_lan.append(e[2])
-            flash(all_lan,'test')
-            have_code=True
-        else:
-            return redirect(url_for('games.index',msg="you need to upload code from the local app first"))
-    except Exception as e:
-        print('error:',e)
-        return redirect(url_for('games.index',msg="error:"+e))
-    finally:
-        if have_code:
-            l= Log.query.filter_by(id=log_id).first()
-            current_users = l.current_users
-            if l.privacy is 1: # public,可以
-                rank_list=""
-                if l.status is 0 :
-                    if current_user not in current_users: 
-                        print("sorry room is full, can't join game")
-                        return redirect(url_for('games.index',msg="sorry, the room is full, can't join game"))
+    if l:
+        all_codes =Code.query.with_entities(Code.id, Code.commit_msg,Language.language_name).filter_by(game_id=l.game_id, user_id=current_user.id).join(Log,(Log.id==log_id)).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).all()
+        all_lan=[]
+        have_code=False
+        try: 
+            if len(all_codes) :
+                for e in all_codes:
+                    all_lan.append(e[2])
+                flash(all_lan,'test')
+                have_code=True
+            else:
+                return redirect(url_for('games.index',msg="you need to upload code from the local app first"))
+        except Exception as e:
+            print('error:',e)
+            return redirect(url_for('games.index',msg="error:"+e))
+        finally:
+            if have_code:
+                l= Log.query.filter_by(id=log_id).first()
+                current_users = l.current_users
+                if l.privacy is 1: # public,可以
+                    rank_list=""
+                    if l.status is 0 :
+                        if current_user not in current_users: 
+                            print("sorry room is full, can't join game")
+                            return redirect(url_for('games.index',msg="sorry, the room is full, can't join game"))
+                        else:
+                            game_start=True
+                    elif l.status < 0: # room還沒滿,可以進來參賽(新增 player_in_log data, update user的 current_log) # if s is not (0 or 1) :
+                        game_start=False
+                        if current_user not in current_users:
+                            join_log(l,l.privacy)
                     else:
-                        game_start=True
-                elif l.status < 0: # room還沒滿,可以進來參賽(新增 player_in_log data, update user的 current_log) # if s is not (0 or 1) :
-                    game_start=False
-                    if current_user not in current_users:
-                        join_log(l,l.privacy)
-                else:
-                    return redirect(url_for('games.index',msg="sorry, the game is end"))
-                    
-            elif l.privacy == 2: # official
-                join_log(l,l.privacy)
-                rank_list=l.get_rank_list()
-            else: # only invited
-                pass
-    return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,rank_list=rank_list,all_codes=all_codes,room_privacy=l.privacy,roomname=l.roomname,game_start=game_start)
+                        return redirect(url_for('games.index',msg="sorry, the game is end"))
+                        
+                elif l.privacy == 2: # official
+                    join_log(l,l.privacy)
+                    rank_list=l.get_rank_list()
+                else: # only invited
+                    pass
+        return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,rank_list=rank_list,all_codes=all_codes,room_privacy=l.privacy,roomname=l.roomname,game_start=game_start)
+    else:
+        return redirect(url_for('games.index',msg="The room is deleted"))
 
 @bp.route('/rank_list/<int:log_id>', methods=['GET','POST'])
 @login_required
