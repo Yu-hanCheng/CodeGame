@@ -172,6 +172,7 @@ def left(message):
     if l.status+g.player_num == 0 and not l.winner_id:
         db.session.delete(l)
     else:
+        send_togameserver(json.dumps({'from':'webserver','func':'del_log','log_id':l.id}))
         name = str(message['room'])+"_stop"
         globals()[name].set()
         emit('wait_room',namespace = '/test',room= str(message['room']))
@@ -181,6 +182,13 @@ def left(message):
 def chat_message(message):
     room = session.get('log_id')
     emit('chat_message_broadcast',{'user':current_user.username,'msg':message},namespace = '/test', room=str(room)) #{'user': current_user.id,'msg': message}
+
+def send_togameserver(msg_data):
+    ws = create_connection("ws://127.0.0.1:6005")# to gameserver
+    ws.send(msg_data)
+    result =  ws.recv() #
+    print("Received '%s'" % result)
+    ws.close()
 
 def emit_code(l,code,the_user):
 # join_log(log_id,message['code'],message['commit_msg'],l.game_id,current_user.id,players)
@@ -193,11 +201,7 @@ def emit_code(l,code,the_user):
     if code.attach_ml:
         with open("%s.sav"%(code.id), "rb") as f_ml:
             ml_file = f_ml.read().decode() # convert to str
-    ws = create_connection("ws://127.0.0.1:6005")# to gameserver
-    ws.send(json.dumps({'from':'webserver','code_id':code.id,'code':code.body,'attach_ml':code.attach_ml,'ml_file':ml_file,'log_id':l.id,'user_id': user_id,'category_id':l.category_id,'game_id':l.game_id,'language':code.language_name,'player_num':int(l.player_num)}))
-    result =  ws.recv() #
-    print("Received '%s'" % result)
-    ws.close()
+    send_togameserver(json.dumps({'from':'webserver','func':'','code_id':code.id,'code':code.body,'attach_ml':code.attach_ml,'ml_file':ml_file,'log_id':l.id,'user_id': user_id,'category_id':l.category_id,'game_id':l.game_id,'language':code.language_name,'player_num':int(l.player_num)}))
 
 #for local
 @socketio.on('get_gamelist')

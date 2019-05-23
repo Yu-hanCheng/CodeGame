@@ -186,9 +186,21 @@ def message_received(client, server, message):
 		print("data json loads failed:",e)
 		return
 	if data['from']=='webserver':
-		global webserver_id
-		webserver_id = client
-		code_address(server,data)
+		if data['func']=='del_log':
+			# pop log_id room
+			rooms = room_list.get_list()
+			print("room list:",rooms)
+			for i in range(0,len(rooms)):
+				if data['log_id']==rooms[i][0]: #find same room
+					r = room_list.pop_index(i)
+					break
+			server.send_message(client,"popped")
+			print("room list:",rooms)
+
+		else:
+			global webserver_id
+			webserver_id = client
+			code_address(server,data)
 
 	elif data['from']=='game_exec':
 		game_exec_id = client
