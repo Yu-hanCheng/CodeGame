@@ -43,7 +43,6 @@ def room_game_list(user_id,cat_id):
 @bp.route('/get_g_list', methods=['GET','POST'])
 @login_required
 def get_g_list():
-        
     if request.method == 'POST':
         if "text/plain" in request.headers['Content-Type']:
             set_g_option = room_game_list(current_user.id,int(request.data)) 
@@ -112,7 +111,6 @@ def add_room():
 @login_required
 def wait_to_play(log_id):
     session['log_id']=log_id
-    print("wait_to play:",session.get('user_id', ''),session['_id'],session.get('log_id', ''),session.get('game_start', ''))
     # 檢查這個log的game有哪些可用的code, 列出語言, 有才讓 html的btn visable
     log_id = session.get('log_id', '')
     l=Log.query.filter_by(id=log_id).first()
@@ -139,13 +137,15 @@ def wait_to_play(log_id):
                 if l.status is 0 :
                     if current_user not in current_users: 
                         print("sorry room is full, can't join game")
-                        return redirect(url_for('games.index',msg="sorry room is full, can't join game"))
+                        return redirect(url_for('games.index',msg="sorry, the room is full, can't join game"))
                     else:
                         game_start=True
-                else: # room還沒滿,可以進來參賽(新增 player_in_log data, update user的 current_log) # if s is not (0 or 1) :
+                elif l.status < 0: # room還沒滿,可以進來參賽(新增 player_in_log data, update user的 current_log) # if s is not (0 or 1) :
                     game_start=False
                     if current_user not in current_users:
                         join_log(l,l.privacy)
+                else:
+                    return redirect(url_for('games.index',msg="sorry, the game is end"))
                     
             elif l.privacy == 2: # official
                 join_log(l,l.privacy)
