@@ -30,6 +30,10 @@ class AddRoomForm(FlaskForm):
 	player_num  = IntegerField('player_num')#game.player_num
 	
 	submit = SubmitField('Enter Gameroom')
+	def validate_roomname(self, roomname):
+		room = Log.query.filter_by(roomname=roomname.data).first()
+		if room is not None:
+			raise ValidationError('Please use a different roomname.')
 
 
 
