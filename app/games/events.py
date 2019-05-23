@@ -79,7 +79,6 @@ def test_connect(message):
 
 @socketio.on('join_room' ,namespace = '/test')
 def join_room_from_browser(message):
-    print("join room :session.get('log_id', '')",session.get('_id', ''),session.get('log_id', ''))
     join_room(message['room'])
     session['game_start'] = message['game_start']
     if int(message['status']) ==0:
@@ -94,7 +93,6 @@ def join_room_from_browser(message):
                 globals()[name] = threading.Event()
                 globals()[name].clear()
                 eventlet.spawn(notify_browser,60,message['room'],app,globals()[name]) 
-                print("join room",message['room'],threading.enumerate())
         else:
             pass # gaming
             
@@ -103,7 +101,6 @@ def join_room_from_browser(message):
 
 @socketio.on('change_code',namespace = '/test')
 def change_code(message):
-    print("change_code:",session.get('user_id', ''),session['_id'],session.get('log_id', ''))
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
     select_code =Code.query.with_entities(Code.id,Code.body, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
     emit('the_change_code',{'code':select_code.body,'code_commit_msg':select_code.commit_msg,'code_id':message['code_id']},namespace = '/test',room= message['room']) 
@@ -112,15 +109,12 @@ def change_code(message):
 def select_code(message):
     all_code = message['room']+"_all"
     globals()[all_code]+=1
-    print('globals()[all_code]:',globals()[all_code])
     # Sent by clients when they click btn.
     # call emit_code to send code to gameserver.-- 0122/2019
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
     if globals()[all_code]==l.player_num :
         name = message['room']+"_stop"
         globals()[name].set()
-
-    print(message['room'],threading.enumerate())
     select_code =Code.query.with_entities(Code.id,Code.body,Code.attach_ml, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
     emit_code(l, select_code,current_user.id)
     
