@@ -26,26 +26,23 @@
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='gameover.css') }}">
 
 <script>
+    window.addEventListener('resize', evt => {
+    rwd_playground();
+});
     let display_content ={{content}}
     let display ={{content}}
     var startTime=new Date();
     var speed=10;
     var start_flag=0;
 
-    function ball_update(position){
+    function ball_update(relative_pos){
         var width = $(".ball").outerWidth();
         var height = $(".ball").outerHeight();
         // console.log($(".ball").left())
-        $(".ball").css({"left":position[0]-width/2,"top":position[1]-height/2});
+        $(".ball").css({"left":relative_pos[0]+"%" ,"top":relative_pos[1]+"%"});
     }
-    function paddle_update(position,direction){
-        var windowHeight = $(window).height();
-        var height =direction.outerHeight();
-        var p_top = position[1]-height/2;
-        var topMax = windowHeight - p_top - 5;
-        if (p_top < 5) p_top = 5;
-        if (p_top > topMax) p_top = topMax;
-        direction.css("top",p_top);	
+    function paddle_update(relative_pos,direction){
+        direction.css("top",relative_pos+"%");
     }
     function score_update(newscores){
         Scores.setLeft(newscores[0]);
@@ -76,7 +73,14 @@
         element.click();
         document.body.removeChild(element);
     }
-    
+    function rwd_playground() {
+    scaling_ratio=$(".playground").width()/800;
+        $(".playground").height(400 * scaling_ratio);
+        // 球要在這邊設長寬
+        let ball_r=40 * scaling_ratio;
+        $(".ball").height(ball_r);
+        $(".ball").width(ball_r);
+}
     if( {{func_type}} ){ //func_type==1 -> display
         var refreshIntervalId=setInterval(function(){
             position=display.shift();
@@ -87,9 +91,12 @@
             }else{ 
             let left = $('.left-goalkeeper')
             let right = $('.right-goalkeeper')
-            ball_update(position[0]);
-            paddle_update(position[1],left);
-            paddle_update(position[3],right);
+            ratio_ball=[((position[0][0]-20)/8).toFixed(1),((position[0][1]-20)/4).toFixed(1)]
+            ratio_paddle1 = ((position[1][1]-66)/4).toFixed(1)
+            ratio_paddle2 = ((position[3][1]-66)/4).toFixed(1)
+            ball_update(ratio_ball);
+            paddle_update(ratio_paddle1,left);
+            paddle_update(ratio_paddle2,right);
             }
         },speed);
     }else{
