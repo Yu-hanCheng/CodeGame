@@ -21,10 +21,15 @@ playerlist = []
 WIDTH = 800
 HEIGHT = 400
 BALL_RADIUS = 20
-PAD_WIDTH = 8
-PAD_HEIGHT = math.ceil(HEIGHT/3)
-HALF_PAD_WIDTH = PAD_WIDTH // 3
-HALF_PAD_HEIGHT = PAD_HEIGHT // 3
+PAD_WIDTH = 20
+PAD_HEIGHT = math.floor(HEIGHT/3)
+HALF_PAD_WIDTH = PAD_WIDTH // 2
+HALF_PAD_HEIGHT = math.floor(PAD_HEIGHT // 2)
+PAD_END = 346
+PAD_CATCH = HALF_PAD_HEIGHT + BALL_RADIUS//2
+paddle1 = [HALF_PAD_WIDTH - 1, HEIGHT // 2]
+paddle2 = [WIDTH + 1 - HALF_PAD_WIDTH, HEIGHT //2]
+
 ball = [0, 0]
 ball_vel = [0, 0]
 record_content=[]
@@ -113,21 +118,27 @@ def play():
         global paddle1, paddle2,paddle1_move,paddle2_move, ball, ball_vel, l_score, r_score, cnt
         global barrier,start
 
-        if paddle1[1] > HALF_PAD_HEIGHT and paddle1[1] < HEIGHT - HALF_PAD_HEIGHT:
-            paddle1[1] += paddle1_move
-        elif paddle1[1] <= HALF_PAD_HEIGHT and paddle1_move > 0:
-            paddle1[1] = HALF_PAD_HEIGHT
-            paddle1[1] += paddle1_move
+        def y_axis(the_paddle,the_move):
+            if the_paddle > HALF_PAD_HEIGHT and the_paddle < PAD_END:
+                
+                if the_paddle + the_move > PAD_END:
+                    the_paddle = PAD_END
+                elif the_paddle + the_move < HALF_PAD_HEIGHT:
+                    the_paddle = HALF_PAD_HEIGHT
+                else:
+                    the_paddle += the_move
+            elif the_paddle <= HALF_PAD_HEIGHT and the_move > 0:
+                the_paddle = HALF_PAD_HEIGHT
+                the_paddle += the_move
+            elif the_paddle >= PAD_END:
+                the_paddle = PAD_END
+                if the_move < 0:
+                    the_paddle += the_move
+            else:
+                pass
+            return the_paddle
 
-        elif paddle1[1] >= HEIGHT - HALF_PAD_HEIGHT and paddle1_move < 0:
-            paddle1[1] = HEIGHT - HALF_PAD_HEIGHT
-            paddle1[1] += paddle1_move
-
-        else:
-            # print('p1 else')
-            pass
-
-
+        paddle1[1] = y_axis(copy.deepcopy(paddle1[1]),paddle1_move)
         ball[0] += int(ball_vel[0])
         ball[1] += int(ball_vel[1])
 
@@ -245,7 +256,9 @@ def handle_client_connection(client_socket):
 
 def after_play():
     global ball, paddle1, paddle2
-    send_to_webserver('info',tuple([ball,paddle1,paddle2,cnt]),log_id)
+    ratio_ball=[round((ball[0]-BALL_RADIUS)/8,1),round((ball[1]-BALL_RADIUS)/4,1)]
+    ratio_paddle1 = round((paddle1[1]-HALF_PAD_HEIGHT)/4,1)
+    send_to_webserver('info',tuple([ratio_ball,ratio_paddle1,[l_score,r_score]]),log_id)
     record_content.append(copy.deepcopy([ball,paddle1,paddle2]))
     game('on_p1')
 

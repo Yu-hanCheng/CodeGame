@@ -35,6 +35,7 @@ $(document).ready(function(){
     socket_local.on('game_connect', function(data) {
         //tuple([ball,paddle1,paddle2])
                 console.log("game connect:",data)
+                game_start(data);
             });
     socket_local.on('info', function(data) {
         //tuple([ball,paddle1,paddle2])
@@ -42,7 +43,6 @@ $(document).ready(function(){
         let right = $('.right-goalkeeper')
         paddle_update(data['msg'][1], left);
         ball_update(data['msg'][0]);
-                
             });
     socket_local.on('gameover', function(data){ 
         console.log("gameover data.msg",data.msg.record_content)
@@ -78,7 +78,9 @@ $(document).ready(function(){
         document.getElementById("commit_btn").disabled="False"
     });
 });
-
+window.addEventListener('resize', evt => {
+    rwd_playground();
+});
 function upload_code(){
     socket_local.emit('upload_toWeb', {msg: ""});
     document.getElementById("myPopup_dom").style.display = "none";
@@ -325,22 +327,26 @@ function leave_room() {
         window.location.href = "{{ url_for('games.index') }}";
     });
 }
-
-
-function ball_update(position){
+function game_start(data){
+    $('.play_space').css("display", "block");
+    rwd_playground();
+}
+function rwd_playground() {
+    scaling_ratio=$(".playground").width()/800;
+        $(".playground").height(400 * scaling_ratio);
+        // 球要在這邊設長寬
+        let ball_r=40 * scaling_ratio;
+        $(".ball").height(ball_r);
+        $(".ball").width(ball_r);
+}
+function ball_update(relative_pos){
     var width = $(".ball").outerWidth();
     var height = $(".ball").outerHeight();
     // console.log($(".ball").left())
-    $(".ball").css({"left":position[0]-width/2,"top":position[1]-height/2});
+    $(".ball").css({"left":relative_pos[0]+"%" ,"top":relative_pos[1]+"%"});
 }
-function paddle_update(position, direction){
-    var windowHeight = $(window).height();
-    var height = direction.outerHeight();
-    var p_top = position[1]-height/2;
-    var topMax = windowHeight - p_top - 5;
-    if (p_top < 5) p_top = 5;
-    if (p_top > topMax) p_top = topMax;
-    direction.css("top",p_top);	
+function paddle_update(relative_pos, direction){
+    direction.css("top",relative_pos+"%");
 }
 
 function score_update(newscores){

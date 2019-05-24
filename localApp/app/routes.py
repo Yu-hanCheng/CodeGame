@@ -143,12 +143,11 @@ def connect(message):
 
 @socketio.on('game_connect') #from test_game
 def game_connect(message):
-
+    socketio.emit('game_connect', {'msg': ''})
     print("conn from test game:",message['msg'])
 
 @socketio.on('info')#from test_game
 def gameobject(message):
-    print("info:",message['msg'])
     socketio.emit('info', {'msg': message['msg']})
 
 @socketio.on('over')#from test_game

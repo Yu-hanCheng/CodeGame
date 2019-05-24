@@ -1,13 +1,15 @@
 .main_container {
 	display: flex;
+	width: 100%;
+	flex-wrap: wrap;
 }
 .play_space {
 	display: none;
-	flex: 3 0 auto;
+	flex: 2 0 auto;
 
 }
 .code_space {
-	flex: 1 0 auto;
+	flex: 4 0 auto;
 	margin-left: 30px;
 }
 .playground {
@@ -28,16 +30,16 @@
 	top: 50%;
 	left: 50%;
 	background: green;
-	border: 1px solid rgba(0, 0, 0, 0.5);
+	/* border: 1px solid rgba(0, 0, 0, 0.5); */
 	border-radius: 50%;
 }
 .goalkeeper {
-	width: 20px;
+	width: 2.5%;
 	height: 30%;
 	position: relative;
 	/* top: 35%; */
 	background: red;
-	border: 1px solid rgba(0, 0, 0, 0.5);
+	/* border: 1px solid rgba(0, 0, 0, 0.5); */
 	border-radius: 5px;
 }
 .left-goalkeeper {
