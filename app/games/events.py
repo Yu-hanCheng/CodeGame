@@ -22,6 +22,14 @@ def gamemain_connect(message):
 @socketio.on('game_start',namespace = '/test') 
 def game_start(message):
     session['game_start']=True
+    l=Log.query.filter_by(id=message['room']).first()
+    l.status=1
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        pass
     print("gamestart:",session['user_id'],session['_id'],session['game_start'])
 
 @socketio.on('timeout_over') #from game.py
@@ -61,7 +69,7 @@ def game_over(message):
         l.winner_code_id=r_report['code_id']
     save_content = json.dumps(message['msg'])
     l.record_content = save_content
-    l.status = 1 
+    l.status = 2
     
     try:
         db.session.commit()
@@ -82,20 +90,18 @@ def join_room_from_browser(message):
     join_room(message['room'])
     session['game_start'] = message['game_start']
     if int(message['status']) ==0:
-        if message['game_start']=="False":
-            emit('enter_room',message['privacy'],namespace = '/test',room= message['room'])
-            if int(message['privacy'])==1:
-                app = current_app._get_current_object()  # get the real app instance
-                # set_interval(app,notify_browser,1,60,message['room'])
-                all_code = message['room']+"_all"
-                globals()[all_code]=0
-                name = message['room']+"_stop"
-                globals()[name] = threading.Event()
-                globals()[name].clear()
-                eventlet.spawn(notify_browser,60,message['room'],app,globals()[name]) 
-        else:
-            pass # gaming
-            
+        emit('enter_room',message['privacy'],namespace = '/test',room= message['room'])
+        if int(message['privacy'])==1:
+            app = current_app._get_current_object()  # get the real app instance
+            # set_interval(app,notify_browser,1,60,message['room'])
+            all_code = message['room']+"_all"
+            globals()[all_code]=0
+            name = message['room']+"_stop"
+            globals()[name] = threading.Event()
+            globals()[name].clear()
+            eventlet.spawn(notify_browser,60,message['room'],app,globals()[name]) 
+    elif int(message['status']) ==1:# gaming
+        pass    
     else:
         emit('wait_room',namespace = '/test',room= message['room'])    
 
@@ -163,9 +169,9 @@ def left(message):
     l.status -=1
     l.current_users.remove(current_user)
     leave_room(str(message['room']))
-    if l.status+g.player_num == 0 and not l.winner_id:
+    if l.status+g.player_num == 0 : # room empty
         db.session.delete(l)
-    else:
+    else: # waiting
         send_togameserver(json.dumps({'from':'webserver','func':'del_log','log_id':l.id}))
         name = str(message['room'])+"_stop"
         globals()[name].set()
@@ -245,12 +251,14 @@ def check_user(message):
 @socketio.on('disconnect')
 def test_disconnect():
     log_id = session.get('log_id', '')
-    print("disconnect session:",current_user,log_id,session.get('game_start', ''))
+    print("disconnect session:",log_id,session.get('game_start', ''))
     if session.get('game_start', '')=="False":
         if log_id:
             left({'room':log_id})
         else:
             print("log_id is ''")
+    else:
+        pass
 
 def set_language_id(filename_extension):
     compiler = {

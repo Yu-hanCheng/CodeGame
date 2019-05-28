@@ -135,17 +135,22 @@ def wait_to_play(log_id):
                 current_users = l.current_users
                 if l.privacy is 1: # public,可以
                     rank_list=""
-                    if l.status is 0 :
+                    if l.status < 0: # room還沒滿,可以進來參賽(新增 player_in_log data, update user的 current_log) # if s is not (0 or 1) :
+                        game_start=False
+                        if current_user not in current_users:
+                            join_log(l,l.privacy)
+                    
+                    elif l.status is 0 :
                         if current_user not in current_users: 
                             print("sorry room is full, can't join game")
                             return redirect(url_for('games.index',msg="sorry, the room is full, can't join game"))
                         else:
-                            game_start=True
-                    elif l.status < 0: # room還沒滿,可以進來參賽(新增 player_in_log data, update user的 current_log) # if s is not (0 or 1) :
-                        game_start=False
-                        if current_user not in current_users:
-                            join_log(l,l.privacy)
-                    else:
+                            game_start=False
+                            
+                    elif l.status ==1 : # gaming
+                        game_start=True
+
+                    else: #l.status ==2
                         return redirect(url_for('games.index',msg="sorry, the game is end"))
                         
                 elif l.privacy == 2: # official
@@ -174,6 +179,7 @@ def display_record(log_id):
 
 
 @bp.route('/<string:msg>', methods=['GET', 'POST'])
+@login_required
 def index(msg):
     # 主畫面會有很多tab(News, NewsGame, HotGames,Discuss, Rooms)
     """Login form to enter a room."""
@@ -188,10 +194,10 @@ def index(msg):
     elif request.method == 'GET':
         form.name.data = session.get('name', '')
         form.room.data = session.get('room', '')
-        wait_rooms = Log.query.with_entities(Log.id,Log.roomname,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.winner_id==None).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
-        wait_room_users = Log.query.filter(Log.winner_id==None).order_by(Log.timestamp.desc()).all()
-        game_rooms = Log.query.with_entities(Log.id,Log.roomname,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.status==0,User.id==current_user.id).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
-        game_room_users = Log.query.filter(Log.status==0,User.id==current_user.id).order_by(Log.timestamp.desc()).all()
+        wait_rooms = Log.query.with_entities(Log.id,Log.roomname,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.status<0).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
+        wait_room_users = Log.query.filter(Log.status<0).order_by(Log.timestamp.desc()).all()
+        game_rooms = Log.query.with_entities(Log.id,Log.roomname,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.status==1,User.id==current_user.id).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
+        game_room_users = Log.query.filter(Log.status==1,User.id==current_user.id).order_by(Log.timestamp.desc()).all()
         games = Game.query.order_by(Game.timestamp.desc()).limit(10).all()
         h_games = Game.query.order_by(Game.count.desc()).limit(10).all()
         news = News.query.order_by(News.timestamp.desc()).limit(5).all()

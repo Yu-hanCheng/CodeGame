@@ -36,5 +36,5 @@ class StatusForm(FlaskForm):
 	def validate_status_name(self,name):
 		status = Status.query.filter_by(status_name=self.status_name.data).first()
 		if status is not None:
-			raise ValidationError('Please use a different privacy name.')
+			raise ValidationError('Please use a different status name.')
 

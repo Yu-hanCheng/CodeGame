@@ -35,7 +35,7 @@ $(document).ready(function(){
     
     socket.on('gamemain_connect', function(data) {
         game_start(data);
-        socket.emit('game_start','');
+        socket.emit('game_start',{room:$('#join_room').val()});
     });
     socket.on('enter_room', function(data){
         $('#page_title').html("enter room");
