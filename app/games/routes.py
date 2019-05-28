@@ -168,6 +168,12 @@ def rank_list(log_id):
     log = Log.query.filter_by(id=log_id).first()
     rank_list = log.get_rank_list()
     return render_template('games/game/rank_list.html', title='rank_list',rank_list=rank_list)
+@bp.route('/game_status/<int:game_id>', methods=['GET','POST'])
+@login_required
+def game_status(game_id):
+    wait_log = Log.query.filter(Log.status<0).all()
+    rank_list = wait_log[0].get_rank_list()
+    return render_template('games/game/game_status.html', title='game_status',wait_log=wait_log,rank_list=rank_list)
 
 @bp.route('/display_record/<int:log_id>', methods=['GET','POST'])
 @login_required

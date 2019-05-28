@@ -16,6 +16,7 @@
                             <td>{{ moment(g.timestamp).format('LL') }}</td>
                             <td>{{ g.gamename }}</td>
                             <td>{{  g.descript }}</td>
+                            <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.game_status',game_id=g.id ) }}'" >Enter</button></td>
                         </tr>
                     {% endfor %}
                     </tbody>

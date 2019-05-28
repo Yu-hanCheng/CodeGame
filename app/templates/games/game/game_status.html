@@ -1,0 +1,76 @@
+<body background="https://i.imgur.com/OPE70hq.jpg">
+{% extends "base.html" %}
+{% block app_content %}
+<br>
+<h3>rank_list</h3>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='list_css.css') }}">
+<div class="container">
+        <div class="modal-content">
+            <div class="panel-body table-responsive">
+                <table class="table ">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Rank</th>
+                        <th scope="col">UserName</th>
+                        <th scope="col">Score</th>
+                        <th scope="col">LogID</th>
+                        <th scope="col">Record</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <p>room_wait</p>
+                    {% set i=0 %}
+                    {% for log in wait_log %}
+                        {% set i=i+1 %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ log.username }}</td>
+                            <td>{{ log.score }}</td>
+                            <td>{{ log.id }}</td>
+                            <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.wait_to_play',log_id=log.id ) }}'" >Enter</button></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="panel-body table-responsive"></div>
+                <table class="table ">
+                    <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Rank</th>
+                        <th scope="col">UserName</th>
+                        <th scope="col">Score</th>
+                        <th scope="col">LogID</th>
+                        <th scope="col">Record</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <p>room_wait</p>
+                    {% set i=0 %}
+                    {% for log in rank_list %}
+                        {% set i=i+1 %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ log.username }}</td>
+                            <td>{{ log.score }}</td>
+                            <td>{{ log.id }}</td>
+                            <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.display_record',log_id=log.id,func_type=1 ) }}'" >Record</button></td> 
+                            <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.display_record',log_id=log.id,func_type=0 ) }}'" >Download</button></td> 
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+</div>
+<script>
+    function enterRoom(room_id) {
+        
+        console.log($(room_id));
+        var log_id =$(room_id)[0];
+        console.log(typeof(log_id));
+    }
+</script>
+{% endblock %}
+</body>

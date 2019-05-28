@@ -20,6 +20,7 @@
                             <td>{{  hg.count }}</td>
                             <td>{{ hg.gamename }}</td>
                             <td>{{  hg.descript }}</td>
+                            <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.game_status',game_id=hg.id ) }}'" >Enter</button></td>
                             
                         </tr>
                     {% endfor %}
