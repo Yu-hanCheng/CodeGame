@@ -39,7 +39,6 @@ $(document).ready(function(){
     });
     socket.on('enter_room', function(data){
         $('#page_title').html("enter room");
-        document.getElementById('btn_select_code').style.display = "block";
         document.getElementById('countdown').style.display = "block";
         
     }); 
@@ -134,7 +133,8 @@ function rwd_playground() {
 }
 function select_code(){
     
-    $('#page_title').html("send code");
+    $('#page_title').html("send code"); // should put in socket.emit callback
+    document.getElementById('btn_select_code').style.display = "none";
     var code_selected=lan_mode.value;
     if(lan_mode.value=="code_id"){
         code_selected=lan_mode.options[1].value;
