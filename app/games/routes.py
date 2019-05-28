@@ -169,6 +169,19 @@ def rank_list(log_id):
     rank_list = log.get_rank_list()
     return render_template('games/game/rank_list.html', title='rank_list',rank_list=rank_list)
 
+@bp.route('/game_status/<int:game_id>', methods=['GET','POST'])
+@login_required
+def game_status(game_id):
+    g_name = Game.query.filter_by(id=game_id).first()
+    a_log = Log.query.filter_by(game_id=game_id).first()
+    wait_log = Log.query.filter(Log.status<0,Log.game_id==game_id).all()
+    gaming_log = Log.query.filter(Log.status==1,Log.game_id==game_id).all()
+    if a_log:
+        rank_list = a_log.get_rank_list()
+        return render_template('games/game/game_status.html', title='game_status',g_name=g_name,wait_log=wait_log,gaming_log=gaming_log,rank_list=rank_list)
+    else:
+        return redirect(url_for('games.index',msg="The game has no room"))
+
 @bp.route('/display_record/<int:log_id>', methods=['GET','POST'])
 @login_required
 def display_record(log_id):
