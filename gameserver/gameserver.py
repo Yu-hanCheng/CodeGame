@@ -190,10 +190,19 @@ def message_received(client, server, message):
 			# pop log_id room
 			rooms = room_list.get_list()
 			print("room list:",rooms)
-			for i in range(0,len(rooms)):
+			init_lenofroom = len(rooms)
+			isplayer=False
+			i=0
+			while  i < init_lenofroom:
 				if data['log_id']==rooms[i][0]: #find same room
 					r = room_list.pop_index(i)
+					isplayer=True
+					if i == init_lenofroom-1: # the end index
+						break
+				elif isplayer:
 					break
+				else:
+					i+=1
 			server.send_message(client,"popped")
 			print("room list:",rooms)
 
