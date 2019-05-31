@@ -40,7 +40,7 @@ $(document).ready(function(){
     socket.on('enter_room', function(data){
         $('#page_title').html("enter room");
         document.getElementById('countdown').style.display = "block";
-        
+        document.getElementById('btn_select_code').style.display = "block";
     }); 
     socket.on('wait_room', function(data){
         document.getElementById('btn_select_code').style.display = "none";
@@ -121,6 +121,7 @@ function game_start(data){
     $('#map_left_user').html(data[0]); 
     $('#map_right_user').html(data[1]);
     $('.play_space').css("display", "block");
+    $('.loading').css("display", "none");
     rwd_playground();
 }
 function rwd_playground() {
@@ -132,7 +133,7 @@ function rwd_playground() {
         $(".ball").width(ball_r);
 }
 function select_code(){
-    
+    $('.loading').css("display", "flex");
     $('#page_title').html("send code"); // should put in socket.emit callback
     document.getElementById('btn_select_code').style.display = "none";
     var code_selected=lan_mode.value;

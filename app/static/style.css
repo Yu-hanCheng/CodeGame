@@ -1,4 +1,11 @@
-
+.flex-container {
+	display: flex;
+	justify-content: space-around;
+}
+.loading {
+	display: none;
+    justify-content: center
+}
 .players {
 	display: flex;
 	flex-direction: row;
