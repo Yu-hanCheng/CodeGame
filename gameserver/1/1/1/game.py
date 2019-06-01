@@ -32,10 +32,11 @@ WIDTH = 800
 HEIGHT = 400
 BALL_RADIUS = 20
 PAD_WIDTH = 20
-PAD_HEIGHT = math.ceil(HEIGHT/3)
+PAD_HEIGHT = math.floor(HEIGHT/3)
 HALF_PAD_WIDTH = PAD_WIDTH // 2
-HALF_PAD_HEIGHT = PAD_HEIGHT // 2
-PAD_END = HEIGHT - HALF_PAD_HEIGHT
+HALF_PAD_HEIGHT = math.floor(PAD_HEIGHT // 2)
+PAD_END = 346
+
 PAD_CATCH = HALF_PAD_HEIGHT + BALL_RADIUS//2
 paddle1 = [HALF_PAD_WIDTH - 1, HEIGHT // 2]
 paddle2 = [WIDTH + 1 - HALF_PAD_WIDTH, HEIGHT //2]
@@ -46,6 +47,7 @@ record_content=[]
 l_score = 0
 r_score = 0
 cnt=0
+p_cnt = 0
 p1_rt=0.0001
 p2_rt=0.0001
 p1_timeout=0
@@ -115,15 +117,19 @@ def tcp_send_rule(str_tosend,startlen):
 
 def send_to_Players(instr):
 
-    global cnt,barrier,ball,paddle1,paddle2,l_score,r_score
+    global cnt,barrier,ball,paddle1,paddle2,l_score,r_score,p_cnt
 
     if (instr == 'gameinfo') and barrier==[1,1]:
         cnt+=1
         json_str={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
         print("send info")
     elif instr == 'over':
+        if l_score > r_score:
+            l_score = p_cnt
+        else:
+            r_score = p_cnt
         json_str={'type':'over','content':{'ball':ball,'score':[l_score,r_score],'normal':[3,3]}} # '{\'ball\':'+str(ball)+'}' normal：[cpu,mem]
-        print('send game over')
+        print('send game over:',l_score,r_score)
 
     elif instr =="score_recved":
         json_str={'type':'score_recved','content':""}
@@ -144,7 +150,7 @@ def c_str_split(recv_msg):
 
 def play():
     try:
-        global paddle1, paddle2,paddle1_move,paddle2_move, ball, ball_vel, l_score, r_score, cnt
+        global paddle1, paddle2,paddle1_move,paddle2_move, ball, ball_vel, l_score, r_score, cnt, p_cnt
         global barrier,start,endgame
         
         def y_axis(the_paddle,the_move):
@@ -159,24 +165,28 @@ def play():
             elif the_paddle <= HALF_PAD_HEIGHT and the_move > 0:
                 the_paddle = HALF_PAD_HEIGHT
                 the_paddle += the_move
-            elif the_paddle >= PAD_END and the_move < 0:
+            elif the_paddle >= PAD_END:
                 the_paddle = PAD_END
-                the_paddle += the_move
+                if the_move < 0:
+                    the_paddle += the_move
             else:
                 pass
             return the_paddle
         paddle2[1] = y_axis(copy.deepcopy(paddle2[1]),paddle2_move)    
         paddle1[1] = y_axis(copy.deepcopy(paddle1[1]),paddle1_move)
-        print("paddle:",paddle1,paddle2)
-        
+    
         
         ball[0] += int(ball_vel[0])
         ball[1] += int(ball_vel[1])
+        if int(ball[1]) <= BALL_RADIUS:
+            ball[1] = BALL_RADIUS+1
+        elif int(ball[1]) >= HEIGHT - BALL_RADIUS:
+            ball[1] = HEIGHT - BALL_RADIUS-1
 
         # 上下邊界反彈
-        if int(ball[1]) <= BALL_RADIUS:
+        if int(ball[1]) <= BALL_RADIUS+1:
             ball_vel[1] = - ball_vel[1]
-        elif int(ball[1]) >= HEIGHT - BALL_RADIUS:
+        elif int(ball[1]) >= HEIGHT - BALL_RADIUS-1:
             ball_vel[1] = - ball_vel[1]
 
         # left normal catch
@@ -184,13 +194,14 @@ def play():
                                                                                        paddle1[1] + PAD_CATCH, 1):
             if int(ball[0]) < PAD_WIDTH :
                 ball[0] = BALL_RADIUS*2 + PAD_WIDTH
+            p_cnt+=1
             ball_vel[0] = -ball_vel[0]
             ball_vel[0] *= 1.1
             ball_vel[1] *= 1.1      
         # left no catch                                                             
-        elif int(ball[0]) <= BALL_RADIUS:
+        elif int(ball[0]) <= BALL_RADIUS+1:
             r_score += 1
-            ball[0] = BALL_RADIUS
+            ball[0] = BALL_RADIUS+1
             print('r_score ',r_score)
             if r_score < WIN_SCORE:
                 ball_init(True)
@@ -210,9 +221,9 @@ def play():
             ball_vel[0] = -ball_vel[0]
             ball_vel[0] *= 1.1
             ball_vel[1] *= 1.1
-        elif int(ball[0]) >= WIDTH + 1 - BALL_RADIUS:
+        elif int(ball[0]) >= WIDTH  - BALL_RADIUS -1:
             l_score += 1
-            ball[0]=WIDTH + 1 - BALL_RADIUS
+            ball[0]=WIDTH - BALL_RADIUS-1
             print('l_score ',l_score)
             if l_score < WIN_SCORE:
                 ball_init(False)
@@ -546,8 +557,12 @@ def timeout_check():
             pass
             
 def after_play(game_whom):
-    global ball, paddle1, paddle2,paddle1_movel,paddle2_move
-    send_to_webserver('info',tuple([ball,paddle1,paddle2,[l_score,r_score]]),log_id)
+    global ball, paddle1, paddle2
+    ratio_ball=[round((ball[0]-BALL_RADIUS)/8,1),round((ball[1]-BALL_RADIUS)/4,1)]
+    ratio_paddle1 = round((paddle1[1]-HALF_PAD_HEIGHT)/4,1)
+    ratio_paddle2 = round((paddle2[1]-HALF_PAD_HEIGHT)/4,1)
+    print("ratio_ball:",ratio_ball,ratio_paddle1)
+    send_to_webserver('info',tuple([ratio_ball,ratio_paddle1,ratio_paddle2,[l_score,r_score]]),log_id)
     record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))
     game(game_whom)
 

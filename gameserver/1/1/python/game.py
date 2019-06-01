@@ -9,7 +9,7 @@ game_exec_ip = sys.argv[1]
 game_exec_port = sys.argv[2]
 log_id = sys.argv[3]
 
-socketIO=SocketIO('127.0.0.1', 5000, LoggingNamespace)
+socketIO=SocketIO('0.0.0.0', 5000, LoggingNamespace)
 socketIO.emit('info',{'msg':'gameconnected','log_id':log_id})
 bind_ip = '0.0.0.0'
 bind_port = int(game_exec_port)+1
@@ -47,6 +47,7 @@ record_content=[]
 l_score = 0
 r_score = 0
 cnt=0
+p_cnt = 0
 p1_rt=0.0001
 p2_rt=0.0001
 p1_timeout=0
@@ -116,15 +117,19 @@ def tcp_send_rule(str_tosend,startlen):
 
 def send_to_Players(instr):
 
-    global cnt,barrier,ball,paddle1,paddle2,l_score,r_score
+    global cnt,barrier,ball,paddle1,paddle2,l_score,r_score,p_cnt
 
     if (instr == 'gameinfo') and barrier==[1,1]:
         cnt+=1
         json_str={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
         print("send info")
     elif instr == 'over':
+        if l_score > r_score:
+            l_score = p_cnt
+        else:
+            r_score = p_cnt
         json_str={'type':'over','content':{'ball':ball,'score':[l_score,r_score],'normal':[3,3]}} # '{\'ball\':'+str(ball)+'}' normal：[cpu,mem]
-        print('send game over')
+        print('send game over:',l_score,r_score)
 
     elif instr =="score_recved":
         json_str={'type':'score_recved','content':""}
@@ -145,7 +150,7 @@ def c_str_split(recv_msg):
 
 def play():
     try:
-        global paddle1, paddle2,paddle1_move,paddle2_move, ball, ball_vel, l_score, r_score, cnt
+        global paddle1, paddle2,paddle1_move,paddle2_move, ball, ball_vel, l_score, r_score, cnt, p_cnt
         global barrier,start,endgame
         
         def y_axis(the_paddle,the_move):
@@ -189,6 +194,7 @@ def play():
                                                                                        paddle1[1] + PAD_CATCH, 1):
             if int(ball[0]) < PAD_WIDTH :
                 ball[0] = BALL_RADIUS*2 + PAD_WIDTH
+            p_cnt+=1
             ball_vel[0] = -ball_vel[0]
             ball_vel[0] *= 1.1
             ball_vel[1] *= 1.1      

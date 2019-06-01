@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request, current_ap
 from app import db
 from app.games.forms import CreateGameForm, AddRoomForm, LoginForm, JoinForm, LeaveForm
 from flask_login import current_user, login_user, logout_user,login_required
-from app.models import User, Game, Log, Code,Privacy,News
+from app.models import User, Game, Log, Code,Privacy,News,P_Score
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from datetime import datetime
@@ -165,8 +165,10 @@ def wait_to_play(log_id):
 @bp.route('/rank_list/<int:log_id>', methods=['GET','POST'])
 @login_required
 def rank_list(log_id):
-    log = Log.query.filter_by(id=log_id).first()
-    rank_list = log.get_rank_list()
+    l=Log.query.filter_by(id=log_id).first()
+    # p_game = P_Score.query.filter_by(game_id=l.game_id).order.all()
+    # p_game
+    rank_list = l.get_rank_list()
     return render_template('games/game/rank_list.html', title='rank_list',rank_list=rank_list)
 
 @bp.route('/game_status/<int:game_id>', methods=['GET','POST'])

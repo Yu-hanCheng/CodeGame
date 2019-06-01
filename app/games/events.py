@@ -3,7 +3,7 @@ from flask import session,redirect, url_for,flash,request,current_app
 from flask_socketio import emit, join_room, leave_room,send
 from .. import socketio # //in CodeGame.py
 from flask_login import current_user
-from app.models import User, Game, Log, Code, Game_lib, Language, Category
+from app.models import User, Game, Log, Code, Game_lib, Language, Category, P_Score
 from app import db
 from websocket import create_connection
 import json,base64,time
@@ -55,18 +55,30 @@ def game_over(message):
     
     l_report=json.loads(message['msg']['l_report'])
     r_report=json.loads(message['msg']['r_report'])
-    emit('gameover', {'msg': message['msg'],'log_id':message['log_id']},namespace = '/test',room= message['log_id'])
-    
-    
-    
-    
     l=Log.query.filter_by(id=message['log_id']).first()
+    #取player_gmaescore
+    lp_game=P_Score.query.filter(P_Score.user_id==l_report['user_id'],P_Score.game_id==l.game_id).first()
+    rp_game=P_Score.query.filter(P_Score.user_id==r_report['user_id'],P_Score.game_id==l.game_id).first()
+    lp_score = 0 if lp_game is None else lp_game.score
+    rp_score = 0 if rp_game is None else rp_game.score
+    def update_winner_score(winner,lp_score,rp_score,report_score):
+        if lp_score > rp_score:
+            winner.score = lp_score + report_score
+        else:
+            winner.score = rp_score + report_score
+    
     if l_report['score']>r_report['score']:
+        update_winner_score(lp_game, lp_score, rp_score, l_report['score'])
         l.winner_id =l_report['user_id']
         l.winner_code_id=l_report['code_id']
+        l.score = l_report['score']
     else:
+        update_winner_score(rp_game, lp_score, rp_score, r_report['score'])
         l.winner_id =r_report['user_id']
         l.winner_code_id=r_report['code_id']
+        l.score = r_report['score']
+    emit('gameover', {'msg': message['msg'],'log_id':message['log_id']},namespace = '/test',room= message['log_id'])
+    print("after:",lp_game.score,rp_game.score)
     save_content = json.dumps(message['msg'])
     l.record_content = save_content
     l.status = 2

@@ -43,6 +43,11 @@ players_in_log = db.Table('players_in_log',
     db.Column('log_id',db.Integer, db.ForeignKey('log.id')),
     db.Column('player_id',db.Integer, db.ForeignKey('user.id'))
     )
+# player_game_score = db.Table('players_game_score',
+#     db.Column('game_id',db.Integer, db.ForeignKey('game.id')),
+#     db.Column('player_id',db.Integer, db.ForeignKey('user.id'))
+#     db.Column('score',db.Integer)
+#     )
 
 @login.user_loader #@lm.user_loader
 def load_user(id):
@@ -255,8 +260,8 @@ class Log(db.Model):
     status=db.Column(db.Integer,db.ForeignKey('status.id'))
     # room目前還有多少空位，會在 event的 joined update
     privacy=db.Column(db.Integer,db.ForeignKey('privacy.id'))
-    score = db.Column(db.Integer,default='100200')
-    
+    score = db.Column(db.Integer,default='0')
+    # player_order=db.Column(db.String(60))
     current_users = db.relationship(
         'User', secondary=players_in_log)
 
@@ -322,6 +327,12 @@ class Game(db.Model):
     #     return json.dumps(self)
     count = db.Column(db.Integer,default=0)
 
+    # player_game_score = db.relationship(
+    #     'User', secondary=player_game_score,
+    #     primaryjoin=(player_game_score.c.game_id==id),
+    #     backref=db.backref('followers', lazy='dynamic'),lazy='dynamic'
+    # )
+
     def followed_posts(self):
         followed = Post.query.join(
             followers, (followers.c.followed_id == Post.user_id)).filter(
@@ -351,6 +362,15 @@ class Category(db.Model):
 
     def __repr__(self):
         return '<Category %r>' % self.name
+
+class P_Score(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    score = db.Column(db.Integer)
+
+    def __repr__(self):
+        return '<P_Score %r>' % self.score
 
 class News(db.Model):
     id = db.Column(db.Integer, primary_key=True)
