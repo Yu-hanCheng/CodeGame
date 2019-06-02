@@ -174,13 +174,14 @@ def rank_list(log_id):
 @bp.route('/game_status/<int:game_id>', methods=['GET','POST'])
 @login_required
 def game_status(game_id):
-    g_name = Game.query.filter_by(id=game_id).first()
+    g_name = Game.query.filter_by(id=game_id).first().gamename
     a_log = Log.query.filter_by(game_id=game_id).first()
     wait_log = Log.query.filter(Log.status<0,Log.game_id==game_id).all()
     gaming_log = Log.query.filter(Log.status==1,Log.game_id==game_id).all()
+    game_players = P_Score.query.join(User,User.id==P_Score.user_id).with_entities(User.username,P_Score.score).order_by(P_Score.score.desc()).all()
     if a_log:
         rank_list = a_log.get_rank_list()
-        return render_template('games/game/game_status.html', title='game_status',g_name=g_name,wait_log=wait_log,gaming_log=gaming_log,rank_list=rank_list)
+        return render_template('games/game/game_status.html', title='game_status',g_name=g_name,game_players=game_players,wait_log=wait_log,gaming_log=gaming_log,rank_list=rank_list)
     else:
         return redirect(url_for('games.index',msg="The game has no room"))
 

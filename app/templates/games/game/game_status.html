@@ -3,90 +3,121 @@
 {% block app_content %}
 <br>
 <h3>{{g_name}} status</h3>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='list_css.css') }}">
-<div class="container">
+<div class="flex-container">
+    <div class="leaderboard">
         <div class="modal-content">
             <div class="panel-body table-responsive">
-                <table class="table ">
-                    <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">Rank</th>
-                        <th scope="col">UserName</th>
-                        <th scope="col">Score</th>
-                        <th scope="col">LogID</th>
-                        <th scope="col">Record</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <p>room_wait</p>
-                    {% set i=0 %}
-                    {% for log in wait_log %}
-                        {% set i=i+1 %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ log.username }}</td>
-                            <td>{{ log.score }}</td>
-                            <td>{{ log.id }}</td>
-                            <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.wait_to_play',log_id=log.id ) }}'" >Enter</button></td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="panel-body table-responsive">
-                <table class="table ">
-                    <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">index</th>
-                        <th scope="col">UserName</th>
-                        <th scope="col">LogID</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <p>gaming room</p>
-                    {% set i=0 %}
-                    {% for g_log in gaming_log %}
-                        {% set i=i+1 %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ g_log.username }}</td>
-                            <td>{{ g_log.id }}</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            <div class="panel-body table-responsive">
-                <table class="table ">
-                    <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">Rank</th>
-                        <th scope="col">UserName</th>
-                        <th scope="col">Score</th>
-                        <th scope="col">LogID</th>
-                        <th scope="col">Record</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <p>rank_list</p>
-                    {% set i=0 %}
-                    {% for log in rank_list %}
-                        {% set i=i+1 %}
-                        <tr>
-                            <td>{{ loop.index }}</td>
-                            <td>{{ log.username }}</td>
-                            <td>{{ log.score }}</td>
-                            <td>{{ log.id }}</td>
-                            <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.display_record',log_id=log.id,func_type=1 ) }}'" >Record</button></td> 
-                            <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.display_record',log_id=log.id,func_type=0 ) }}'" >Download</button></td> 
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                    <table class="table ">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">Rank</th>
+                                <th scope="col">UserName</th>
+                                <th scope="col">Score</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <h3>Leaderboard</h3>
+                            {% set i=0 %}
+                            {% for p_g in game_players %}
+                                {% set i=i+1 %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td><a href="{{ url_for('main.user',username=p_g.username ) }}">{{ p_g.username }}</a></td>
+                                    <td>{{ p_g.score }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
             </div>
         </div>
-        
+    </div>
+    <div class="tables-container">
+            <div class="modal-content">
+                <div class="panel-body table-responsive">
+                    <table class="table ">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Index</th>
+                            <th scope="col">RoomName</th>
+                            <th scope="col">UserName</th>
+                            <th scope="col">Enter</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <h4>room_wait</h4>
+                        {% set i=0 %}
+                        {% for log in wait_log %}
+                            {% set i=i+1 %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ log.roomname }}</td>
+                                <td>{{ log.username }}</td>
+                                <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.wait_to_play',log_id=log.id ) }}'" >Enter</button></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-body table-responsive">
+                    <table class="table ">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">index</th>
+                            <th scope="col">RoomName</th>
+                            <th scope="col">UserName</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <h4>gaming room</h4>
+                        {% set i=0 %}
+                        {% for g_log in gaming_log %}
+                            {% set i=i+1 %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ g_log.roomname }}</td>
+                                <td>{{ g_log.username }}</td>
+                                
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-body table-responsive">
+                    <table class="table ">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Rank</th>
+                            <th scope="col">RoomName</th>
+                            <th scope="col">UserName</th>
+                            <th scope="col">Score</th>
+                            <th scope="col">LogID</th>
+                            <th scope="col">Record</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <h4>rank_list</h4>
+                        {% set i=0 %}
+                        {% for log in rank_list %}
+                            {% set i=i+1 %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ log.roomname }}</td>
+                                <td>{{ log.username }}</td>
+                                <td>{{ log.score }}</td>
+                                <td>{{ log.id }}</td>
+                                <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.display_record',log_id=log.id,func_type=1 ) }}'" >Record</button></td> 
+                                <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.display_record',log_id=log.id,func_type=0 ) }}'" >Download</button></td> 
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>         
+    </div>
 </div>
+
 <script>
     function enterRoom(room_id) {
         

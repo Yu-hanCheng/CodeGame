@@ -59,8 +59,18 @@ def game_over(message):
     #取player_gmaescore
     lp_game=P_Score.query.filter(P_Score.user_id==l_report['user_id'],P_Score.game_id==l.game_id).first()
     rp_game=P_Score.query.filter(P_Score.user_id==r_report['user_id'],P_Score.game_id==l.game_id).first()
-    lp_score = 0 if lp_game is None else lp_game.score
-    rp_score = 0 if rp_game is None else rp_game.score
+    lp_score = 0
+    rp_score = 0
+    if lp_game is None:
+        lp_game = P_Score(user_id=l_report['user_id'],game_id=l.game_id)
+        db.session.add(lp_game)
+    else: 
+        lp_score = lp_game.score
+    if rp_game is None:
+        rp_game = P_Score(user_id=r_report['user_id'],game_id=l.game_id)
+        db.session.add(rp_game)
+    else: 
+        rp_score = rp_game.score
     def update_winner_score(winner,lp_score,rp_score,report_score):
         if lp_score > rp_score:
             winner.score = lp_score + report_score
