@@ -61,12 +61,12 @@ def game_over(message):
     rp_game=P_Score.query.filter(P_Score.user_id==r_report['user_id'],P_Score.game_id==l.game_id).first()
     lp_score = 0
     rp_score = 0
-    if lp_game is None:
+    if lp_game.score is None:
         lp_game = P_Score(user_id=l_report['user_id'],game_id=l.game_id)
         db.session.add(lp_game)
     else: 
         lp_score = lp_game.score
-    if rp_game is None:
+    if rp_game.score is None:
         rp_game = P_Score(user_id=r_report['user_id'],game_id=l.game_id)
         db.session.add(rp_game)
     else: 
