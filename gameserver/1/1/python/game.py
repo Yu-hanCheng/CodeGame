@@ -308,111 +308,112 @@ def handle_client_connection(client_socket):
                     lock.release()
                     pass
     if lib_lan==1: # c
-        while True:
+        pass
+        # while True:
             
-            try:
-                request = client_socket.recv(1024)
-                req_split=c_str_split(request)
-                if req_split==b'':
-                    print("sys.exit()")
-                    os._exit(0)
+        #     try:
+        #         request = client_socket.recv(1024)
+        #         req_split=c_str_split(request)
+        #         if req_split==b'':
+        #             print("sys.exit()")
+        #             os._exit(0)
                     
-                else:
-                    msg = json.loads(req_split)
-            except(RuntimeError, TypeError, NameError)as e: 
-                print('error',e)
-                os._exit(0)
+        #         else:
+        #             msg = json.loads(req_split)
+        #     except(RuntimeError, TypeError, NameError)as e: 
+        #         print('error',e)
+        #         os._exit(0)
 
-            if start == 1:
-                if msg['type']=='info':
-                    if msg['who']=='P1':
-                        paddle1_move=msg['content']         
-                        print("p1 info lock",lock.acquire())
-                        p1_rt=time.time()
-                        try:
-                            barrier[0]=1 ## return to 0 in send_to_player
-                            if barrier[1]==1:
-                                after_play('on_p1')
-                                lock.release()
-                            else:
-                                lock.release()
-                        finally:
-                            pass
-                    elif msg['who']=='P2':
-                        paddle2_move=msg['content'] 
-                        print("p2 info lock",lock.acquire())
-                        p2_rt=time.time()
-                        try:
-                            barrier[1]=1
-                            if barrier[0]==1:
-                                after_play('on_p2')
-                                lock.release()
-                            else:
-                                lock.release()
-                        finally:
-                            pass
-                    else:
-                        pass
-                else:
-                    pass
-            elif endgame==1:
+        #     if start == 1:
+        #         if msg['type']=='info':
+        #             if msg['who']=='P1':
+        #                 paddle1_move=msg['content']         
+        #                 print("p1 info lock",lock.acquire())
+        #                 p1_rt=time.time()
+        #                 try:
+        #                     barrier[0]=1 ## return to 0 in send_to_player
+        #                     if barrier[1]==1:
+        #                         after_play('on_p1')
+        #                         lock.release()
+        #                     else:
+        #                         lock.release()
+        #                 finally:
+        #                     pass
+        #             elif msg['who']=='P2':
+        #                 paddle2_move=msg['content'] 
+        #                 print("p2 info lock",lock.acquire())
+        #                 p2_rt=time.time()
+        #                 try:
+        #                     barrier[1]=1
+        #                     if barrier[0]==1:
+        #                         after_play('on_p2')
+        #                         lock.release()
+        #                     else:
+        #                         lock.release()
+        #                 finally:
+        #                     pass
+        #             else:
+        #                 pass
+        #         else:
+        #             pass
+        #     elif endgame==1:
                 
-                if msg['type']=='score':
+        #         if msg['type']=='score':
                     
-                    if msg['who']=='P1':
-                        print("p1 score lock",lock.acquire())
-                        l_report = msg['content']                
-                        if r_report!="":
-                            lock.release()
-                            send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
+        #             if msg['who']=='P1':
+        #                 print("p1 score lock",lock.acquire())
+        #                 l_report = msg['content']                
+        #                 if r_report!="":
+        #                     lock.release()
+        #                     send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)
 
-                            game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
-                            game_exec_address = (game_exec_ip, int(game_exec_port))
-                            print("game_exec_address:",game_exec_address)
-                            while True:
-                                try:
-                                    game_exec=game_exec_client.connect(game_exec_address)
-                                    print("connected")
-                                    break
-                                except:
-                                    time.sleep(0.1)
-                            binary =json.dumps({'type':'over'}).encode()
-                            print("binary:",binary)
-                            game_exec_client.send(binary)
-                            print("send game_exec:",game_exec_client)
-                            send_to_Players('score_recved')
-                            # sys.exit()
-                            break
-                        else:
-                            lock.release()
-                    elif msg['who']=='P2':
-                        print("p2 score lock",lock.acquire())
-                        r_report = msg['content']
-                        if l_report!="":
-                            lock.release()
-                            send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)                       
-                            game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
-                            game_exec_address = (game_exec_ip, int(game_exec_port))
-                            print("game_exec_address:",game_exec_address)
-                            while True:
-                                try:
-                                    game_exec=game_exec_client.connect(game_exec_address)
-                                    print("connected")
-                                    break
-                                except:
-                                    time.sleep(0.1)
-                            binary =json.dumps({'type':'over'}).encode()
-                            print("binary:",binary)
-                            game_exec_client.send(binary)
-                            send_to_Players('score_recved')
-                            break
-                else:
-                    print("the type is not score")
+        #                     game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+        #                     game_exec_address = (game_exec_ip, int(game_exec_port))
+        #                     print("game_exec_address:",game_exec_address)
+        #                     while True:
+        #                         try:
+        #                             game_exec=game_exec_client.connect(game_exec_address)
+        #                             print("connected")
+        #                             break
+        #                         except:
+        #                             time.sleep(0.1)
+        #                     binary =json.dumps({'type':'over'}).encode()
+        #                     print("binary:",binary)
+        #                     game_exec_client.send(binary)
+        #                     print("send game_exec:",game_exec_client)
+        #                     send_to_Players('score_recved')
+        #                     # sys.exit()
+        #                     break
+        #                 else:
+        #                     lock.release()
+        #             elif msg['who']=='P2':
+        #                 print("p2 score lock",lock.acquire())
+        #                 r_report = msg['content']
+        #                 if l_report!="":
+        #                     lock.release()
+        #                     send_to_webserver('over',{'l_report':l_report,'r_report':r_report,'record_content':record_content},log_id)                       
+        #                     game_exec_client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+        #                     game_exec_address = (game_exec_ip, int(game_exec_port))
+        #                     print("game_exec_address:",game_exec_address)
+        #                     while True:
+        #                         try:
+        #                             game_exec=game_exec_client.connect(game_exec_address)
+        #                             print("connected")
+        #                             break
+        #                         except:
+        #                             time.sleep(0.1)
+        #                     binary =json.dumps({'type':'over'}).encode()
+        #                     print("binary:",binary)
+        #                     game_exec_client.send(binary)
+        #                     send_to_Players('score_recved')
+        #                     break
+        #         else:
+        #             print("the type is not score")
 
                 
-            else:
-                time.sleep(0.2)
-                lock.release()
+        #     else:
+        #         time.sleep(0.2)
+        #         lock.release()
     elif lib_lan==0:#python
         while True:
             try:
@@ -513,6 +514,7 @@ def gameover(msg_type,l_report,r_report,record_content,log_id):
         except:
             time.sleep(0.1)
     binary =json.dumps({'type':'over'}).encode()
+    time.sleep(1)
     game_exec_client.send(binary)
     send_to_Players('score_recved')
 def timeout_check():
