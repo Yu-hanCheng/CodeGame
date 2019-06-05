@@ -367,7 +367,7 @@ class P_Score(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     game_id = db.Column(db.Integer, db.ForeignKey('game.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    score = db.Column(db.Integer)
+    score = db.Column(db.Integer,default=0)
 
     def __repr__(self):
         return '<P_Score %r>' % self.score
