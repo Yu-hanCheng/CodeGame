@@ -112,7 +112,12 @@ def join_room_from_browser(message):
     join_room(message['room'])
     session['game_start'] = message['game_start']
     if int(message['status']) ==0:
-        emit('enter_room',message['privacy'],namespace = '/test',room= message['room'])
+        log_users_id =Log.query.filter_by(id=message['room']).first().current_users
+        log_users=[]
+        for u in log_users_id:
+            log_users.append(u.username)
+        print("log_users",log_users)
+        emit('enter_room',{'enter':current_user.username,'log_users':log_users},namespace = '/test',room= message['room'])
         if int(message['privacy'])==1:
             app = current_app._get_current_object()  # get the real app instance
             # set_interval(app,notify_browser,1,60,message['room'])

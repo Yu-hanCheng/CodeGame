@@ -38,12 +38,14 @@ $(document).ready(function(){
         socket.emit('game_start',{room:$('#join_room').val()});
     });
     socket.on('enter_room', function(data){
-        $('#page_title').html("enter room");
+        $('#page_title').html(data['enter']+" enter room");
         document.getElementById('countdown').style.display = "block";
         document.getElementById('btn_select_code').style.display = "block";
+        $('#room_players').html("room_players:"+data['log_users']);
     }); 
     socket.on('wait_room', function(data){
         document.getElementById('btn_select_code').style.display = "none";
+        $('.loading').css("display", "none");
         $('#page_title').html("wait for others");
     }); 
 

@@ -158,7 +158,7 @@ def wait_to_play(log_id):
                     rank_list=l.get_rank_list()
                 else: # only invited
                     pass
-        return render_template('games/game/spa.html', title='wait_play_commit',room_id=log_id,room_status=l.status,rank_list=rank_list,all_codes=all_codes,room_privacy=l.privacy,roomname=l.roomname,game_start=game_start)
+        return render_template('games/game/spa.html', title='wait_play_commit',log=l,room_id=log_id,room_status=l.status,rank_list=rank_list,all_codes=all_codes,room_privacy=l.privacy,roomname=l.roomname,game_start=game_start)
     else:
         return redirect(url_for('games.index',msg="The room is deleted"))
 
