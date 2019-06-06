@@ -156,6 +156,9 @@ def wait_to_play(log_id):
                 elif l.privacy == 2: # official
                     join_log(l,l.privacy)
                     rank_list=l.get_rank_list()
+                    game_start=False
+                    if l.status ==1 : # gaming
+                        game_start=True
                 else: # only invited
                     pass
         return render_template('games/game/spa.html', title='wait_play_commit',log=l,rank_list=rank_list,all_codes=all_codes,game_start=game_start)
