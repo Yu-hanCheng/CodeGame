@@ -62,6 +62,7 @@ class User(PaginatedAPIMixin, UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     current_log_id = db.Column(db.Integer, db.ForeignKey('log.id'))
     confirm = db.Column(db.Boolean, default=False)
+    level = db.Column(db.Integer,default=0)
 
 
     posts = db.relationship('Post', backref='author', lazy='dynamic')
