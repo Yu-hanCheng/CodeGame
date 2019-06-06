@@ -18,7 +18,7 @@
         <div class="navbar-collapse collapse" id="bs-example-navbar-collapse-1">
             <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="{{ url_for('main.explore') }}">Explore</a></li>
+                <!-- <li class="nav-item"><a class="nav-link" href="{{ url_for('main.explore') }}">Explore</a></li> -->
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('games.index',msg='welcome') }}">Game</a></li>
                 {% if not current_user.is_anonymous %}
                     {% if current_user.level %}
