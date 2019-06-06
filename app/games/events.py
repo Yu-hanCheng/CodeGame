@@ -140,14 +140,15 @@ def change_code(message):
 
 @socketio.on('select_code' ,namespace = '/test')
 def select_code(message):
-    all_code = message['room']+"_all"
-    globals()[all_code]+=1
-    # Sent by clients when they click btn.
-    # call emit_code to send code to gameserver.-- 0122/2019
     l=Log.query.with_entities(Log.id,Log.game_id,Game.category_id,Game.player_num).filter_by(id=message['room']).first()
-    if globals()[all_code]==l.player_num :
-        name = message['room']+"_stop"
-        globals()[name].set()
+    if int(message['privacy'])==1:
+        all_code = message['room']+"_all"
+        globals()[all_code]+=1
+        # Sent by clients when they click btn.
+        # call emit_code to send code to gameserver.-- 0122/2019
+        if globals()[all_code]==l.player_num :
+            name = message['room']+"_stop"
+            globals()[name].set()
     select_code =Code.query.with_entities(Code.id,Code.body,Code.attach_ml, Code.commit_msg,Code.compile_language_id,Language.language_name).filter_by(id=message['code_id']).join(Log,(Log.id==message['room'])).join(Language,(Language.id==Code.compile_language_id)).order_by(Code.id.desc()).first()
     emit_code(l, select_code,current_user.id)
     

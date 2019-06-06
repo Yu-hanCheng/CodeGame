@@ -149,7 +149,7 @@ function select_code(){
     if (opponent){ 
         opponent_rank=opponent.value;
     }
-    socket.emit('select_code', {room: $('#join_room').val(),code_id:code_selected,opponent:opponent_rank,status: $('#join_status').val()});
+    socket.emit('select_code', {room: $('#join_room').val(),privacy: $('#room_privacy').val(),code_id:code_selected,opponent:opponent_rank,status: $('#join_status').val()});
 }
 var countdownnumber=30;
 var countdownid,x;
