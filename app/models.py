@@ -69,8 +69,8 @@ class User(PaginatedAPIMixin, UserMixin, db.Model):
     #lazy argument defines how the database query for the relationship will be issued
     #mode of dynamic sets up the query to not run until specifically requested
     
-    # about_me =db.deferred( db.Column(db.String(140)))
-    # last_seen = db.deferred(db.Column(db.DateTime, default=datetime.utcnow))
+    about_me =db.deferred( db.Column(db.String(140)))
+    last_seen = db.deferred(db.Column(db.DateTime, default=datetime.utcnow))
     
     followed = db.relationship(
         'User', secondary=followers,
