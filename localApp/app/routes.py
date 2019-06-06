@@ -153,9 +153,9 @@ def gameobject(message):
 @socketio.on('over')#from test_game
 def gameobject(message):
     print("over")
-    global p_gamemain,p
-    p.kill()
-    p_gamemain.kill()
+    # global p_gamemain,p
+    # p.kill()
+    # p_gamemain.kill()
     message['msg']['l_report'] = message['msg']['l_report'].replace("'", '"')
     socketio.emit('gameover', {'msg': message['msg'],'log_id':message['log_id']})
 
