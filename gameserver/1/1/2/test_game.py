@@ -292,8 +292,6 @@ def timeout_check(client_socket):
                     p2_rt=time.time()
                     send_to_webserver('timeout',p1_rt_sub,log_id)
                     client_socket.close()
-                    import os
-                    os._exit(0)
         except Exception as e:
             print("timeout e:",e)
                     
