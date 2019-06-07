@@ -84,6 +84,7 @@ def commit():
     # // 0Game_lib.id,1Category.id,2Category.name,3Game.id,4Game.gamename,5Language.id, 6Language.language_name, 7Language.filename_extension
     # socket.emit('commit', {code: editor_content, commit_msg:commit_msg, game_id:game_id, glanguage:glanguage, user_id:1});
     global code_data,isCodeOk
+    isCodeOk=0
     data = request.data
     json_obj=json.loads(data)
     obj=json_obj["obj"].split(",")
@@ -173,8 +174,12 @@ def timeout(message):
     socketio.emit('timeout', {'msg':""})
     global p_gamemain,p,isCodeOk
     isCodeOk=2
-    p.kill()
-    p_gamemain.kill()
+    try :
+        p.kill()
+        p_gamemain.kill()
+    except Exception as e:
+        print("timeout kill, e:",e)
+
 
 def test_security(only_user_code):
     a=[' os',' sys',' subprocess']
@@ -237,8 +242,6 @@ def test_code(compiler,save_path,filename,file_end):
             print("p.returncode",p.returncode)
             if p.returncode ==1:
                 return [0,"type of paddle is not int"]
-            p_gamemain.kill()
-            p.kill()
             flash("great, execuse successfully:",stdout)
             # browser
 
