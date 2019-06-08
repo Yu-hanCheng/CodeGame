@@ -224,8 +224,8 @@ def message_received(client, server, message):
 			except Exception as e:
 				print("send_message:",e)
 
-	elif data['from']=='game':
-		print("gameover")
+	# elif data['from']=='game':
+	# 	print("gameover")
 					
 while True:
 	try:

@@ -99,14 +99,14 @@ def send_to_webserver(msg_type,msg_content,logId):
         socketIO.emit(msg_type,{'msg':msg_content,'log_id':logId})
     except (RuntimeError, TypeError, NameError) as e:
         print(' send_to_webserver error:',e)
-def send_to_gameserver(score_msg):
-    global logId
-    print('gameserver')
-    ws = create_connection("ws://localhost:6005")
-    ws.send(json.dumps({'from':"game",'logId':logId,'score_msg':score_msg}))
-    ws.close()
-    exit()
-    quit()
+# def send_to_gameserver(score_msg):
+#     global logId
+#     print('gameserver')
+#     ws = create_connection("ws://localhost:6005")
+#     ws.send(json.dumps({'from':"game",'logId':logId,'score_msg':score_msg}))
+#     ws.close()
+#     exit()
+#     quit()
 
 def tcp_send_rule(str_tosend,startlen):
     msg_tosend=str(len(str_tosend))
