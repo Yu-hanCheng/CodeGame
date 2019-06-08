@@ -21,7 +21,7 @@ global ws
 p=""
 Can_recving=False
 Is_thread_created=False
-def connectto_web(intervaltime):
+def connectto_gameserver(intervaltime):
     global ws
     while True:
         try:
@@ -32,7 +32,7 @@ def connectto_web(intervaltime):
             time.sleep(intervaltime)
     print("ws create_connection")
     
-connectto_web(1)
+connectto_gameserver(1)
 def ws_recv_from_gameserv():
     # independent thread to run a loop for polling sebsocket of webserver(6005) to get exec codes
     global ws,Can_recving
@@ -42,13 +42,13 @@ def ws_recv_from_gameserv():
                 ws.send(json.dumps({'from':"game_exec",'msg':"get_codes"}))
             except:
                 print("cannot connect now")
-                connectto_web(0.3)
+                connectto_gameserver(0.3)
                 ws.send(json.dumps({'from':"game_exec",'msg':"get_codes"}))
             try:
                 recv_msg = ws.recv()
             except Exception as e:
                 print("ws recv error:",e)
-                connectto_web(0.3)
+                connectto_gameserver(0.3)
                 recv_msg = ws.recv()
 
             if len(recv_msg) > 5:
@@ -182,7 +182,7 @@ def tcp_client_handle(client_socket):
                 subserver_cnt+=1  #because there must recv no msg "" later
                 Can_recving=False
             else:
-                pass
+                print("subserver:",msg['type'])
         except Exception as e:
             print("error:",e)           
             for i,e in enumerate(subserverlist):
