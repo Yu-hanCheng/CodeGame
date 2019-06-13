@@ -64,30 +64,6 @@
                     <table class="table ">
                         <thead class="thead-dark">
                         <tr>
-                            <th scope="col">index</th>
-                            <th scope="col">RoomName</th>
-                            <th scope="col">UserName</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <h4>gaming room</h4>
-                        {% set i=0 %}
-                        {% for g_log in gaming_log %}
-                            {% set i=i+1 %}
-                            <tr>
-                                <td>{{ loop.index }}</td>
-                                <td>{{ g_log.roomname }}</td>
-                                <td>{{ g_log.username }}</td>
-                                
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <div class="panel-body table-responsive">
-                    <table class="table ">
-                        <thead class="thead-dark">
-                        <tr>
                             <th scope="col">Rank</th>
                             <th scope="col">RoomName</th>
                             <th scope="col">UserName</th>
@@ -115,6 +91,30 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="panel-body table-responsive">
+                    <table class="table ">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">index</th>
+                            <th scope="col">RoomName</th>
+                            <th scope="col">UserName</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <h4>gaming room</h4>
+                        {% set i=0 %}
+                        {% for g_log in gaming_log %}
+                            {% set i=i+1 %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ g_log.roomname }}</td>
+                                <td>{{ g_log.username }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
             </div>         
     </div>
 </div>

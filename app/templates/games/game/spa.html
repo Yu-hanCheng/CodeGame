@@ -8,8 +8,9 @@
 {% block app_content %}
 <div class="flex-container">
     <div class="roomInfo">
-        <h2 id="roomname">{{ log.roomname }}</h2> <h2 id="page_title">room wait</h2>
-        <h3 id="room_players">room_players:{% for u in log.current_users %} {{ u.username }} {% endfor %}</h3>
+        <h2 id="roomname" style="color: forestgreen;">{{ log.roomname }}</h2> 
+        <h2 id="page_title" style="color: rgb(138, 82, 17);">room wait</h2>
+        <h3 id="room_players">players:{% for u in log.current_users %} {{ u.username }} {% endfor %}</h3>
         <button onclick="left_room()" id="leave_btn">leave room</button>
     </div>
     <div class="loading">
