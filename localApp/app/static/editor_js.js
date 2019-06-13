@@ -301,6 +301,8 @@ function myPopupjs(data_msg,log_id){
     var mytable = "<table class=\"popuptext\" ><tbody><tr>" ;
     var l_data = JSON.parse(data_msg.l_report)
     var r_data = {'user_id':1,'score':0,'cpu':'50','mem':'30','time':'554400'}
+    l_data['cpu']=l_data['cpu']+"%"
+    l_data['mem']=l_data['mem']+"%"
     l_data['max_val'][0]=l_data['max_val'][0]+"%"
     l_data['max_val'][1]=l_data['max_val'][1]+"%"
     mytable += "</tr><tr><td></td><td>SCORE</td></tr><tr>";

@@ -174,8 +174,14 @@ function myPopupjs(data_msg,log_id){
     var mytable = "<table class=\"popuptext\" ><tbody><tr>" ;
     var l_data = JSON.parse(data_msg.l_report)
     var r_data = JSON.parse(data_msg.r_report)
+    l_data['cpu']=l_data['cpu']+"%"
+    l_data['mem']=l_data['mem']+"%"
     l_data['max_val'][0]=l_data['max_val'][0]+"%"
     l_data['max_val'][1]=l_data['max_val'][1]+"%"
+    r_data['cpu']=r_data['cpu']+"%"
+    r_data['mem']=r_data['mem']+"%"
+    r_data['max_val'][0]=r_data['max_val'][0]+"%"
+    r_data['max_val'][1]=r_data['max_val'][1]+"%"
     
     mytable += "</tr><tr><td></td><td>SCORE</td></tr><tr>";
     mytable += "</tr><tr><td></td><td>P1</td><td>P2</td></tr><tr>";
