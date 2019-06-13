@@ -119,7 +119,7 @@ def score(msg_from_gamemain):# CPU, MEM Utility
 
     cpu = round(reduce(lambda x, y: x + y, cpu_list) / len(cpu_list),3)
     mem = round(reduce(lambda x, y: x + y, mem_list) / len(mem_list),3)
-    max_val=[max(cpu_list),round(max(mem_list),6)]
+    max_val=['cpu: '+str(max(cpu_list)),' mem: '+str(round(max(mem_list),3))] 
 
     # report="\""+str(user_id)+","+str(cpu)+","+str(mem)+","+str(avg_time)+"\""
     report= '{\'score\':'+str(score)+',\'user_id\':'+str(user_id)+',\'code_id\':'+str(code_id)+',\'cpu\':'+str(cpu)+',\'mem\':'+str(mem)+',\'max_val\':'+str(max_val)+'}'

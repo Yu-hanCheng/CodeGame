@@ -171,10 +171,11 @@ countdownnumber--;
 }
 function myPopupjs(data_msg,log_id){
 
-    console.log('msg type parse:'+typeof(JSON.parse(data_msg.l_report)))
     var mytable = "<table class=\"popuptext\" ><tbody><tr>" ;
     var l_data = JSON.parse(data_msg.l_report)
     var r_data = JSON.parse(data_msg.r_report)
+    l_data['max_val'][0]=l_data['max_val'][0]+"%"
+    l_data['max_val'][1]=l_data['max_val'][1]+"%"
     
     mytable += "</tr><tr><td></td><td>SCORE</td></tr><tr>";
     mytable += "</tr><tr><td></td><td>P1</td><td>P2</td></tr><tr>";
