@@ -594,7 +594,7 @@ if __name__ == '__main__':
     binary =json.dumps({'type':'game_setted'}).encode()
     game_exec_client.send(binary)
     game_exec_client.close()
-    inter=setInterval(0.03,timeout_check)
+    inter=setInterval(0.2,timeout_check)
     while True:
         client_sock, address = server.accept()
         playerlist.append(client_sock)
