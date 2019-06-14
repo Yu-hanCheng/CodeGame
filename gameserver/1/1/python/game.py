@@ -282,6 +282,7 @@ def handle_client_connection(client_socket):
                     else:
                         print("recv connect p1_start")
                         start=1
+                        record_content.append(identify)
                         send_to_webserver('gamemain_connect',identify,log_id)
                         p1_rt=time.time()
                         p2_rt=time.time()
@@ -299,6 +300,7 @@ def handle_client_connection(client_socket):
                     else:
                         print("p2_start")
                         start=1
+                        record_content.append(identify)
                         send_to_webserver('gamemain_connect',identify,log_id)
                         p1_rt=time.time()
                         p2_rt=time.time()

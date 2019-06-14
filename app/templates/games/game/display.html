@@ -8,8 +8,17 @@
         </span>
     </div>
 <div class="container" id="game_playground">
+
     <h2> game_playground </h2>
-    
+    <div class="players">
+        <div class="player">
+            <div id="map_left_user"> P1 username</div>
+        </div>
+        <span>vs</span>
+        <div class="player">
+            <div id="map_right_user"> P2 username</div>
+        </div>
+    </div>
     <div id="game_display">
         <div class="row" style="height:500px">
     
@@ -29,6 +38,8 @@
     window.addEventListener('resize', evt => {
     rwd_playground();
 });
+    $('#map_left_user').html({{players | safe }}[0]);
+    document.getElementById("map_right_user").textContent={{players | safe }}[1]; 
     let display_content ={{content}}
     let display ={{content}}
     var startTime=new Date();
