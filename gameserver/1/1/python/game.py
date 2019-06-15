@@ -4,7 +4,6 @@ import threading,math, random,copy
 from socketIO_client import SocketIO, BaseNamespace,LoggingNamespace
 from websocket import create_connection
 import re
-WIN_SCORE = 1
 game_exec_ip = sys.argv[1]
 game_exec_port = sys.argv[2]
 log_id = sys.argv[3]
@@ -44,10 +43,10 @@ paddle2 = [WIDTH + 1 - HALF_PAD_WIDTH, HEIGHT //2]
 ball = [0, 0]
 ball_vel = [0, 0]
 record_content=[]
-l_score = 0
-r_score = 0
+lp_cnt = 0
+rp_cnt = 0
+winner=""
 cnt=0
-p_cnt = 0
 p1_rt=0.0001
 p2_rt=0.0001
 p1_timeout=0
@@ -82,10 +81,10 @@ def ball_init(right):
     print("init move",horz,-vert)
 
 def __init__():
-    global paddle1, paddle2, paddle1_move, paddle2_move, l_score, r_score  # these are floats
+    global paddle1, paddle2, paddle1_move, paddle2_move, lp_cnt, rp_cnt  # these are floats
     global score1, score2  # these are ints
-    l_score = 0
-    r_score = 0
+    lp_cnt = 0
+    rp_cnt = 0
     if random.randrange(0, 2) == 0:
         ball_init(True)
     else:
@@ -117,19 +116,19 @@ def tcp_send_rule(str_tosend,startlen):
 
 def send_to_Players(instr):
 
-    global cnt,barrier,ball,paddle1,paddle2,l_score,r_score,p_cnt
+    global cnt,barrier,ball,paddle1,paddle2,lp_cnt,rp_cnt
 
     if (instr == 'gameinfo') and barrier==[1,1]:
         cnt+=1
-        json_str={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'score\':'+str([l_score,r_score])+',\'cnt\':'+str(cnt)+'}'}
+        json_str={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'cnt\':'+str(cnt)+'}'}
         print("send info")
     elif instr == 'over':
-        if l_score > r_score:
-            l_score = p_cnt
+        if winner=="r":
+            lp_cnt=0
         else:
-            r_score = p_cnt
-        json_str={'type':'over','content':{'ball':ball,'score':[l_score,r_score],'normal':[3,3]}} # '{\'ball\':'+str(ball)+'}' normal：[cpu,mem]
-        print('send game over:',l_score,r_score)
+            rp_cnt=0
+        json_str={'type':'over','content':{'ball':ball,'hit_cnt':[lp_cnt,rp_cnt],'normal':[3,3]}} # '{\'ball\':'+str(ball)+'}' normal：[cpu,mem]
+        print('send game over:',lp_cnt,rp_cnt)
 
     elif instr =="score_recved":
         json_str={'type':'score_recved','content':""}
@@ -150,7 +149,7 @@ def c_str_split(recv_msg):
 
 def play():
     try:
-        global paddle1, paddle2,paddle1_move,paddle2_move, ball, ball_vel, l_score, r_score, cnt, p_cnt
+        global paddle1, paddle2,paddle1_move,paddle2_move, ball, ball_vel, lp_cnt, rp_cnt, cnt
         global barrier,start,endgame
         
         def y_axis(the_paddle,the_move):
@@ -194,24 +193,18 @@ def play():
                                                                                        paddle1[1] + PAD_CATCH, 1):
             if int(ball[0]) < PAD_WIDTH :
                 ball[0] = BALL_RADIUS*2 + PAD_WIDTH
-            p_cnt+=1
+            lp_cnt+=1
             ball_vel[0] = -ball_vel[0]
             ball_vel[0] *= 1.1
             ball_vel[1] *= 1.1      
         # left no catch                                                             
         elif int(ball[0]) <= BALL_RADIUS+1:
-            r_score += 1
+            winner="r"
             ball[0] = BALL_RADIUS+1
-            print('r_score ',r_score)
-            if r_score < WIN_SCORE:
-                ball_init(True)
-                after_play('onP1')
-            else:
-                # barrier=1
-                send_to_Players('over')
-                start=0
-                endgame=1
-                after_play('onP1')
+            send_to_Players('over')
+            start=0
+            endgame=1
+            after_play('onP1')
         # right normal catch
         if int(ball[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH and int(ball[1]) in range(
                 paddle2[1] - PAD_CATCH, paddle2[1] + PAD_CATCH, 1):
@@ -221,20 +214,14 @@ def play():
             ball_vel[0] = -ball_vel[0]
             ball_vel[0] *= 1.1
             ball_vel[1] *= 1.1
+            rp_cnt+=1
         elif int(ball[0]) >= WIDTH  - BALL_RADIUS -1:
-            l_score += 1
+            winner="l"
             ball[0]=WIDTH - BALL_RADIUS-1
-            print('l_score ',l_score)
-            if l_score < WIN_SCORE:
-                ball_init(False)
-                after_play('onP2')
-                
-            else:
-                # barrier=1
-                send_to_Players('over')
-                start=0
-                endgame=1
-                after_play('onP2')
+            send_to_Players('over')
+            start=0
+            endgame=1
+            after_play('onP2')
         else:
             pass
     except(RuntimeError, TypeError, NameError) as e:
@@ -255,7 +242,7 @@ def game(where):
 def handle_client_connection(client_socket):
     # connect就進入 socket就進入 handler了, 為什麼connect後還要recv？ 為了判斷是p1連進來 還是p2
     global ball,paddle1,paddle2,record_content
-    global paddle1_move,barrier,p1_rt,paddle2_move,p2_rt, playerlist, start,endgame, l_score, r_score, r_report,l_report
+    global paddle1_move,barrier,p1_rt,paddle2_move,p2_rt, playerlist, start,endgame, lp_cnt, rp_cnt, r_report,l_report
     client_socket.sendall(json.dumps({'type':"conn",'msg':"connected to server"}).encode())
     recv_request = client_socket.recv(1024)
     request=re.split(r'(\"|\\x)\s*', str(recv_request))[2]
@@ -561,12 +548,12 @@ def timeout_check():
             pass
             
 def after_play(game_whom):
-    global ball, paddle1, paddle2
+    global ball, paddle1, paddle2,lp_cnt,rp_cnt
     ratio_ball=[round((ball[0]-BALL_RADIUS)/8,1),round((ball[1]-BALL_RADIUS)/4,1)]
     ratio_paddle1 = round((paddle1[1]-HALF_PAD_HEIGHT)/4,1)
     ratio_paddle2 = round((paddle2[1]-HALF_PAD_HEIGHT)/4,1)
     print("ratio_ball:",ratio_ball,ratio_paddle1)
-    send_to_webserver('info',tuple([ratio_ball,ratio_paddle1,ratio_paddle2,[l_score,r_score]]),log_id)
+    send_to_webserver('info',tuple([ratio_ball,ratio_paddle1,ratio_paddle2,[lp_cnt,rp_cnt]]),log_id)
     record_content.append(copy.deepcopy([ball,paddle1,paddle1_move,paddle2,paddle2_move]))
     game(game_whom)
 

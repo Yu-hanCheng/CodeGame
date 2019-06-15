@@ -110,12 +110,12 @@ def send_togame(type_class,content):
 def score(msg_from_gamemain):# CPU, MEM Utility
     inter.cancel
     global p,cpu_list, mem_list
-    print('l_score',msg_from_gamemain['score'])
+    print('l_score',msg_from_gamemain['hit_cnt'])
     if who == 'P1':
-        score = msg_from_gamemain['score'][0]
+        score = msg_from_gamemain['hit_cnt'][0]
 
     elif who == 'P2':
-        score = msg_from_gamemain['score'][1]
+        score = msg_from_gamemain['hit_cnt'][1]
 
     cpu = round(reduce(lambda x, y: x + y, cpu_list) / len(cpu_list),3)
     mem = round(reduce(lambda x, y: x + y, mem_list) / len(mem_list),3)
