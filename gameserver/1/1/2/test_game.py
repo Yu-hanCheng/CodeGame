@@ -154,15 +154,15 @@ def play():
             ball_vel[0] = -ball_vel[0]
             ball_vel[0] *= 1.1
             ball_vel[1] *= 1.1
+            l_score += 1
         elif int(ball[0]) <= BALL_RADIUS + PAD_WIDTH:
-            r_score += 1
-            print('r_score ',r_score)
+            
             send_to_Players('endgame')
             start=0
                 
         if int(ball[0]) >= (WIDTH + 1 - BALL_RADIUS - PAD_WIDTH):
             if cnt>1000:
-                l_score += 1
+                
                 send_to_Players('endgame')
                 start=0
                 
