@@ -22,7 +22,7 @@ class CreateGameForm(FlaskForm):
 	create = SubmitField('Create Game')
 	
 class AddRoomForm(FlaskForm):
-	roomname = StringField('roomname', validators=[DataRequired(),Length(min=0, max=60)])
+	roomname = StringField('roomname', validators=[Length(min=0, max=20)])
 	game_category = SelectField('Game Category',coerce=int,choices=[])
 	game =  SelectField('Game',coerce=int,choices=[])
 	user_id = HiddenField('User id', default=current_user)
@@ -30,10 +30,10 @@ class AddRoomForm(FlaskForm):
 	player_num  = IntegerField('player_num')#game.player_num
 	
 	submit = SubmitField('Enter Gameroom')
-	def validate_roomname(self, roomname):
-		room = Log.query.filter_by(roomname=roomname.data).first()
-		if room is not None:
-			raise ValidationError('Please use a different roomname.')
+	# def validate_roomname(self, roomname):
+	# 	room = Log.query.filter_by(roomname=roomname.data).first()
+		# if room is not None:
+		# 	raise ValidationError('Please use a different roomname.')
 
 
 
