@@ -29,8 +29,8 @@ def create_app(config_class=Config):
 	app.config['MAIL_SERVER']='smtp.googlemail.com'
 	app.config['MAIL_PORT']='587'
 	app.config['MAIL_USE_TLS']='1'
-	app.config['MAIL_USERNAME']='sarahcheng1231'
-	app.config['MAIL_PASSWORD']='2016sarahcheng'
+	app.config['MAIL_USERNAME']='codegame.scream'
+	app.config['MAIL_PASSWORD']='codescream'
 	socketio.init_app(app)
 
 	db.init_app(app)
