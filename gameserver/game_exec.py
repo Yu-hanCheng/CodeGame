@@ -56,7 +56,7 @@ def ws_recv_from_gameserv():
                 Can_recving=False
                 ws_msg_handler(recv_msg)
                 
-        time.sleep(1)
+        time.sleep(2)
 
 def ws_msg_handler(msg):
     # 每個 element的 內容：[0data['log_id'],1data['user_id'],\
