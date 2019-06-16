@@ -6,7 +6,7 @@ import os,time
 from os import walk
 from functools import wraps
 from flask_socketio import emit
-socketIO = SocketIO('http://vegelephant.club', 80, LoggingNamespace)
+socketIO = SocketIO('http://codegame.fun', 80, LoggingNamespace)
 app.secret_key = "secretkey"
 code_data=""
 isCodeOk=0
