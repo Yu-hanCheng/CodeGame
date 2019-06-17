@@ -195,12 +195,14 @@ def game_status(game_id):
 @login_required
 def display_record(log_id):
     log = Log.query.filter_by(id=log_id).first()
+    lan1=Language.query.filter_by(id=log.the_codes[0].compile_language_id).first()
+    lan2=Language.query.filter_by(id=log.the_codes[1].compile_language_id).first()
     record_content = json.loads(log.record_content)
     p1=User.query.filter_by(id=record_content['record_content'][0]['P1']).first().username
     p2=User.query.filter_by(id=record_content['record_content'][0]['P2']).first().username
     func_type = request.args.get('func_type')
     
-    return render_template('games/game/display.html', title='display',players=[p1,p2],content=record_content['record_content'][1:],func_type=func_type,log_id=log_id)
+    return render_template('games/game/display.html', title='display',players=[p1,p2],content=record_content['record_content'][1:],func_type=func_type,log_id=log_id,p1_code=log.the_codes[0].body,p2_code=log.the_codes[1].body,p1_lan_mode=lan1.language_name,p2_lan_mode=lan2.language_name)
 
 
 @bp.route('/<string:msg>', methods=['GET', 'POST'])

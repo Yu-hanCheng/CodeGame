@@ -87,6 +87,10 @@ def game_over(message):
         l.winner_id =r_report['user_id']
         l.winner_code_id=r_report['code_id']
         l.score = r_report['score']
+    c = Code.query.filter_by(id=l_report['code_id']).first()
+    l.the_codes.append(c)
+    c2 = Code.query.filter_by(id=r_report['code_id']).first()
+    l.the_codes.append(c2)
     emit('gameover', {'msg': message['msg'],'log_id':message['log_id']},namespace = '/test',room= message['log_id'])
     print("after:",lp_game.score,rp_game.score)
     save_content = json.dumps(message['msg'])

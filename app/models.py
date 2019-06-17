@@ -41,7 +41,8 @@ followers = db.Table('followers',
     )
 players_in_log = db.Table('players_in_log',
     db.Column('log_id',db.Integer, db.ForeignKey('log.id')),
-    db.Column('player_id',db.Integer, db.ForeignKey('user.id'))
+    db.Column('player_id',db.Integer, db.ForeignKey('user.id')),
+    db.Column('code_id',db.Integer, db.ForeignKey('code.id'))
     )
 # player_game_score = db.Table('players_game_score',
 #     db.Column('game_id',db.Integer, db.ForeignKey('game.id')),
@@ -263,6 +264,9 @@ class Log(db.Model):
     privacy=db.Column(db.Integer,db.ForeignKey('privacy.id'))
     score = db.Column(db.Integer,default='0')
     # player_order=db.Column(db.String(60))
+    the_codes = db.relationship(
+        'Code', secondary=players_in_log)
+
     current_users = db.relationship(
         'User', secondary=players_in_log)
 
@@ -274,10 +278,6 @@ class Log(db.Model):
         rank_list = Log.query.with_entities(Log.id,Log.game_id,Log.winner_code_id,User.username,Log.score,Log.roomname).filter_by(game_id = self.game_id).join(User,(User.id==Log.winner_id)).order_by(Log.score.desc()).all()
         
         return rank_list
-
-    def get_codes(self):
-        codes = Code.query.filter_by(log_id = self.id).order_by(Code.timestamp.desc())
-        return codes
         
     def get_record_content(self):
         record_content = Log.query.with_entities(Log.record_content).filter_by(id = self.id)

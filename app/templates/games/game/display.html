@@ -29,8 +29,14 @@
                 </div>
         </div>
     </div>
+    <div id="p1_code">
+            <pre id="editor1" style="height:255px"></pre>
+    </div>
+    <div id="p2_code">
+            <pre id="editor2" style="height:255px"></pre>
+    </div>
 </div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.4/ace.js" type="text/javascript" charset="utf-8"></script>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='gameover.css') }}">
 
@@ -38,6 +44,19 @@
     window.addEventListener('resize', evt => {
     rwd_playground();
 });
+    let code_decode1 = atob("{{p1_code}}");
+    let code_decode2 = atob("{{p2_code}}");
+    let editor1 = ace.edit("editor1");    
+    editor1.setTheme("ace/theme/twilight");
+    editor1.session.setMode("ace/mode/{{p1_lan_mode}}");
+    editor1.setValue(code_decode1);
+    editor1.setReadOnly(true)
+    let editor2 = ace.edit("editor2");    
+    editor2.setTheme("ace/theme/twilight");
+    editor2.session.setMode("ace/mode/{{p2_lan_mode}}");
+    editor2.setValue(code_decode2);
+    editor2.setReadOnly(true)
+
     $('#map_left_user').html({{players | safe }}[0]);
     document.getElementById("map_right_user").textContent={{players | safe }}[1]; 
     let display_content ={{content}}
