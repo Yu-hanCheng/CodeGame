@@ -116,7 +116,7 @@ def tcp_send_rule(str_tosend,startlen):
 
 def send_to_Players(instr):
 
-    global cnt,barrier,ball,paddle1,paddle2,lp_cnt,rp_cnt
+    global cnt,barrier,ball,paddle1,paddle2,lp_cnt,rp_cnt,winner
 
     if (instr == 'gameinfo') and barrier==[1,1]:
         cnt+=1
@@ -125,6 +125,7 @@ def send_to_Players(instr):
     elif instr == 'over':
         if winner=="r":
             lp_cnt=0
+            print("winner r:",winner)
         else:
             rp_cnt=0
         json_str={'type':'over','content':{'ball':ball,'hit_cnt':[lp_cnt,rp_cnt],'normal':[3,3]}} # '{\'ball\':'+str(ball)+'}' normal：[cpu,mem]
@@ -149,7 +150,7 @@ def c_str_split(recv_msg):
 
 def play():
     try:
-        global paddle1, paddle2,paddle1_move,paddle2_move, ball, ball_vel, lp_cnt, rp_cnt, cnt
+        global paddle1, paddle2,paddle1_move,paddle2_move, ball, ball_vel, lp_cnt, rp_cnt, cnt, winner
         global barrier,start,endgame
         
         def y_axis(the_paddle,the_move):
