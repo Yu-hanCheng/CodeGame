@@ -434,7 +434,8 @@ def handle_client_connection(client_socket):
                 if msg['type']=='info':
                     if msg['who']=='P1':
                         paddle1_move=msg['content']         
-                        print("p1 info lock",lock.acquire())
+                        # print("p1 info lock",)
+                        lock.acquire()
                         p1_rt=time.time()
                         try:
                             barrier[0]=1 ## return to 0 in send_to_player
@@ -448,7 +449,8 @@ def handle_client_connection(client_socket):
 
                     elif msg['who']=='P2':
                         paddle2_move=msg['content'] 
-                        print("p2 info lock",lock.acquire())
+                        # print("p2 info lock",)
+                        lock.acquire()
                         p2_rt=time.time()
                         try:
                             barrier[1]=1
