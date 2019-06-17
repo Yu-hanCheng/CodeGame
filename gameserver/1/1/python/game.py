@@ -272,6 +272,7 @@ def handle_client_connection(client_socket):
             if msg['who']=='P1':
                 
                 identify['P1']=msg['user_id']
+                print("identify['P1']:",msg['user_id'])
                 print("p1 conn lock",lock.acquire())
                 try:
                     barrier[0]=1
