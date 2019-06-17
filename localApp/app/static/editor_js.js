@@ -101,9 +101,9 @@ function replay(){
     },replay_speed);
 }
 function download_log(){
-    let ball="BALL:";
-    let p1="P1:";
-    let p1_move="PMOVE:";
+    let ball="BALL: ";
+    let p1="P1: ";
+    let p1_move="P1MOVE: ";
     for (var i = 0; i < record_content.length; i++) { 
         ball +=  record_content[i][0]+"''";
         p1 +=  record_content[i][1]+"''";
