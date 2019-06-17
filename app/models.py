@@ -271,7 +271,7 @@ class Log(db.Model):
     
     def get_rank_list(self):
         
-        rank_list = Log.query.with_entities(Log.id,Log.game_id,Log.winner_code_id,User.username,Log.score).filter_by(game_id = self.game_id).join(User,(User.id==Log.winner_id)).order_by(Log.score.desc()).all()
+        rank_list = Log.query.with_entities(Log.id,Log.game_id,Log.winner_code_id,User.username,Log.score,Log.roomname).filter_by(game_id = self.game_id).join(User,(User.id==Log.winner_id)).order_by(Log.score.desc()).all()
         
         return rank_list
 

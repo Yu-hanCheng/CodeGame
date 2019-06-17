@@ -65,10 +65,9 @@
                         <thead class="thead-dark">
                         <tr>
                             <th scope="col">Rank</th>
-                            <th scope="col">RoomName</th>
+                            <th scope="col">RoomName-ID</th>
                             <th scope="col">UserName</th>
                             <th scope="col">Score</th>
-                            <th scope="col">LogID</th>
                             <th scope="col">Record</th>
                             <th scope="col">Download</th>
                         </tr>
@@ -80,10 +79,9 @@
                             {% set i=i+1 %}
                             <tr>
                                 <td>{{ loop.index }}</td>
-                                <td>{{ log.roomname }}</td>
+                                <td>{{ log.roomname }}-{{ log.id }}</td>
                                 <td>{{ log.username }}</td>
                                 <td>{{ log.score }}</td>
-                                <td>{{ log.id }}</td>
                                 <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.display_record',log_id=log.id,func_type=1 ) }}'" >Record</button></td> 
                                 <td><button class="btn btn-info" onclick="javascript:location.href='{{ url_for('games.display_record',log_id=log.id,func_type=0 ) }}'" >Download</button></td> 
                             </tr>
