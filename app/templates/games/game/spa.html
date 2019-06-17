@@ -48,6 +48,16 @@
         </div>
     </div>
     <div class ="code_space">
+        {% if rank_list!="" %}
+        <div id="opponent">
+            <label class="control-label">opponent rank:</label>
+            <select id="opponent_rank" class="form-control" >
+                {% for rank in rank_list %}
+                <option value="{'username':'{{rank[3]}}','code_id':{{rank[2]}}}">{{rank[3]}}-{{rank[4]}}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
         <label for="mode" class="control-label">Language Mode:</label>
         <select id="mode" class="form-control">
             <option value="code_id">"choose language-code"</option>
@@ -55,17 +65,9 @@
             <option value={{code_id}}>{{ lan_name }}-{{code_msg}}</option>
             {% endfor %}
         </select>
+
         <button id="btn_select_code" onclick="select_code()" style="display:none">submit</button>
-        {% if rank_list!="" %}
-            <div id="opponent">
-                <label class="control-label">opponent rank:</label>
-                <select id="opponent_rank" class="form-control" >
-                    {% for rank in rank_list %}
-                    <option value="{'username':'{{rank[3]}}','code_id':{{rank[2]}}}">{{rank[3]}}-{{rank[4]}}</option>
-                    {% endfor %}
-                </select>
-            </div>
-        {% endif %}
+
         <div id="game_code">
             <pre id="editor" style="height:255px"></pre>
         </div>

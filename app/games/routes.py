@@ -134,7 +134,7 @@ def wait_to_play(log_id):
                 l= Log.query.filter_by(id=log_id).first()
                 current_users = l.current_users
                 if l.privacy is 1: # public,可以
-                    rank_list=""
+                    rank_list_delself=""
                     if l.status < 0: # room還沒滿,可以進來參賽(新增 player_in_log data, update user的 current_log) # if s is not (0 or 1) :
                         game_start=False
                         if current_user not in current_users:
@@ -156,12 +156,15 @@ def wait_to_play(log_id):
                 elif l.privacy == 2: # official
                     join_log(l,l.privacy)
                     rank_list=l.get_rank_list()
+                    for each_log in rank_list:
+                        if each_log.username!=current_user.username:
+                            rank_list_delself.append(each_log)
                     game_start=False
                     if l.status ==1 : # gaming
                         game_start=True
                 else: # only invited
                     pass
-        return render_template('games/game/spa.html', title='wait_play_commit',log=l,rank_list=rank_list,all_codes=all_codes,game_start=game_start)
+        return render_template('games/game/spa.html', title='wait_play_commit',log=l,rank_list=rank_list_delself,all_codes=all_codes,game_start=game_start)
     else:
         return redirect(url_for('games.index',msg="The room is deleted"))
 
