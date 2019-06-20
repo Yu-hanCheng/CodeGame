@@ -156,6 +156,7 @@ def wait_to_play(log_id):
                 elif l.privacy == 2: # official
                     join_log(l,l.privacy)
                     rank_list=l.get_rank_list()
+                    rank_list_delself=[]
                     for each_log in rank_list:
                         if each_log.username!=current_user.username:
                             rank_list_delself.append(each_log)
@@ -246,7 +247,6 @@ def gameover(log_id):
 def join_log(l,privacy_info):
     l.current_users.append(current_user) #current_users為該局的玩家名單
     current_users_len = len(l.current_users)
-    current_user.current_log_id = l.id
     if privacy_info==1:
         l.status +=1
     session['user_id']=current_user.id
