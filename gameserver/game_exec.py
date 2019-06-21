@@ -194,8 +194,4 @@ def tcp_client_handle(client_socket):
             return
             
 
-if __name__ == '__main__':
-    wst = threading.Thread(target=tcp_serve_for_sub)
-    wst.start()
-    wst.join()
-    
+tcp_serve_for_sub()

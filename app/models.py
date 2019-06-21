@@ -297,7 +297,7 @@ class Language(db.Model):
     filename_extension = db.Column(db.String(30)) 
 class Game(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    gamename = db.Column(db.String(30))
+    game_name = db.Column(db.String(30))
     descript = db.Column(db.String(1024))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))

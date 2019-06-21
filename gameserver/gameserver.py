@@ -50,9 +50,6 @@ class MaxSizeList(object):
 	def get_list(self):
 		return self.ls
 
-	def get_len(self):
-		return len(self.ls)
-
 
 room_list=MaxSizeList(100)
 serv_list=MaxSizeList(50)
@@ -92,7 +89,6 @@ def push_to_room_list(user_code_str):
 	
 def pop_code_in_room(i,the_log_id):
 	popped =[]
-	# _rooms = copy.copy(room_list.get_list())
 	_rooms = room_list.get_list()
 	while _rooms[i][0]== the_log_id:
 		pop = room_list.pop_index(i)
@@ -108,7 +104,7 @@ def pop_code_in_room(i,the_log_id):
 				break
 
 
-
+				
 	return popped#[len(popped),popped]
 
 def push_to_serv_list(elephant):
@@ -226,14 +222,12 @@ def message_received(client, server, message):
 
 	# elif data['from']=='game':
 	# 	print("gameover")
-					
-while True:
-	try:
-		server.set_fn_new_client(new_client)# set callback function
-		server.set_fn_message_received(message_received)
-		server.run_forever()
-	except Exception as e:
-		print("server exception:",e)
+try:
+	server.set_fn_new_client(new_client)# set callback function
+	server.set_fn_message_received(message_received)
+	server.run_forever()
+except Exception as e:
+	print("server exception:",e)
 
 
 

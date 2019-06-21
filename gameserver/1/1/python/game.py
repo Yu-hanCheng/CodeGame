@@ -7,9 +7,9 @@ import re
 game_exec_ip = sys.argv[1]
 game_exec_port = sys.argv[2]
 log_id = sys.argv[3]
-
 socketIO=SocketIO('0.0.0.0', 5000, LoggingNamespace)
 socketIO.emit('info',{'msg':'gameconnected','log_id':log_id})
+print("SocketIO:",threading.active_count())
 bind_ip = '0.0.0.0'
 bind_port = int(game_exec_port)+1
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -596,7 +596,3 @@ if __name__ == '__main__':
 
 
 print('just after setInterval -> time : {:.1f}s'.format(time.time()-StartTime))
-
-# # will stop interval in 5s
-t=threading.Timer(90,inter.cancel)
-t.start()
