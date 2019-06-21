@@ -239,14 +239,14 @@ def emit_code(l,code,the_user):
 @socketio.on('get_gamelist')
 def get_gamelist(msg):
     sid = request.sid
-    g_list=Game.query.with_entities(Game.id,Game.gamename,Game.descript).all()
+    g_list=Game.query.with_entities(Game.id,Game.game_name,Game.descript).all()
     
     emit('g_list',g_list, room=sid)
 
 @socketio.on('get_lanlist')
 def get_lanlist(message):
     sid = request.sid
-    lan_list=Game_lib.query.with_entities(Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension).filter_by(game_id=message['game_id']).join(Language,(Game_lib.language_id==Language.id)).join(Game,(Game.id==message['game_id'])).join(Category,(Category.id==Game.category_id)).group_by(Language.id).all()
+    lan_list=Game_lib.query.with_entities(Game_lib.id,Category.id,Category.name,Game.id,Game.game_name,Language.id, Language.language_name, Language.filename_extension).filter_by(game_id=message['game_id']).join(Language,(Game_lib.language_id==Language.id)).join(Game,(Game.id==message['game_id'])).join(Category,(Category.id==Game.category_id)).group_by(Language.id).all()
     # 取Category.name,Game.gamename是為了localapp端將code存成檔案的路徑
     
     emit('lan_list',lan_list, room=sid)

@@ -81,7 +81,7 @@ def library():
 def commit():
     # save
     # {"encodedData":encodedData,"commit_msg":commit_msg,"lan_compiler":lan_compiler,'obj':obj,'user_id':1,}
-    # // 0Game_lib.id,1Category.id,2Category.name,3Game.id,4Game.gamename,5Language.id, 6Language.language_name, 7Language.filename_extension
+    # // 0Game_lib.id,1Category.id,2Category.name,3Game.id,4Game.game_name,5Language.id, 6Language.language_name, 7Language.filename_extension
     # socket.emit('commit', {code: editor_content, commit_msg:commit_msg, game_id:game_id, glanguage:glanguage, user_id:1});
     global code_data,isCodeOk
     isCodeOk=0

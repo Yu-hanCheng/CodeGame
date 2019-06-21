@@ -22,7 +22,7 @@
                             <tr>
                                 <td>{{ w_room.id }}</td>
                                 <td>{{ w_room.roomname }}</td>
-                                <td>{{ w_room.gamename }}</td>
+                                <td>{{ w_room.game_name }}</td>
                                 <td>{% for u in w_users[loop.index-1].current_users %} {{ u.username }} {% endfor %}</td>
                                 <td>{{ w_room.player_num  | int  + w_room.status | int  }}</td>
                                 <td>{{ w_room.player_num }}</td>
@@ -51,7 +51,7 @@
                         <tr>
                             <td>{{ g_room.id }}</td>
                             <td>{{ g_room.roomname }}</td>
-                            <td>{{ g_room.gamename }}</td>
+                            <td>{{ g_room.game_name }}</td>
                             <td>{% for u in g_users[loop.index-1].current_users %} {{ u.username }} {% endfor %}</td>
                             <td>{{ g_room.player_num  | int  + g_room.status | int  }}</td>
                             <td>{{ g_room.player_num }}</td>

@@ -17,13 +17,13 @@ def create_game():
     # 新增遊戲
     form = CreateGameForm()
     if form.validate_on_submit():
-        game = Game(user_id=form.user_id.data,gamename=form.gamename.data,descript=form.descript.data, player_num=form.player_num.data,\
+        game = Game(user_id=form.user_id.data,game_name=form.game_name.data,descript=form.descript.data, player_num=form.player_num.data,\
         category_id=form.category_id.data)
         db.session.add(game)
         db.session.commit()
 
         # '''obj_to_json'''
-        g_query=Game.query.filter_by(gamename=form.gamename.data).first()
+        g_query=Game.query.filter_by(game_name=form.game_name.data).first()
         result=""
         if isinstance(g_query, list):
             result = obj_to_json(g_query)
@@ -35,9 +35,9 @@ def create_game():
     return render_template('games/create_game.html', title='Register', form=form)
 
 def room_game_list(user_id,cat_id):
-    code = Code.query.with_entities(Code.id,Code.game_id,Game.gamename,Game.descript,Category.name).filter(Code.user_id==user_id,Game.category_id==cat_id).join(Game,(Game.id==Code.game_id)).group_by(Game.id).all()
+    code = Code.query.with_entities(Code.id,Code.game_id,Game.game_name,Game.descript,Category.name).filter(Code.user_id==user_id,Game.category_id==cat_id).join(Game,(Game.id==Code.game_id)).group_by(Game.id).all()
     game_choices=[(0,"default")]
-    game_choices.extend([(g.game_id,g.gamename) for g in code])
+    game_choices.extend([(g.game_id,g.game_name) for g in code])
     return game_choices
 
 @bp.route('/get_g_list', methods=['GET','POST'])
@@ -181,7 +181,7 @@ def rank_list(log_id):
 @bp.route('/game_status/<int:game_id>', methods=['GET','POST'])
 @login_required
 def game_status(game_id):
-    g_name = Game.query.filter_by(id=game_id).first().gamename
+    g_name = Game.query.filter_by(id=game_id).first().game_name
     a_log = Log.query.filter_by(game_id=game_id).first()
     wait_log = Log.query.filter(Log.status<0,Log.game_id==game_id).all()
     gaming_log = Log.query.filter(Log.status==1,Log.game_id==game_id).all()
@@ -222,9 +222,9 @@ def index(msg):
     elif request.method == 'GET':
         form.name.data = session.get('name', '')
         form.room.data = session.get('room', '')
-        wait_rooms = Log.query.with_entities(Log.id,Log.roomname,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.status<0).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
+        wait_rooms = Log.query.with_entities(Log.id,Log.roomname,Log.game_id,Game.game_name,Log.status,Game.player_num).filter(Log.status<0).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
         wait_room_users = Log.query.filter(Log.status<0).order_by(Log.timestamp.desc()).all()
-        game_rooms = Log.query.with_entities(Log.id,Log.roomname,Log.game_id,Game.gamename,Log.status,Game.player_num).filter(Log.status==1,User.id==current_user.id).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
+        game_rooms = Log.query.with_entities(Log.id,Log.roomname,Log.game_id,Game.game_name,Log.status,Game.player_num).filter(Log.status==1,User.id==current_user.id).join(Game,(Game.id==Log.game_id)).order_by(Log.timestamp.desc()).all()
         game_room_users = Log.query.filter(Log.status==1,User.id==current_user.id).order_by(Log.timestamp.desc()).all()
         games = Game.query.order_by(Game.timestamp.desc()).limit(10).all()
         h_games = Game.query.order_by(Game.count.desc()).limit(10).all()

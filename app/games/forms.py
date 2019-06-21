@@ -8,7 +8,7 @@ from app.games import current_game,current_log,current_code
 
 class CreateGameForm(FlaskForm):
 	user_id = HiddenField('User id', default=current_user)
-	gamename = TextAreaField('gamename', validators=[DataRequired()])
+	game_name = TextAreaField('game_name', validators=[DataRequired()])
 	descript = TextAreaField('descript', validators=[DataRequired()])
 	player_num = IntegerField('player_num')
 	category_id = IntegerField('category_id')

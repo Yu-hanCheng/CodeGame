@@ -40,10 +40,10 @@ def over_game(id):
 @bp.route('/games', methods=['POST'])
 def create_game():
 	data = request.get_json() or {}
-	if 'descript' not in data or 'game_lib' not in data or 'example_code' not in data or 'gamename' not in data:
-		return bad_request('must include descript, game_lib, example_code, gamename fields')
-	if Game.query.filter_by(gamename=data['gamename']).first():
-		return bad_request('please use a different gamename')
+	if 'descript' not in data or 'game_lib' not in data or 'example_code' not in data or 'game_name' not in data:
+		return bad_request('must include descript, game_lib, example_code, game_name fields')
+	if Game.query.filter_by(game_name=data['game_name']).first():
+		return bad_request('please use a different game_name')
 	game=Game()
 	game.from_dict(data, new_user=True)
 	db.session.add(game)

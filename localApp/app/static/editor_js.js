@@ -18,12 +18,12 @@ socket_local.emit('conn', {msg: "conn"});
 $(document).ready(function(){
 
     socket.on('lan_list', function(data) {
-//Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension)
+//Game_lib.id,Category.id,Category.name,Game.id,Game.game_name,Language.id, Language.language_name, Language.filename_extension)
         console.log("lan_list:",data)
         set_lan_list(data)
     });
     socket.on('library', function(data) {
-        //Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension)
+        //Game_lib.id,Category.id,Category.name,Game.id,Game.game_name,Language.id, Language.language_name, Language.filename_extension)
                 var FD  = new FormData();
                 FD.append("path", data[0]);
                 FD.append("end", data[1]);
@@ -182,7 +182,7 @@ editor.setTheme("ace/theme/twilight");
 editor.session.setMode("ace/mode/python");
 
 function changeMode(){
-    // Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension
+    // Game_lib.id,Category.id,Category.name,Game.id,Game.game_name,Language.id, Language.language_name, Language.filename_extension
     // filename = "%s_%s%s"%(log_id,user_id,language_res[1]) 
     
     var mode = document.getElementById('mode').value.split(",");
@@ -264,7 +264,7 @@ function send_to_back(content,Content_type,dest){
 }
 function set_lan_list(language_list) {
     //先清空舊的語言選項,在新增新的語言選項,保留第一個option為 default
-    // Game_lib.id,Category.id,Category.name,Game.id,Game.gamename,Language.id, Language.language_name, Language.filename_extension)
+    // Game_lib.id,Category.id,Category.name,Game.id,Game.game_name,Language.id, Language.language_name, Language.filename_extension)
     var mode_select = document.getElementById('mode')
     while (mode_select.length > 1) {
         mode_select.remove(mode_select.length-1);
@@ -277,7 +277,7 @@ function set_lan_list(language_list) {
 }
 function before_sendback(Data,content_type,post_dest){
     const obj = document.getElementById("mode").value;
-        // 0Game_lib.id,1Category.id,2Category.name,3Game.id,4Game.gamename,5Language.id, 6Language.language_name, 7Language.filename_extension
+        // 0Game_lib.id,1Category.id,2Category.name,3Game.id,4Game.game_name,5Language.id, 6Language.language_name, 7Language.filename_extension
     var commit_msg = document.getElementById('commit_msg').value; 
     let res = obj.split(",");
     var lan_compiler
