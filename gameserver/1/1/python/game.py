@@ -116,11 +116,13 @@ def tcp_send_rule(str_tosend,startlen):
 
 def send_to_Players(instr):
 
-    global cnt,barrier,ball,paddle1,paddle2,lp_cnt,rp_cnt,winner
+    global cnt,barrier,ball,paddle1,paddle2,lp_cnt,rp_cnt,winner,p1_rt, p2_rt
 
     if (instr == 'gameinfo') and barrier==[1,1]:
         cnt+=1
         json_str={'type':'info','content':'{\'ball\':'+str(ball)+',\'paddle1\':'+str(paddle1[1])+',\'paddle2\':'+str(paddle2[1])+',\'cnt\':'+str(cnt)+'}'}
+        p1_rt=time.time()
+        p2_rt=time.time()
         print("send info")
     elif instr == 'over':
         if winner=="r":
@@ -526,16 +528,12 @@ def timeout_check():
                     if p1_timeout==3:
                         gameover("timeout_over","","",{'user':"P1","sub":p1_rt_sub},log_id)                
                     after_play('p1_timeout')
-                    p1_rt=time.time()
-                    p2_rt=time.time()
     
             elif barrier[1]==0:
                 p2_rt_sub = time.time()-p2_rt
                 if (p2_rt_sub)>timeout:
                     paddle2_move=0
                     barrier=[1,1]
-                    p1_rt=time.time()
-                    p2_rt=time.time()
                     print("p2timeout:",p2_timeout)
                     p2_timeout+=1
                     if p2_timeout==3:
