@@ -177,7 +177,8 @@ def play():
         paddle2[1] = y_axis(copy.deepcopy(paddle2[1]),paddle2_move)    
         paddle1[1] = y_axis(copy.deepcopy(paddle1[1]),paddle1_move)
     
-        
+        last_ball=ball
+        print("last_ball:",last_ball)
         ball[0] += int(ball_vel[0])
         ball[1] += int(ball_vel[1])
         if int(ball[1]) <= BALL_RADIUS:
@@ -192,39 +193,54 @@ def play():
             ball_vel[1] = - ball_vel[1]
 
         # left normal catch
-        if int(ball[0]) <= BALL_RADIUS + PAD_WIDTH and int(ball[1]) in range(paddle1[1] - PAD_CATCH,
-                                                                                       paddle1[1] + PAD_CATCH, 1):
-            if int(ball[0]) < PAD_WIDTH :
-                ball[0] = BALL_RADIUS*2 + PAD_WIDTH
-            lp_cnt+=1
-            ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.1
-            ball_vel[1] *= 1.1      
+        if int(ball[0]) <= BALL_RADIUS + PAD_WIDTH:
+            # and int(ball[1]) in range(paddle1[1] - PAD_CATCH, paddle1[1] + PAD_CATCH, 1):
+            if int(ball[0]) > 0:
+                y1=int(ball[1])
+            else:
+                if last_ball[1] < ball[1]:
+                    y1= last_ball[1] + (abs(last_ball[0])*(ball_vel[1]/ball_vel[0]))
+                else:
+                    y1= last_ball[1] - (abs(last_ball[0])*(ball_vel[1]/ball_vel[0]))
+            if y1 in range( paddle1[1] - PAD_CATCH, paddle1[1] + PAD_CATCH, 1):
+                if int(ball[0]) < PAD_WIDTH :
+                    ball[0] = BALL_RADIUS*2 + PAD_WIDTH
+                lp_cnt+=1
+                ball_vel[0] = -ball_vel[0]
+                ball_vel[0] *= 1.1
+                ball_vel[1] *= 1.1      
         # left no catch                                                             
-        elif int(ball[0]) <= BALL_RADIUS+1:
-            winner="r"
-            ball[0] = BALL_RADIUS+1
-            send_to_Players('over')
-            start=0
-            endgame=1
-            after_play('onP1')
+            else:
+                winner="r"
+                ball[0] = BALL_RADIUS+1
+                send_to_Players('over')
+                start=0
+                endgame=1
+                after_play('onP1')
         # right normal catch
-        if int(ball[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH and int(ball[1]) in range(
-                paddle2[1] - PAD_CATCH, paddle2[1] + PAD_CATCH, 1):
-            if int(ball[0]) > WIDTH - PAD_WIDTH :
-                ball[0] = BALL_RADIUS*2 + PAD_WIDTH
-            ball[0] = WIDTH - BALL_RADIUS*2 -1
-            ball_vel[0] = -ball_vel[0]
-            ball_vel[0] *= 1.1
-            ball_vel[1] *= 1.1
-            rp_cnt+=1
-        elif int(ball[0]) >= WIDTH  - BALL_RADIUS -1:
-            winner="l"
-            ball[0]=WIDTH - BALL_RADIUS-1
-            send_to_Players('over')
-            start=0
-            endgame=1
-            after_play('onP2')
+        if int(ball[0]) >= WIDTH + 1 - BALL_RADIUS - PAD_WIDTH:
+            if int(ball[0]) < WIDTH:
+                y1=int(ball[1])
+            else:
+                if last_ball[1] < ball[1]:
+                    y1= last_ball[1] + ((WIDTH-last_ball[0])*(ball_vel[1]/ball_vel[0]))
+                else:
+                    y1= last_ball[1] - ((WIDTH-last_ball[0])*(ball_vel[1]/ball_vel[0]))
+            if y1 in range( paddle2[1] - PAD_CATCH, paddle2[1] + PAD_CATCH, 1):
+                if int(ball[0]) > WIDTH - PAD_WIDTH :
+                    ball[0] = BALL_RADIUS*2 + PAD_WIDTH
+                ball[0] = WIDTH - BALL_RADIUS*2 -1
+                ball_vel[0] = -ball_vel[0]
+                ball_vel[0] *= 1.1
+                ball_vel[1] *= 1.1
+                rp_cnt+=1
+            else:
+                winner="l"
+                ball[0]=WIDTH - BALL_RADIUS-1
+                send_to_Players('over')
+                start=0
+                endgame=1
+                after_play('onP2')
         else:
             pass
     except(RuntimeError, TypeError, NameError) as e:
