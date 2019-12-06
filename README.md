@@ -33,4 +33,5 @@
 1. 由 url: `http://localhost:5000/games` 輸入要進入的聊天室
 2. Webserver 透過 app/main/events.py 來接收 socket 訊息(聊天室和遊戲物件位置)
 
-{%youtube S98ATE6EaGw %}
+[![CodeGame](https://img.youtube.com/vi/S98ATE6EaGw/0.jpg)](https://www.youtube.com/watch?v=S98ATE6EaGw)
+
