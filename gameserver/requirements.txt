@@ -6,7 +6,7 @@ click==6.7
 cryptography==2.3
 dnspython==1.15.0
 eventlet==0.24.1
-Flask==0.12.2
+Flask==1.0
 Flask-Login==0.4.0
 Flask-Session==0.3.1
 Flask-SocketIO==3.0.1
