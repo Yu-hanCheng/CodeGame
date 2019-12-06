@@ -33,7 +33,7 @@ PyJWT==1.7.0
 python-dateutil==2.7.3
 python-dotenv==0.9.1
 python-editor==1.0.3
-python-engineio==2.2.0
+python-engineio==3.8.2.post1
 python-socketio==2.0.0
 rauth==0.7.3
 requests==2.19.1
