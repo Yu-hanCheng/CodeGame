@@ -13,7 +13,7 @@ Flask-SocketIO==3.0.1
 greenlet==0.4.14
 idna==2.7
 itsdangerous==0.24
-Jinja2==2.7.3
+Jinja2==2.11.3
 MarkupSafe==0.23
 monotonic==1.5
 numpy==1.16.2
